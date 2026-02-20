@@ -33,6 +33,7 @@
             border: 4px solid black;
             transition: all 0.1s;
             box-shadow: 4px 4px 0px black;
+            cursor: pointer;
         }
         .nes-btn:active {
             transform: translate(4px, 4px);
@@ -70,7 +71,7 @@
         }
     </style>
 </head>
-<body class="min-h-screen text-gray-800 pb-12">
+<body class="min-h-screen text-gray-800 pb-12 relative">
 
     <!-- Navbar -->
     <nav class="bg-red-600 border-b-4 border-black p-4 sticky top-0 z-50 shadow-lg">
@@ -202,8 +203,8 @@
                 <div class="bg-white p-4 rounded border-2 border-green-200 shadow-sm hover:shadow-md transition">
                     <div class="w-10 h-10 bg-green-600 text-white font-bold rounded-full flex items-center justify-center mx-auto mb-3">2</div>
                     <h4 class="font-bold mb-2">Realiza el Pago</h4>
-                    <p class="text-xs text-gray-600 mb-2"><strong>Mañanas (Aula UATyG 7 Y 9):</strong> Comité</p>
-                    <p class="text-xs text-gray-600 mb-2"><strong>Tardes (Aula UATyG 4):</strong> Comité</p>
+                    <p class="text-xs text-gray-600 mb-2"><strong> Por la Mañana (Aula UATyG 7 Y 9):</strong> Comité</p>
+                    <p class="text-xs text-gray-600 mb-2"><strong> Por la Tarde (Aula UATyG 4):</strong> Comité</p>
                     <p class="text-xs text-gray-600"><strong>Dirección:</strong> Con Tania</p>
                 </div>
 
@@ -274,6 +275,82 @@
         // Icons Initialization
         lucide.createIcons();
 
+        // --- 8-BIT AUDIO SYNTHESIZER (PLAY ONCE) ---
+        let audioCtx;
+        
+        // Revisar si ya sonó en esta sesión
+        let hasPlayed = sessionStorage.getItem('musicPlayedUATyG');
+
+        const melody = [
+            { f: 523.25, d: 0.15 }, // Do5
+            { f: 659.25, d: 0.15 }, // Mi5
+            { f: 783.99, d: 0.15 }, // Sol5
+            { f: 1046.50, d: 0.30 }, // Do6
+            { f: 783.99, d: 0.15 }, // Sol5
+            { f: 1046.50, d: 0.60 }  // Do6
+        ];
+
+        function play8BitTheme() {
+            // Si ya sonó, no hacer nada
+            if (hasPlayed) return;
+            
+            // Marcar que ya sonó para esta sesión
+            hasPlayed = true;
+            sessionStorage.setItem('musicPlayedUATyG', 'true');
+
+            // Iniciar contexto de audio
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            let startTime = audioCtx.currentTime;
+
+            // Tocar cada nota
+            melody.forEach(note => {
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                oscillator.type = 'square';
+                oscillator.frequency.value = note.f;
+
+                gainNode.gain.setValueAtTime(0.05, startTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + note.d - 0.02);
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                oscillator.start(startTime);
+                oscillator.stop(startTime + note.d);
+
+                startTime += note.d + 0.05;
+            });
+        }
+
+        // Configurar para que suene con la primera interacción del usuario
+        function setupAudioTrigger() {
+            if (hasPlayed) return; // Si ya sonó antes, ni siquiera agregamos los eventos
+
+            const triggerAudio = () => {
+                play8BitTheme();
+                // Remover los eventos una vez que ya sonó
+                document.removeEventListener('click', triggerAudio);
+                document.removeEventListener('touchstart', triggerAudio);
+                document.removeEventListener('keydown', triggerAudio);
+            };
+
+            // Escuchar el primer clic, toque o tecla
+            document.addEventListener('click', triggerAudio);
+            document.addEventListener('touchstart', triggerAudio);
+            document.addEventListener('keydown', triggerAudio);
+        }
+
+        // Iniciar el gatillo de audio al cargar la página
+        window.addEventListener('load', setupAudioTrigger);
+        // -------------------------------
+
         // Character Data
         const characters = [
             { name: "Mario", color: "bg-red-600", border: "border-red-800" },
@@ -306,5 +383,4 @@
         });
     </script>
 </body>
-
 </html>
