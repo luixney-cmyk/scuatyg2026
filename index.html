@@ -88,8 +88,10 @@
                 <div class="w-8 h-8 bg-white border-2 border-black rounded-full flex items-center justify-center font-bold">M</div>
                 <span class="text-white font-pixel text-xs md:text-sm">SC UATyG 2026</span>
             </div>
-            <!-- Botón PRESS START con ID para el sonido -->
-            <div id="press-start-btn" class="text-white font-pixel text-[10px] md:text-xs blink cursor-pointer hover:text-yellow-300 transition-colors">PRESS START</div>
+            <div class="flex items-center gap-4">
+                <a href="cronograma.html" class="text-white font-pixel text-[10px] md:text-xs hover:text-yellow-300 transition-colors hidden md:inline-block">WORLD MAP</a>
+                <div id="press-start-btn" class="text-white font-pixel text-[10px] md:text-xs blink cursor-pointer hover:text-yellow-300 transition-colors">PRESS START</div>
+            </div>
         </div>
     </nav>
 
@@ -116,9 +118,15 @@
 
             <p class="mb-6 max-w-2xl mx-auto relative z-10">El Reino Champiñón ha llegado. ¿Estás listo para el nivel más difícil, divertido y épico? Olvídate de las aulas por tres días: ¡Es hora de jugar!</p>
             
-            <a href="#registro" class="nes-btn bg-red-500 text-white font-pixel py-4 px-6 inline-block hover:bg-red-600 no-underline text-xs md:text-sm relative z-10">
-                INSERT COIN (Inscribirse)
-            </a>
+            <!-- BOTONES DE NAVEGACIÓN PRINCIPAL -->
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-4 relative z-10">
+                <a href="#registro" class="nes-btn bg-red-500 text-white font-pixel py-4 px-6 inline-block hover:bg-red-600 no-underline text-xs md:text-sm w-full sm:w-auto">
+                    INSERT COIN (Registro)
+                </a>
+                <a href="cronograma.html" class="nes-btn bg-blue-500 text-white font-pixel py-4 px-6 flex items-center justify-center gap-2 hover:bg-blue-600 no-underline text-xs md:text-sm w-full sm:w-auto">
+                    <i data-lucide="map" class="w-5 h-5"></i> WORLD MAP (Programa)
+                </a>
+            </div>
         </div>
     </header>
 
@@ -292,34 +300,29 @@
 
         let hasPlayedOnLoad = false;
 
-        // Dispara la melodía principal al entrar (en el primer clic/toque del usuario)
         const playOnFirstInteraction = () => {
             if (!hasPlayedOnLoad) {
                 play8BitTheme();
                 hasPlayedOnLoad = true;
-                // Eliminamos los eventos globales para que no vuelva a sonar a cada clic
                 document.removeEventListener('click', playOnFirstInteraction);
                 document.removeEventListener('touchstart', playOnFirstInteraction);
                 document.removeEventListener('keydown', playOnFirstInteraction);
             }
         };
 
-        // Escuchamos la primera interacción en cualquier parte de la página
         document.addEventListener('click', playOnFirstInteraction);
         document.addEventListener('touchstart', playOnFirstInteraction);
         document.addEventListener('keydown', playOnFirstInteraction);
 
-        // Lógica de disparo manual de audio desde el Navbar
         const pressStartBtn = document.getElementById('press-start-btn');
         if(pressStartBtn) {
             pressStartBtn.addEventListener('click', (e) => {
-                e.stopPropagation(); // Evita conflictos con el listener global si es el primer clic
+                e.stopPropagation(); 
                 play8BitTheme();
-                hasPlayedOnLoad = true; // Marcamos como reproducido si le dieron al botón primero
+                hasPlayedOnLoad = true; 
             });
         }
 
-        // --- EFECTO BLOOP (NUEVO) ---
         function playBloopSound() {
             if (!audioCtx || audioCtx.state === 'suspended') return;
 
@@ -340,7 +343,6 @@
             osc.stop(audioCtx.currentTime + 0.1);
         }
 
-        // --- EFECTO MONEDA (NUEVO) ---
         function playCoinSound() {
             if (!audioCtx || audioCtx.state === 'suspended') return;
 
@@ -368,7 +370,6 @@
             treasureBox.addEventListener('click', playCoinSound);
         }
 
-        // --- EFECTO "HERE WE GO!" AL LLEGAR AL FINAL (NUEVO) ---
         function playHereWeGoSound() {
             if (!audioCtx || audioCtx.state === 'suspended') return;
 
