@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronograma - Super Semana Cultural 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Fredoka:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* --- ESTILOS COMPARTIDOS (IDENTIDAD VISUAL) --- */
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #5c94fc; /* Mario Sky Blue */
+            background-image: 
+                linear-gradient(transparent 95%, rgba(255, 255, 255, 0.2) 95%),
+                linear-gradient(90deg, transparent 95%, rgba(255, 255, 255, 0.2) 95%);
+            background-size: 20px 20px;
+        }
+        
+        .font-pixel { font-family: 'Press Start 2P', cursive; }
+
+        .nes-container {
+            border: 4px solid black;
+            padding: 1.5rem;
+            position: relative;
+            background: white;
+            box-shadow: 6px 6px 0px rgba(0,0,0,0.2);
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+        }
+
+        /* --- ESTILOS ESPECÍFICOS DEL CRONOGRAMA --- */
+        .world-header {
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        /* Acordeón (Caja de Misión) */
+        .mission-box {
+            border: 3px solid black;
+            margin-bottom: 0.8rem;
+            background: #fff;
+            transition: transform 0.1s;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .mission-header {
+            padding: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #f8f9fa;
+            user-select: none;
+        }
+
+        .mission-header:hover {
+            background-color: #f0f0f0;
+        }
+
+        .mission-header.active {
+            background-color: #ffeb3b; /* Amarillo moneda al abrir */
+            border-bottom: 3px solid black;
+        }
+
+        .mission-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background-color: #fff;
+        }
+
+        .mission-body {
+            padding: 1rem;
+            background-color: #fafafa;
+        }
+
+        .tag-time {
+            background: #000;
+            color: #4ade80; /* Verde terminal */
+            padding: 6px 10px;
+            font-size: 0.65rem;
+            font-family: 'Press Start 2P';
+            border-radius: 4px;
+            display: inline-block;
+            margin-right: 12px;
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.3);
+            min-width: 140px;
+            text-align: center;
+        }
+
+        @media (max-width: 640px) {
+            .tag-time {
+                display: block;
+                margin-bottom: 8px;
+                width: max-content;
+            }
+            .mission-header {
+                align-items: flex-start;
+            }
+            .header-info {
+                display: flex;
+                flex-direction: column;
+            }
+        }
+
+        /* Icono de ? que gira */
+        .q-block {
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            background: #eab308;
+            border: 3px solid black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-family: 'Press Start 2P', cursive;
+            color: white;
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-left: 12px;
+        }
+        
+        .mission-header.active .q-block {
+            transform: rotate(180deg) scale(1.1);
+            background: #ef4444; /* Rojo al abrir */
+        }
+    </style>
+</head>
+<body class="min-h-screen text-gray-800 pb-12">
+
+    <!-- Navbar Simple -->
+    <nav class="bg-red-600 border-b-4 border-black p-4 sticky top-0 z-50 shadow-lg flex justify-between items-center">
+        <a href="index.html" class="text-white font-pixel text-[10px] md:text-xs hover:text-yellow-300 no-underline flex items-center gap-2">
+            <i data-lucide="arrow-left" class="w-4 h-4 md:w-5 md:h-5"></i> BACK
+        </a>
+        <span class="text-white font-pixel text-[10px] md:text-xs text-center flex-1">WORLD MAP</span>
+        <div class="w-16"></div> <!-- Espaciador para centrar -->
+    </nav>
+
+    <div class="container mx-auto mt-8 px-4 max-w-4xl">
+
+        <div class="text-center mb-10">
+            <div class="inline-block relative">
+                <img src="https://github.com/luixney-cmyk/scuatyg2026/blob/main/mario2.png?raw=true" class="w-20 h-20 mx-auto mb-2 object-contain relative z-10" onerror="this.src='https://placehold.co/80x80?text=M'">
+                <div class="absolute inset-0 bg-yellow-400 rounded-full blur-xl opacity-40 animate-pulse z-0"></div>
+            </div>
+            <h1 class="font-pixel text-2xl md:text-4xl text-yellow-400 drop-shadow-[3px_3px_0_rgba(0,0,0,1)] uppercase leading-relaxed mt-2">
+                SELECT LEVEL
+            </h1>
+            <p class="font-bold text-white text-lg mt-2 text-shadow-sm drop-shadow-md">Cronograma de Actividades</p>
+        </div>
+
+        <!-- WORLD 1: MIÉRCOLES (Apertura) -->
+        <section class="mb-12">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="bg-red-500 text-white font-pixel p-3 border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] text-xs md:text-sm">W 1-1</div>
+                <h2 class="font-pixel text-white text-sm md:text-xl world-header uppercase tracking-wide">Miércoles 22 <span class="hidden md:inline">- Press Start</span></h2>
+            </div>
+
+            <div class="nes-container">
+                
+                <!-- Actividad 1 -->
+                <div class="mission-box">
+                    <div class="mission-header" onclick="toggleMission(this)">
+                        <div class="header-info flex items-center w-full">
+                            <span class="tag-time">09:00 - 10:00</span>
+                            <span class="font-bold text-sm md:text-lg flex-1">CEREMONIA "PRESS START"</span>
+                        </div>
+                        <div class="q-block">?</div>
+                    </div>
+                    <div class="mission-content">
+                        <div class="mission-body">
+                            <p class="text-sm md:text-base mb-3"><strong class="text-red-600">🎯 Actividad:</strong> Inauguración oficial y Presentación de Equipos (Character Select).</p>
+                            <p class="text-sm md:text-base text-blue-700 font-semibold flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Sede: Explanada UATyG.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actividad 2 -->
+                <div class="mission-box">
+                    <div class="mission-header" onclick="toggleMission(this)">
+                        <div class="header-info flex items-center w-full">
+                            <span class="tag-time">11:00 - 12:00</span>
+                            <span class="font-bold text-sm md:text-lg flex-1">GRAND PRIX UAN</span>
+                        </div>
+                        <div class="q-block">?</div>
+                    </div>
+                    <div class="mission-content">
+                        <div class="mission-body">
+                            <p class="text-sm md:text-base mb-3"><strong class="text-red-600">🎯 Actividad:</strong> La Copa Champiñón. Carrera de vehículos creativos "Mario Kart" (Diseño y Velocidad).</p>
+                            <p class="text-sm md:text-base text-blue-700 font-semibold flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4 min-w-[16px]"></i> Sede: Avenida de un carril (Costado del Mesón de los Deportes hasta el Estadio Universitario).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actividad 3 -->
+                <div class="mission-box">
+                    <div class="mission-header" onclick="toggleMission(this)">
+                        <div class="header-info flex items-center w-full">
+                            <span class="tag-time">13:00 - 14:00</span>
+                            <span class="font-bold text-sm md:text-lg flex-1">BOWSER'S CASTLE</span>
+                        </div>
+                        <div class="q-block">?</div>
+                    </div>
+                    <div class="mission-content">
+                        <div class="mission-body">
+                            <p class="text-sm md:text-base mb-3"><strong class="text-red-600">🎯 Actividad:</strong> El Circuito de Lava. Carrera de obstáculos y resistencia física.</p>
+                            <p class="text-sm md:text-base text-blue-700 font-semibold flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Sede: Cancha de Fútbol.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Receso -->
+                <div class="py-4 text-center text-[10px] md:text-xs text-gray-500 font-pixel mb-2 tracking-widest bg-gray-100 border-2 border-dashed border-gray-300 rounded mx-1 mt-3">
+                    <i data-lucide="coffee" class="inline w-4 h-4 mr-2 mb-1"></i> PAUSE MENU (14:00 - 16:00 hrs) RECESO
+                </div>
+
+                <!-- Actividad 4 -->
+                <div class="mission-box mt-3">
+                    <div class="mission-header" onclick="toggleMission(this)">
+                        <div class="header-info flex items-center w-full">
+                            <span class="tag-time">16:00 - 17:00</span>
+                            <span class="font-bold text-sm md:text-lg flex-1">EL PALADAR DE YOSHI</span>
+                        </div>
+                        <div class="q-block">?</div>
+                    </div>
+                    <div class="mission-content">
+                        <div class="mission-body">
+                            <p class="text-sm md:text-base mb-3"><strong class="text-red-600">🎯 Actividad:</strong> Blind Test. Concurso "Adivina el Ingrediente" (Vendados).</p>
+                            <p class="text-sm md:text-base text-blue-700 font-semibold flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Sede: Explanada UATyG.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actividad 5 -->
+                <div class="mission-box">
+                    <div class="mission-header" onclick="toggleMission(this)">
+                        <div class="header-info flex items-center w-full">
+                            <span class="tag-time">17:00 - 18:00</span>
+                            <span class="font-bold text-sm md:text-lg flex-1">SUPER STAR TALENT</span>
+                        </div>
+                        <div class="q-block">?</div>
+                    </div>
+                    <div class="mission-content">
+                        <div class="mission-body">
+                            <p class="text-sm md:text-base mb-3"><strong class="text-red-600">🎯 Actividad:</strong> Brilla o Game Over. Show de Talentos (Canto, baile, habilidades varias).</p>
+                            <p class="text-sm md:text-base text-blue-700 font-semibold flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Sede: Explanada UATyG.</p>
+                        </div>
+                    </div>
+                </div>
+
+                 <!-- Actividad 6 (Especial) -->
+                 <div class="mission-box border-purple-800">
+                    <div class="mission-header bg-purple-100 hover:bg-purple-200" onclick="toggleMission(this)">
+                        <div class="header-info flex items-center w-full">
+                            <span class="tag-time bg-purple-800 text-purple-200">20:00 - 22:00</span>
+                            <span class="font-bold text-sm md:text-lg flex-1 text-purple-900">GALA REAL DEL REINO</span>
+                        </div>
+                        <div class="q-block bg-purple-500 border-purple-900">?</div>
+                    </div>
+                    <div class="mission-content">
+                        <div class="mission-body bg-purple-50">
+                            <p class="text-sm md:text-base mb-3 text-purple-900"><strong class="text-purple-700">🎯 Actividad:</strong> Peach & Bowser Night. Certamen Diva Drag / Mr. Ribs.</p>
+                            <p class="text-sm md:text-base text-purple-700 font-semibold flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Sede: Mr. Ribs.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- WORLD 2: JUEVES (Deportes) -->
+        <section class="mb-12">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="bg-green-500 text-white font-pixel p-3 border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] text-xs md:text-sm">W 1-2</div>
+                <h2 class="font-pixel text-white text-sm md:text-xl world-header uppercase tracking-wide">Jueves 23 <span class="hidden md:inline">- Level Up</span></h2>
+            </div>
+
+            <div class="nes-container">
+                
+                <!-- Volley Gigante -->
+                <div class="mission-box">
+                    <div class="mission-header" onclick="toggleMission(this)">
+                        <div class="header-info flex items-center w-full">
+                            <span class="tag-time">09:00 - 10:00</span>
+                            <span class="font-bold text-sm md:text-lg flex-1">BIG ISLAND VOLLEY</span>
+                        </div>
+                        <div class="q-block">?</div>
+                    </div>
+                    <div class="mission-content">
+                        <div class="mission-body">
+                            <p class="text-sm md:text-base mb-3"><strong class="text-red-600">🎯 Actividad:</strong> La Batalla de los Chomps. Torneo de Voleibol con Pelota Gigante.</p>
+                            <p class="text-sm md:text-base text-blue-700 font-semibold flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Sede: Canchas de Voleibol.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Basket -->
+                <div class="mission-box">
+                    <div class="mission-header" onclick="toggleMission(this)">
+                        <div class="header-info flex items-center w-full">
+                            <span class="tag-time">10:00 - 11:00</span>
+                            <span class="font-bold text-sm md:text-lg flex-1">JUMPMAN BASKETBALL CUP</span>
+                        </div>
+                        <div class="q-block">?</div>
+                    </div>
+                    <div class="mission-content">
+                        <div class="mission-body">
+                            <p class="text-sm md:text-base mb-3"><strong class="text-red-600">🎯 Actividad:</strong> Torneo de Básquetbol.</p>
+                            <p class="text-sm md:text-base text-blue-700 font-semibold flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Sede: Canchas de Básquetbol.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Volley Normal -->
+                <div class="mission-box">
+                    <div class="mission-header" onclick="toggleMission(this)">
+                        <div class="header-info flex items-center w-full">
+                            <span class="tag-time">11:00 - 12:00</span>
+                            <span class="font-bold text-sm md:text-lg flex-1">KOOPA BEACH VOLLEY</span>
+                        </div>
+                        <div class="q-block">?</div>
+                    </div>
+                    <div class="mission-content">
+                        <div class="mission-body">
+                            <p class="text-sm md:text-base mb-3"><strong class="text-red-600">🎯 Actividad:</strong> Torneo de Voleibol Tradicional.</p>
+                            <p class="text-sm md:text-base text-blue-700 font-semibold flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Sede: Canchas de Voleibol.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tacones -->
+                <div class="mission-box border-pink-600">
+                    <div class="mission-header bg-pink-50 hover:bg-pink-100" onclick="toggleMission(this)">
+                        <div class="header-info flex items-center w-full">
+                            <span class="tag-time bg-pink-600 text-white">12:00 - 13:00</span>
+                            <span class="font-bold text-sm md:text-lg flex-1 text-pink-800">PRINCESS PEACH DASH</span>
+                        </div>
+                        <div class="q-block bg-pink-500 border-pink-700">?</div>
+                    </div>
+                    <div class="mission-content">
+                        <div class="mission-body bg-pink-50">
+                            <p class="text-sm md:text-base mb-3 text-pink-900"><strong class="text-pink-700">🎯 Actividad:</strong> Tacones de Fuego. Carrera en zapatillas / tacones.</p>
+                            <p class="text-sm md:text-base text-pink-700 font-semibold flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Sede: Cancha de Básquetbol.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Globos Agua -->
+                <div class="mission-box border-blue-600">
+                    <div class="mission-header bg-blue-50 hover:bg-blue-100" onclick="toggleMission(this)">
+                        <div class="header-info flex items-center w-full">
+                            <span class="tag-time bg-blue-600 text-white">13:00 - 14:00</span>
+                            <span class="font-bold text-sm md:text-lg flex-1 text-blue-800">CHEEP CHEEP SPLASH</span>
+                        </div>
+                        <div class="q-block bg-blue-500 border-blue-700">?</div>
+                    </div>
+                    <div class="mission-content">
+                        <div class="mission-body bg-blue-50">
+                            <p class="text-sm md:text-base mb-3 text-blue-900"><strong class="text-blue-700">🎯 Actividad:</strong> Guerra Acuática. Guerra de globos de agua.</p>
+                            <p class="text-sm md:text-base text-blue-700 font-semibold flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Sede: Cancha de Básquetbol.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Receso -->
+                <div class="py-4 text-center text-[10px] md:text-xs text-gray-500 font-pixel mb-2 tracking-widest bg-gray-100 border-2 border-dashed border-gray-300 rounded mx-1 mt-3">
+                    <i data-lucide="coffee" class="inline w-4 h-4 mr-2 mb-1"></i> PAUSE MENU (14:00 - 16:00 hrs) RECESO
+                </div>
+
+                <!-- Docentes -->
+                <div class="mission-box border-yellow-600 mt-3">
+                    <div class="mission-header bg-yellow-50 hover:bg-yellow-100" onclick="toggleMission(this)">
+                        <div class="header-info flex items-center w-full">
+                            <span class="tag-time bg-yellow-600 text-white">16:00 - 17:00</span>
+                            <span class="font-bold text-sm md:text-lg flex-1 text-yellow-900">COPA TOADSWORTH</span>
+                        </div>
+                        <div class="q-block bg-yellow-500 border-yellow-700">?</div>
+                    </div>
+                    <div class="mission-content">
+                        <div class="mission-body bg-yellow-50">
+                            <p class="text-sm md:text-base mb-3 text-yellow-900"><strong class="text-yellow-700">🎯 Actividad:</strong> Maestros del Reino. Reto exclusivo para Docentes.</p>
+                            <p class="text-sm md:text-base text-yellow-700 font-semibold flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Sede: Fútbol Bardas.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Futbol -->
+                <div class="mission-box">
+                    <div class="mission-header" onclick="toggleMission(this)">
+                        <div class="header-info flex items-center w-full">
+                            <span class="tag-time">17:00 - 19:00</span>
+                            <span class="font-bold text-sm md:text-lg flex-1">SUPER MARIO STRIKERS</span>
+                        </div>
+                        <div class="q-block">?</div>
+                    </div>
+                    <div class="mission-content">
+                        <div class="mission-body">
+                            <p class="text-sm md:text-base mb-3"><strong class="text-red-600">🎯 Actividad:</strong> La Final. Torneo de Fútbol Rápido.</p>
+                            <p class="text-sm md:text-base text-blue-700 font-semibold flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Sede: Fútbol Bardas.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- WORLD 3: VIERNES (Clausura) -->
+        <section class="mb-12">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="bg-blue-600 text-white font-pixel p-3 border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] text-xs md:text-sm">W 1-3</div>
+                <h2 class="font-pixel text-white text-sm md:text-xl world-header uppercase tracking-wide">Viernes 24 <span class="hidden md:inline">- Final Boss</span></h2>
+            </div>
+
+            <div class="nes-container">
+                
+                <!-- Chef Toad -->
+                <div class="mission-box">
+                    <div class="mission-header" onclick="toggleMission(this)">
+                        <div class="header-info flex items-center w-full">
+                            <span class="tag-time">09:00 - 10:00</span>
+                            <span class="font-bold text-sm md:text-lg flex-1">CHEF TOAD'S KITCHEN</span>
+                        </div>
+                        <div class="q-block">?</div>
+                    </div>
+                    <div class="mission-content">
+                        <div class="mission-body">
+                            <p class="text-sm md:text-base mb-3"><strong class="text-red-600">🎯 Actividad:</strong> Batalla Culinaria. Concurso de Gastronomía.</p>
+                            <p class="text-sm md:text-base text-blue-700 font-semibold flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Sede: Laboratorio General UATyG.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DK Feast -->
+                <div class="mission-box">
+                    <div class="mission-header" onclick="toggleMission(this)">
+                        <div class="header-info flex items-center w-full">
+                            <span class="tag-time">10:00 - 11:00</span>
+                            <span class="font-bold text-sm md:text-lg flex-1">DONKEY KONG FEAST</span>
+                        </div>
+                        <div class="q-block">?</div>
+                    </div>
+                    <div class="mission-content">
+                        <div class="mission-body">
+                            <p class="text-sm md:text-base mb-3"><strong class="text-red-600">🎯 Actividad:</strong> El Banquete. Concurso de comida "El Glotón".</p>
+                            <p class="text-sm md:text-base text-blue-700 font-semibold flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Sede: Explanada UATyG.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dr Mario -->
+                <div class="mission-box">
+                    <div class="mission-header" onclick="toggleMission(this)">
+                        <div class="header-info flex items-center w-full">
+                            <span class="tag-time">11:00 - 12:00</span>
+                            <span class="font-bold text-sm md:text-lg flex-1">DR. MARIO'S BRAIN CHALLENGE</span>
+                        </div>
+                        <div class="q-block">?</div>
+                    </div>
+                    <div class="mission-content">
+                        <div class="mission-body">
+                            <p class="text-sm md:text-base mb-3"><strong class="text-red-600">🎯 Actividad:</strong> Concurso de conocimientos "El Rival Más Listo".</p>
+                            <p class="text-sm md:text-base text-blue-700 font-semibold flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Sede: Explanada UATyG.</p>
+                        </div>
+                    </div>
+                </div>
+
+                 <!-- Lucky Block -->
+                 <div class="mission-box">
+                    <div class="mission-header" onclick="toggleMission(this)">
+                        <div class="header-info flex items-center w-full">
+                            <span class="tag-time">12:00 - 13:00</span>
+                            <span class="font-bold text-sm md:text-lg flex-1">LUCKY? BLOCK</span>
+                        </div>
+                        <div class="q-block">?</div>
+                    </div>
+                    <div class="mission-content">
+                        <div class="mission-body">
+                            <p class="text-sm md:text-base mb-3"><strong class="text-red-600">🎯 Actividad:</strong> La Caja Sorpresa. Ruleta de retos / Un minuto para ganar.</p>
+                            <p class="text-sm md:text-base text-blue-700 font-semibold flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Sede: Explanada UATyG.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Star Hunt -->
+                <div class="mission-box border-yellow-600">
+                    <div class="mission-header bg-yellow-50 hover:bg-yellow-100" onclick="toggleMission(this)">
+                        <div class="header-info flex items-center w-full">
+                            <span class="tag-time bg-yellow-600 text-white">13:00 - 14:00</span>
+                            <span class="font-bold text-sm md:text-lg flex-1 text-yellow-900">THE STAR HUNT</span>
+                        </div>
+                        <div class="q-block bg-yellow-500 border-yellow-700">?</div>
+                    </div>
+                    <div class="mission-content">
+                        <div class="mission-body bg-yellow-50">
+                            <p class="text-sm md:text-base mb-3 text-yellow-900"><strong class="text-yellow-700">🎯 Actividad:</strong> Rally por el Campus. Rally Académico y de Pistas.</p>
+                            <p class="text-sm md:text-base text-yellow-700 font-semibold flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Sede: Campus UAN.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Receso -->
+                <div class="py-4 text-center text-[10px] md:text-xs text-gray-500 font-pixel mb-2 tracking-widest bg-gray-100 border-2 border-dashed border-gray-300 rounded mx-1 mt-3">
+                    <i data-lucide="coffee" class="inline w-4 h-4 mr-2 mb-1"></i> PAUSE MENU (14:00 - 16:00 hrs) RECESO
+                </div>
+
+                <!-- Taller Toads -->
+                <div class="mission-box mt-3">
+                    <div class="mission-header" onclick="toggleMission(this)">
+                        <div class="header-info flex items-center w-full">
+                            <span class="tag-time">16:00 - 18:00</span>
+                            <span class="font-bold text-sm md:text-lg flex-1">TALLER DE LOS TOADS</span>
+                        </div>
+                        <div class="q-block">?</div>
+                    </div>
+                    <div class="mission-content">
+                        <div class="mission-body">
+                            <p class="text-sm md:text-base mb-3"><strong class="text-red-600">🎯 Actividad:</strong> Pimp My Kart. Decoración de vehículos para la caravana.</p>
+                            <p class="text-sm md:text-base text-blue-700 font-semibold flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4 min-w-[16px]"></i> Sede: Avenida de un carril (Costado del Mesón de los Deportes).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rainbow Road -->
+                <div class="mission-box bg-gradient-to-r from-red-50 via-yellow-50 to-blue-50 border-gray-800 border-4">
+                    <div class="mission-header bg-transparent hover:bg-white/50" onclick="toggleMission(this)">
+                        <div class="header-info flex items-center w-full">
+                            <span class="tag-time bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white border border-black shadow-none">18:00 - 19:00</span>
+                            <span class="font-bold text-sm md:text-lg flex-1">RAINBOW ROAD PARADE</span>
+                        </div>
+                        <div class="q-block bg-white text-black border-black"><i data-lucide="star" class="w-5 h-5 fill-yellow-400 text-yellow-400"></i></div>
+                    </div>
+                    <div class="mission-content">
+                        <div class="mission-body bg-white/80 backdrop-blur-sm">
+                            <p class="text-sm md:text-base mb-3"><strong class="text-red-600">🎯 Actividad:</strong> Senda Arcoíris. Caravana Vehicular rumbo a la sede final.</p>
+                            <p class="text-sm md:text-base text-blue-700 font-semibold flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Ruta: Salida de UAN hacia lugar del evento.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game Over Party -->
+                <div class="mission-box border-4 border-black">
+                    <div class="mission-header bg-gray-900 hover:bg-black text-white" onclick="toggleMission(this)">
+                        <div class="header-info flex items-center w-full">
+                            <span class="tag-time bg-white text-black">20:00 - Cierre</span>
+                            <span class="font-bold text-sm md:text-lg flex-1 text-green-400 font-pixel text-shadow-sm">VICTORY PARTY: 1-UP</span>
+                        </div>
+                        <div class="q-block bg-green-500 text-black border-white font-pixel">!</div>
+                    </div>
+                    <div class="mission-content bg-gray-900 text-white">
+                        <div class="mission-body bg-gray-800 border-t border-gray-700">
+                            <p class="text-sm md:text-base mb-3"><strong class="text-green-400">🎯 Actividad:</strong> Fiesta de Clausura "Game Over".</p>
+                            <p class="text-sm md:text-base text-yellow-400 font-semibold flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Sede: (Por definir).</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Script para abrir/cerrar acordeones -->
+    <script>
+        // Inicializar iconos
+        lucide.createIcons();
+
+        // Audio Context Setup
+        let audioCtx = null;
+        
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playCoinSound() {
+            initAudio();
+            if (!audioCtx) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(987.77, audioCtx.currentTime); // Nota B5
+            osc.frequency.setValueAtTime(1318.51, audioCtx.currentTime + 0.1); // Nota E6
+
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.35);
+        }
+
+        function playBloopSound() {
+            initAudio();
+            if (!audioCtx) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'triangle'; 
+            osc.frequency.setValueAtTime(300, audioCtx.currentTime); 
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1); 
+
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime); 
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        function toggleMission(header) {
+            // Alternar estado activo
+            header.classList.toggle('active');
+            var content = header.nextElementSibling;
+            
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+                playBloopSound(); // Sonido al cerrar
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+                playCoinSound(); // Sonido al abrir
+            }
+        }
+    </script>
+</body>
+</html>
