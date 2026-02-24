@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Juego - Semana Cultural UATyG 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Fredoka:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* --- ESTILOS COMPARTIDOS (IDENTIDAD VISUAL) --- */
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #5c94fc; /* Mario Sky Blue */
+            background-image: 
+                linear-gradient(transparent 95%, rgba(255, 255, 255, 0.2) 95%),
+                linear-gradient(90deg, transparent 95%, rgba(255, 255, 255, 0.2) 95%);
+            background-size: 20px 20px;
+        }
+        
+        .font-pixel { font-family: 'Press Start 2P', cursive; }
+
+        /* Contenedor tipo NES clásico */
+        .nes-container {
+            border: 4px solid black;
+            padding: 1.5rem;
+            position: relative;
+            background: white;
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.2);
+            border-radius: 4px;
+        }
+
+        /* Títulos de sección tipo bloque de Mario */
+        .block-title {
+            background-color: #e52521; /* Rojo Mario */
+            color: white;
+            border: 4px solid black;
+            box-shadow: inset -4px -4px 0px rgba(0,0,0,0.2), 4px 4px 0px rgba(0,0,0,0.2);
+            padding: 0.75rem;
+            display: inline-block;
+            transform: rotate(-1deg);
+        }
+
+        /* Listas personalizadas */
+        .pixel-list li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .pixel-list li::before {
+            content: '■';
+            position: absolute;
+            left: 0;
+            color: #e52521;
+            font-size: 0.8rem;
+            top: 0.2rem;
+        }
+
+        /* Cajas de alerta/reglas */
+        .rule-box {
+            border-left: 6px solid #eab308;
+            background: #fefce8;
+        }
+
+        /* Estilo de libro/manual */
+        .manual-page {
+            background-color: #fdfbf7;
+            border: 4px solid #000;
+            box-shadow: 10px 10px 0px #000;
+            position: relative;
+        }
+        .manual-page::after {
+            content: "";
+            position: absolute;
+            top: 4px; left: 4px; right: -12px; bottom: -12px;
+            border: 4px solid #000;
+            z-index: -1;
+            background: #e5e5e5;
+        }
+
+        /* Utilidad para brillo dorado */
+        .gold-shadow {
+            box-shadow: 4px 4px 0px #b45309;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-gray-800 pb-16">
+
+    <!-- Navbar Simple -->
+    <nav class="bg-red-600 border-b-4 border-black p-4 sticky top-0 z-50 shadow-lg flex justify-between items-center">
+        <a href="index.html" class="text-white font-pixel text-[10px] md:text-xs hover:text-yellow-300 no-underline flex items-center gap-2 transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4 md:w-5 md:h-5"></i> START
+        </a>
+        <span class="text-white font-pixel text-[10px] md:text-xs text-center flex-1">INSTRUCTION MANUAL</span>
+        <div class="w-16"></div>
+    </nav>
+
+    <div class="container mx-auto mt-8 px-4 max-w-4xl">
+
+        <!-- Portada del Manual -->
+        <div class="text-center mb-10">
+            <h1 class="font-pixel text-2xl md:text-4xl text-white drop-shadow-[4px_4px_0_rgba(0,0,0,1)] uppercase leading-relaxed mt-2 mb-4">
+                GUÍA DEL JUGADOR
+            </h1>
+            <p class="font-bold text-yellow-300 text-lg md:text-xl drop-shadow-[2px_2px_0_rgba(0,0,0,1)] bg-black/50 inline-block px-4 py-2 rounded border-2 border-black">
+                Reglamento y Misiones Oficiales
+            </p>
+        </div>
+
+        <!-- ==========================================
+             NIVEL 1: PRESENTACIÓN DE EQUIPOS 
+             ========================================== -->
+        <div class="manual-page p-6 md:p-10 mb-16 relative z-10">
+            
+            <div class="absolute -top-5 -left-5 bg-black text-white font-pixel p-3 border-4 border-white shadow-[4px_4px_0_0_rgba(0,0,0,1)] transform -rotate-3 text-xs md:text-sm">
+                MISIÓN 1
+            </div>
+
+            <div class="text-center mt-6 mb-8">
+                <h2 class="block-title font-pixel text-lg md:text-2xl w-full max-w-2xl mx-auto">
+                    PRESENTACIÓN DE EQUIPOS
+                </h2>
+            </div>
+
+            <p class="text-center text-lg md:text-xl font-bold text-blue-800 mb-8 italic">
+                "La Semana Cultural comienza como un videojuego clásico, llena de música, energía y trabajo en equipo..."
+            </p>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 bg-gray-900 text-white p-4 border-4 border-black rounded">
+                <div class="text-center">
+                    <i data-lucide="clock" class="w-6 h-6 mx-auto mb-2 text-yellow-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">HORA</p>
+                    <p class="font-bold text-sm">9:00 AM</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="map-pin" class="w-6 h-6 mx-auto mb-2 text-red-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">SEDE</p>
+                    <p class="font-bold text-sm">Explanada UATyG</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="timer" class="w-6 h-6 mx-auto mb-2 text-green-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">DURACIÓN</p>
+                    <p class="font-bold text-sm">4 a 6 Min.</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="users" class="w-6 h-6 mx-auto mb-2 text-blue-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">RÉCORD</p>
+                    <p class="font-bold text-sm">Mín. 10 Jugadores</p>
+                </div>
+            </div>
+
+            <div class="mb-10">
+                <h3 class="font-pixel text-blue-600 text-sm md:text-base mb-4 flex items-center gap-2 border-b-4 border-blue-600 pb-2 inline-flex">
+                    <i data-lucide="info" class="w-5 h-5"></i> DESCRIPCIÓN
+                </h3>
+                <div class="space-y-4 text-gray-700 leading-relaxed font-medium">
+                    <p>
+                        Prepárense para una explosión de ritmo y actitud, donde cada equipo tomará el escenario para presentarse a través de una <strong>coreografía</strong> que marcará el arranque oficial de esta gran celebración inspirada en el universo de Super Mario World.
+                    </p>
+                    <p>
+                        En esta actividad, cada equipo se presentará ante el público utilizando canciones de su libre elección. 
+                    </p>
+                    <div class="bg-blue-50 border-2 border-blue-200 p-4 rounded-md">
+                        <p class="font-bold text-blue-900 mb-2">📸 FOTO DE VICTORIA (Al finalizar la coreografía):</p>
+                        <p class="text-sm">El equipo deberá permanecer completo en el escenario, junto con sus mentores (docentes seleccionados por el equipo), así como con el cosplay representativo del personaje para la evaluación final.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-10 rule-box p-6 border-4 border-black relative">
+                <div class="absolute -top-4 -right-4 bg-yellow-400 border-2 border-black p-2 rounded-full rotate-12">
+                    <i data-lucide="alert-triangle" class="w-6 h-6 text-black"></i>
+                </div>
+                <h3 class="font-pixel text-red-600 text-sm md:text-base mb-4">REGLAMENTO STRICTO</h3>
+                
+                <ul class="pixel-list text-sm md:text-base text-gray-800 space-y-3 font-medium">
+                    <li><strong class="text-black">Cosplay Obligatorio:</strong> El personaje elegido deberá ser visible durante la presentación mediante una personificación tipo cosplay.</li>
+                    <li><strong class="text-black">Uniforme:</strong> El equipo, a excepción de la persona caracterizada, deberá usar la <strong>camisa representativa de su equipo</strong> (color correspondiente) durante el baile.</li>
+                    <li><strong class="text-black">Utilería:</strong> Se permite siempre que no ponga en riesgo a participantes ni público. El equipo es responsable de retirar su utilería al finalizar.</li>
+                    <li><strong class="text-black">Escenografía:</strong> En caso de usarla, hacer eficiente el montaje para no atrasar a los siguientes equipos.</li>
+                    <li><strong class="text-black">Música:</strong> Libertad en elección de pistas de cualquier género, respetando el tiempo (4 a 6 min).</li>
+                    <li><strong class="text-black">Juego Limpio:</strong> No se aceptan burlas, insultos ni señas ofensivas hacia otros equipos. El equipo debe acatar indicaciones del staff.</li>
+                    <li><strong class="text-black">Orden de Pase:</strong> Se sorteará el orden. <em>Si no se presentan en su turno, contará como no participación (descalificación automática).</em></li>
+                </ul>
+                <div class="mt-4 p-3 bg-red-100 border border-red-300 text-red-800 text-xs text-center font-bold uppercase rounded">
+                    Las decisiones del jurado serán DEFINITIVAS e INAPELABLES.<br>
+                    Situaciones no contempladas serán resueltas por el Comité.
+                </div>
+            </div>
+
+            <!-- Criterios de Evaluación -->
+            <div>
+                <h3 class="font-pixel text-green-600 text-sm md:text-base mb-4 flex items-center gap-2 border-b-4 border-green-600 pb-2 inline-flex">
+                    <i data-lucide="check-circle-2" class="w-5 h-5"></i> CRITERIOS DE EVALUACIÓN
+                </h3>
+                <p class="text-sm text-gray-500 mb-4">Se otorgarán 1er, 2do y 3er lugar reconociendo a los equipos con mejor desempeño evaluando lo siguiente:</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="flex items-center gap-3 bg-gray-50 p-3 border-2 border-gray-200 rounded hover:border-green-400 transition-colors">
+                        <i data-lucide="star" class="w-5 h-5 text-yellow-500 fill-yellow-500"></i>
+                        <span class="font-semibold text-gray-700">Coordinación y sincronización</span>
+                    </div>
+                    <div class="flex items-center gap-3 bg-gray-50 p-3 border-2 border-gray-200 rounded hover:border-green-400 transition-colors">
+                        <i data-lucide="star" class="w-5 h-5 text-yellow-500 fill-yellow-500"></i>
+                        <span class="font-semibold text-gray-700">Creatividad y originalidad</span>
+                    </div>
+                    <div class="flex items-center gap-3 bg-gray-50 p-3 border-2 border-gray-200 rounded hover:border-green-400 transition-colors">
+                        <i data-lucide="star" class="w-5 h-5 text-yellow-500 fill-yellow-500"></i>
+                        <span class="font-semibold text-gray-700">Expresión corporal y escénica</span>
+                    </div>
+                    <div class="flex items-center gap-3 bg-gray-50 p-3 border-2 border-gray-200 rounded hover:border-green-400 transition-colors">
+                        <i data-lucide="star" class="w-5 h-5 text-yellow-500 fill-yellow-500"></i>
+                        <span class="font-semibold text-gray-700">Vestuario y presentación general</span>
+                    </div>
+                    <div class="flex items-center gap-3 bg-gray-50 p-3 border-2 border-gray-200 rounded hover:border-green-400 transition-colors">
+                        <i data-lucide="star" class="w-5 h-5 text-yellow-500 fill-yellow-500"></i>
+                        <span class="font-semibold text-gray-700">Uso del espacio escénico</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PREMIACIÓN MISIÓN 1 -->
+            <div class="mt-8 bg-blue-50 border-4 border-blue-600 p-5 rounded-lg text-center shadow-sm relative">
+                <div class="absolute -top-4 -left-4 bg-blue-600 border-2 border-black p-2 rounded-full rotate-[-10deg]">
+                    <i data-lucide="star" class="w-5 h-5 text-white fill-yellow-400"></i>
+                </div>
+                <h4 class="font-pixel text-blue-900 text-sm mb-4">🏆 TABLA DE PUNTOS (Nivel Estelar)</h4>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-2">
+                    <div class="bg-yellow-50 p-2 border-2 border-yellow-500 rounded-lg shadow-[2px_2px_0px_#eab308]">
+                        <span class="block text-2xl mb-1">🥇</span>
+                        <strong class="text-yellow-700 block text-lg font-pixel text-xs mt-2 mb-1">100</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">1er Lugar</span>
+                    </div>
+                    <div class="bg-gray-50 p-2 border-2 border-gray-400 rounded-lg shadow-[2px_2px_0px_#9ca3af]">
+                        <span class="block text-2xl mb-1">🥈</span>
+                        <strong class="text-gray-700 block text-lg font-pixel text-xs mt-2 mb-1">70</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">2do Lugar</span>
+                    </div>
+                    <div class="bg-orange-50 p-2 border-2 border-orange-500 rounded-lg shadow-[2px_2px_0px_#f97316]">
+                        <span class="block text-2xl mb-1">🥉</span>
+                        <strong class="text-orange-700 block text-lg font-pixel text-xs mt-2 mb-1">50</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">3er Lugar</span>
+                    </div>
+                    <div class="bg-blue-100 p-2 border-2 border-blue-400 rounded-lg shadow-[2px_2px_0px_#60a5fa]">
+                        <span class="block text-2xl mb-1">⭐</span>
+                        <strong class="text-blue-700 block text-lg font-pixel text-xs mt-2 mb-1">20</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">Participación</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ==========================================
+             NIVEL 2: GRAND PRIX UAN 
+             ========================================== -->
+        <div class="manual-page p-6 md:p-10 mb-16 relative z-10">
+            <div class="absolute -top-5 -left-5 bg-black text-white font-pixel p-3 border-4 border-white shadow-[4px_4px_0_0_rgba(0,0,0,1)] transform -rotate-3 text-xs md:text-sm">MISIÓN 2</div>
+            <div class="text-center mt-6 mb-8">
+                <h2 class="block-title font-pixel text-lg md:text-xl w-full max-w-2xl mx-auto bg-blue-600">GRAND PRIX UAN: LA COPA CHAMPIÑÓN</h2>
+            </div>
+
+            <p class="text-center text-lg md:text-xl font-bold text-red-700 mb-8 italic">
+                "¿Tienes la velocidad de Mario o la estrategia de Peach? Prepara tu vehículo, reúne a tu equipo y compite en el evento más esperado de la UAN."
+            </p>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 bg-gray-900 text-white p-4 border-4 border-black rounded">
+                <div class="text-center">
+                    <i data-lucide="clock" class="w-6 h-6 mx-auto mb-2 text-yellow-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">HORA</p>
+                    <p class="font-bold text-sm">11:00 AM</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="map-pin" class="w-6 h-6 mx-auto mb-2 text-red-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">SEDE</p>
+                    <p class="font-bold text-xs">Av. Mesón a Estadio</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="wrench" class="w-6 h-6 mx-auto mb-2 text-gray-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">KART</p>
+                    <p class="font-bold text-sm">100% Manual</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="users" class="w-6 h-6 mx-auto mb-2 text-blue-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">EQUIPO</p>
+                    <p class="font-bold text-sm">Piloto + Motor</p>
+                </div>
+            </div>
+            
+            <!-- Integración y Mecánica -->
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <div>
+                    <h3 class="font-pixel text-blue-600 text-sm mb-4 flex items-center gap-2 border-b-4 border-blue-600 pb-2 inline-flex"><i data-lucide="users-2" class="w-5 h-5"></i> EL SQUAD</h3>
+                    <p class="text-sm text-gray-700 mb-3 font-medium">Cada escudería debe registrar obligatoriamente a dos integrantes (¡Docentes y mentores también pueden participar!):</p>
+                    <ul class="space-y-2 text-sm text-gray-800 font-medium bg-blue-50 p-4 border-2 border-blue-200 rounded">
+                        <li>🏎️ <strong>El Piloto:</strong> Va dentro del coche y dirige el rumbo.</li>
+                        <li>💨 <strong>Motor Humano:</strong> Empuja el kart con fuerza y velocidad.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-pixel text-orange-600 text-sm mb-4 flex items-center gap-2 border-b-4 border-orange-600 pb-2 inline-flex"><i data-lucide="shield-alert" class="w-5 h-5"></i> SEGURIDAD (HP)</h3>
+                    <p class="text-sm text-gray-700 mb-3 font-medium">Indispensable para poder participar:</p>
+                    <ul class="space-y-2 text-sm text-gray-800 font-medium bg-orange-50 p-4 border-2 border-orange-200 rounded">
+                        <li>⛑️ <strong>Casco rígido</strong> (Obligatorio para el piloto).</li>
+                        <li>👟 <strong>Calzado cerrado</strong> (Para ambos integrantes).</li>
+                        <li>🛡️ <strong>Sugerido:</strong> Rodilleras, coderas y guantes.</li>
+                        <li class="text-red-600">⚠️ <strong>Puntualidad:</strong> Equipo que no esté en el sorteo = DESCALIFICADO.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Taller de Toad (Requisitos del Kart) -->
+            <div class="mb-10 bg-gray-100 p-6 border-4 border-gray-400 rounded-lg relative">
+                <div class="absolute -top-6 right-4 bg-gray-800 text-white font-pixel p-2 border-2 border-gray-400 text-xs rounded">
+                    TALLER DE TOAD
+                </div>
+                <h3 class="font-pixel text-gray-800 text-sm md:text-base mb-4">REVISIÓN TÉCNICA DEL KART</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm font-medium">
+                    <div class="flex items-start gap-2">
+                        <i data-lucide="check-square" class="w-5 h-5 text-green-600 mt-0.5"></i>
+                        <p><strong>Base permitida:</strong> Patín, patines, patín del diablo, bicicleta pequeña, triciclo o avalancha adaptada.</p>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <i data-lucide="check-square" class="w-5 h-5 text-green-600 mt-0.5"></i>
+                        <p><strong>Mecánica:</strong> Debe tener ruedas, sistema de dirección funcional y un <strong>mecanismo seguro de frenado</strong>.</p>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <i data-lucide="ban" class="w-5 h-5 text-red-600 mt-0.5"></i>
+                        <p><strong>Propulsión:</strong> 100% fuerza humana. PROHIBIDO motores, baterías o pedales.</p>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <i data-lucide="palette" class="w-5 h-5 text-purple-600 mt-0.5"></i>
+                        <p><strong>Estética (Obligatorio):</strong> Vehículo decorado con los colores y temática de su personaje.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reglas de Carrera (Rule Box) -->
+            <div class="mb-8 rule-box p-6 border-4 border-black relative">
+                <div class="absolute -top-4 -right-4 bg-yellow-400 border-2 border-black p-2 rounded-full rotate-12">
+                    <i data-lucide="flag" class="w-6 h-6 text-black"></i>
+                </div>
+                <h3 class="font-pixel text-red-600 text-sm md:text-base mb-4">REGLAS DE CARRERA (ESTRATEGIA)</h3>
+                <p class="text-sm font-bold mb-3">La competencia se divide en dos categorías simultáneas: Velocidad y Diseño.</p>
+                
+                <ul class="pixel-list text-sm md:text-base text-gray-800 space-y-3 font-medium">
+                    <li><strong class="text-black">1v1:</strong> Se competirá en rondas de dos vehículos por sorteo previo.</li>
+                    <li><strong class="text-black">La Meta:</strong> Cruzar primero da una ventaja, pero NO garantiza la victoria final.</li>
+                    <li><strong class="text-black">Cajas de Objetos (Ítems):</strong> En el camino encontrarás Ítems Incógnito. Algunos suman puntos extra, otros pueden restarte puntos a ti o a tu oponente.</li>
+                    <li><strong class="text-black">Obstáculos:</strong> Habrá elementos en la pista que impedirán tu avance; esquivarlos es clave para el tiempo.</li>
+                    <li><strong class="text-black">Revisión Estética:</strong> Jueces realizarán ronda visual al inicio y observarán el desempeño estético durante la carrera.</li>
+                </ul>
+            </div>
+
+            <!-- Porras -->
+            <div class="mb-8 bg-red-50 border-2 border-red-400 p-4 rounded text-sm">
+                <h4 class="font-pixel text-red-700 text-xs mb-2">📣 ZONA DE PORRAS</h4>
+                <p class="font-medium text-red-900 mb-2">Se permite el apoyo total de las porras <strong>únicamente del lado derecho del carril</strong>.</p>
+                <p class="font-bold text-red-700 uppercase bg-red-200 p-2 text-center rounded text-xs border border-red-400">
+                    ¡ESTRICTAMENTE PROHIBIDO cruzar la calle o invadir la pista durante la competencia!
+                </p>
+            </div>
+
+            <!-- PREMIACIÓN MISIÓN 2 -->
+            <div class="mt-8 bg-blue-50 border-4 border-blue-600 p-5 rounded-lg text-center shadow-sm relative">
+                <div class="absolute -top-4 -left-4 bg-blue-600 border-2 border-black p-2 rounded-full rotate-[-10deg]">
+                    <i data-lucide="star" class="w-5 h-5 text-white fill-yellow-400"></i>
+                </div>
+                <h4 class="font-pixel text-blue-900 text-sm mb-4">🏆 TABLA DE PUNTOS (Nivel Estelar)</h4>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-2">
+                    <div class="bg-yellow-50 p-2 border-2 border-yellow-500 rounded-lg shadow-[2px_2px_0px_#eab308]">
+                        <span class="block text-2xl mb-1">🥇</span>
+                        <strong class="text-yellow-700 block text-lg font-pixel text-xs mt-2 mb-1">100</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">1er Lugar</span>
+                    </div>
+                    <div class="bg-gray-50 p-2 border-2 border-gray-400 rounded-lg shadow-[2px_2px_0px_#9ca3af]">
+                        <span class="block text-2xl mb-1">🥈</span>
+                        <strong class="text-gray-700 block text-lg font-pixel text-xs mt-2 mb-1">70</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">2do Lugar</span>
+                    </div>
+                    <div class="bg-orange-50 p-2 border-2 border-orange-500 rounded-lg shadow-[2px_2px_0px_#f97316]">
+                        <span class="block text-2xl mb-1">🥉</span>
+                        <strong class="text-orange-700 block text-lg font-pixel text-xs mt-2 mb-1">50</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">3er Lugar</span>
+                    </div>
+                    <div class="bg-blue-100 p-2 border-2 border-blue-400 rounded-lg shadow-[2px_2px_0px_#60a5fa]">
+                        <span class="block text-2xl mb-1">⭐</span>
+                        <strong class="text-blue-700 block text-lg font-pixel text-xs mt-2 mb-1">20</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">Participación</span>
+                    </div>
+                </div>
+                <p class="text-[10px] text-gray-600">Puntaje aplica para clasificación general de Carreras (Meta + Ítems) y Diseño.</p>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             NIVEL 3: BOWSER'S CASTLE 
+             ========================================== -->
+        <div class="manual-page p-6 md:p-10 mb-16 relative z-10 border-red-900" style="background-color: #fff5f5;">
+            <div class="absolute -top-5 -left-5 bg-black text-red-500 font-pixel p-3 border-4 border-red-800 shadow-[4px_4px_0_0_rgba(0,0,0,1)] transform -rotate-3 text-xs md:text-sm">MISIÓN 3</div>
+            <div class="text-center mt-6 mb-8">
+                <h2 class="block-title font-pixel text-lg md:text-xl w-full max-w-2xl mx-auto bg-red-800 border-black text-white">BOWSER'S CASTLE: EL CIRCUITO DE LAVA</h2>
+            </div>
+
+            <p class="text-center text-lg md:text-xl font-bold text-red-900 mb-8 italic">
+                "¿Listos para enfrentar el calor? Una carrera de obstáculos y resistencia física donde solo los más fuertes sobrevivirán."
+            </p>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8 bg-gray-900 text-white p-4 border-4 border-red-800 rounded">
+                <div class="text-center">
+                    <i data-lucide="clock" class="w-6 h-6 mx-auto mb-2 text-yellow-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">HORA</p>
+                    <p class="font-bold text-sm">13:00 - 14:00</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="map-pin" class="w-6 h-6 mx-auto mb-2 text-red-500"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">SEDE</p>
+                    <p class="font-bold text-sm">Cancha de Fútbol</p>
+                </div>
+                <div class="text-center col-span-2 md:col-span-1">
+                    <i data-lucide="flame" class="w-6 h-6 mx-auto mb-2 text-orange-500"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">TIPO</p>
+                    <p class="font-bold text-sm">Obstáculos / Física</p>
+                </div>
+            </div>
+
+            <!-- Placeholder -->
+            <div class="bg-black text-white p-8 border-4 border-red-600 rounded text-center relative overflow-hidden mt-8 shadow-[8px_8px_0px_rgba(220,38,38,0.3)]">
+                <div class="relative z-10">
+                    <i data-lucide="lock" class="w-12 h-12 mx-auto mb-4 text-gray-500"></i>
+                    <h3 class="font-pixel text-yellow-500 text-lg mb-2 drop-shadow-md">ÁREA RESTRINGIDA</h3>
+                    <p class="font-medium text-gray-300 mb-4">El reglamento está siendo forjado en la lava por los secuaces de Bowser.</p>
+                    <div class="inline-block bg-red-900 text-red-200 text-xs font-pixel p-2 border-2 border-red-500 animate-pulse">
+                        [ REGLAMENTO PENDIENTE ]
+                    </div>
+                </div>
+            </div>
+
+            <!-- PREMIACIÓN MISIÓN 3 -->
+            <div class="mt-8 bg-red-50 border-4 border-red-800 p-5 rounded-lg text-center shadow-sm relative">
+                <div class="absolute -top-4 -left-4 bg-red-800 border-2 border-black p-2 rounded-full rotate-[-10deg]">
+                    <i data-lucide="star" class="w-5 h-5 text-white fill-yellow-400"></i>
+                </div>
+                <h4 class="font-pixel text-red-900 text-sm mb-4">🏆 TABLA DE PUNTOS (Nivel Competencia)</h4>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="bg-yellow-50 p-2 border-2 border-yellow-500 rounded-lg shadow-[2px_2px_0px_#eab308]">
+                        <span class="block text-2xl mb-1">🥇</span>
+                        <strong class="text-yellow-700 block text-lg font-pixel text-xs mt-2 mb-1">60</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">1er Lugar</span>
+                    </div>
+                    <div class="bg-gray-50 p-2 border-2 border-gray-400 rounded-lg shadow-[2px_2px_0px_#9ca3af]">
+                        <span class="block text-2xl mb-1">🥈</span>
+                        <strong class="text-gray-700 block text-lg font-pixel text-xs mt-2 mb-1">40</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">2do Lugar</span>
+                    </div>
+                    <div class="bg-orange-50 p-2 border-2 border-orange-500 rounded-lg shadow-[2px_2px_0px_#f97316]">
+                        <span class="block text-2xl mb-1">🥉</span>
+                        <strong class="text-orange-700 block text-lg font-pixel text-xs mt-2 mb-1">25</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">3er Lugar</span>
+                    </div>
+                    <div class="bg-red-100 p-2 border-2 border-red-400 rounded-lg shadow-[2px_2px_0px_#f87171]">
+                        <span class="block text-2xl mb-1">⭐</span>
+                        <strong class="text-red-700 block text-lg font-pixel text-xs mt-2 mb-1">10</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">Participación</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             NIVEL 4: EL PALADAR DE YOSHI 
+             ========================================== -->
+        <div class="manual-page p-6 md:p-10 mb-16 relative z-10 border-green-800" style="background-color: #f0fdf4;">
+            <div class="absolute -top-5 -left-5 bg-black text-green-400 font-pixel p-3 border-4 border-green-700 shadow-[4px_4px_0_0_rgba(0,0,0,1)] transform -rotate-3 text-xs md:text-sm">MISIÓN 4</div>
+            <div class="text-center mt-6 mb-8">
+                <h2 class="block-title font-pixel text-lg md:text-xl w-full max-w-2xl mx-auto bg-green-600 border-black text-white">EL PALADAR DE YOSHI (BLIND TEST)</h2>
+                <p class="font-bold text-green-700 mt-2 bg-green-200 inline-block px-3 py-1 border-2 border-green-800 rounded">
+                    Power-Up del Sabor: Misión Reino Champiñón
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 bg-gray-900 text-white p-4 border-4 border-green-800 rounded">
+                <div class="text-center">
+                    <i data-lucide="clock" class="w-6 h-6 mx-auto mb-2 text-yellow-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">HORA</p>
+                    <p class="font-bold text-sm">16:00 - 17:00</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="map-pin" class="w-6 h-6 mx-auto mb-2 text-red-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">SEDE</p>
+                    <p class="font-bold text-xs">Explanada UATyG</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="eye-off" class="w-6 h-6 mx-auto mb-2 text-gray-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">ESTADO</p>
+                    <p class="font-bold text-sm">Modo Oscuro</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="users" class="w-6 h-6 mx-auto mb-2 text-blue-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">FORMATO</p>
+                    <p class="font-bold text-sm">10 Rondas (Relevos)</p>
+                </div>
+            </div>
+
+            <!-- 1. Dinámica de Equipo -->
+            <div class="mb-8 bg-green-50 border-2 border-green-300 p-5 rounded-lg">
+                <h3 class="font-pixel text-green-700 text-sm mb-4 flex items-center gap-2 border-b-2 border-green-400 pb-2">
+                    <i data-lucide="users-2" class="w-5 h-5"></i> 1. DINÁMICA DE EQUIPO
+                </h3>
+                <ul class="space-y-3 text-sm text-gray-800 font-medium">
+                    <li class="flex items-start gap-2">
+                        <i data-lucide="check-circle" class="w-5 h-5 text-green-600 mt-0.5 shrink-0"></i>
+                        <span><strong>Alineación:</strong> Cada equipo debe presentar 10 integrantes. Participará un jugador diferente por ronda (PROHIBIDO REPETIR).</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i data-lucide="check-circle" class="w-5 h-5 text-green-600 mt-0.5 shrink-0"></i>
+                        <span><strong>Mentores:</strong> Los docentes pueden integrarse como parte de los 10 jugadores para representar una ronda.</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i data-lucide="check-circle" class="w-5 h-5 text-green-600 mt-0.5 shrink-0"></i>
+                        <span><strong>Uniforme:</strong> Es obligatorio portar la camiseta del equipo.</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i data-lucide="eye-off" class="w-5 h-5 text-gray-800 mt-0.5 shrink-0"></i>
+                        <span><strong>El Ritual:</strong> Antes de cada prueba, el concursante entrará en <em>'Modo Oscuro'</em> (ojos vendados).</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 2 y 3: La Prueba y El Pizarrón -->
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <div>
+                    <h3 class="font-pixel text-blue-700 text-xs mb-3">🍽️ 2. PRUEBA ORGANOLÉPTICA</h3>
+                    <div class="bg-white p-4 border-2 border-blue-200 rounded text-sm text-gray-700 h-full font-medium">
+                        <p class="mb-2"><strong>Protocolo Staff:</strong> Darán el producto en la boca del concursante a la cuenta de 3 con una cuchara desechable.</p>
+                        <p class="mb-2 text-red-600 font-bold">¡Debes consumir el producto en su totalidad (deglutir) para evitar rastros al quitarte la venda!</p>
+                        <p class="bg-blue-100 p-2 text-center rounded text-blue-900 border border-blue-300">
+                            ⏱️ <strong>TIEMPO:</strong> 1 minuto para procesar el sabor (mientras suena la música).
+                        </p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="font-pixel text-purple-700 text-xs mb-3">📝 3. EL PIZARRÓN DE LA VERDAD</h3>
+                    <div class="bg-white p-4 border-2 border-purple-200 rounded text-sm text-gray-700 h-full font-medium">
+                        <p class="mb-2">Tras comer, se bajan las vendas y tienes <strong>15 segundos</strong> para escribir el ingrediente.</p>
+                        <p class="bg-purple-100 p-2 text-center rounded text-purple-900 border border-purple-300 font-bold mt-4">
+                            "1, 2, 3... ¡Pizarrones arriba!"<br>
+                            <span class="text-xs font-normal">Todos muestran respuesta al mismo tiempo.</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GAME OVER (Reglas estrictas) -->
+            <div class="bg-black text-white p-6 border-4 border-red-600 rounded-lg relative shadow-[8px_8px_0px_rgba(220,38,38,0.5)]">
+                <div class="absolute -top-4 right-4 bg-red-600 border-2 border-white p-2 rounded-full animate-bounce">
+                    <i data-lucide="skull" class="w-6 h-6 text-white"></i>
+                </div>
+                <h3 class="font-pixel text-red-500 text-sm md:text-base mb-4 text-center">REGLAS DE 'GAME OVER'</h3>
+                
+                <div class="space-y-4 text-sm font-medium">
+                    <div class="border border-red-800 p-3 bg-red-950/50 rounded">
+                        <strong class="text-red-400 block mb-1">🛑 ZONA DE SILENCIO ABSOLUTO:</strong>
+                        El público debe guardar silencio durante el minuto de degustación y los 15s de escritura.
+                    </div>
+                    
+                    <div>
+                        <strong class="text-yellow-400 block mb-2">⚠️ INTERFERENCIA DEL PÚBLICO:</strong>
+                        <p class="text-gray-300 mb-1">Si alguien grita el ingrediente o intenta ayudar:</p>
+                        <ul class="pl-4 border-l-2 border-red-500 space-y-2">
+                            <li><span class="text-red-400 font-bold">Si se identifica al culpable:</span> El equipo apoyado queda DESCALIFICADO de la actividad.</li>
+                            <li><span class="text-red-400 font-bold">Si NO se identifica:</span> Se anula la ronda completa y NINGÚN equipo suma estrellas.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PREMIACIÓN MISIÓN 4 -->
+            <div class="mt-8 bg-green-50 border-4 border-green-700 p-5 rounded-lg text-center shadow-sm relative">
+                <div class="absolute -top-4 -left-4 bg-green-700 border-2 border-black p-2 rounded-full rotate-[-10deg]">
+                    <i data-lucide="star" class="w-5 h-5 text-white fill-yellow-400"></i>
+                </div>
+                <h4 class="font-pixel text-green-900 text-sm mb-4">🏆 TABLA DE PUNTOS (Nivel Minijuego)</h4>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="bg-yellow-50 p-2 border-2 border-yellow-500 rounded-lg shadow-[2px_2px_0px_#eab308]">
+                        <span class="block text-2xl mb-1">🥇</span>
+                        <strong class="text-yellow-700 block text-lg font-pixel text-xs mt-2 mb-1">30</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">1er Lugar</span>
+                    </div>
+                    <div class="bg-gray-50 p-2 border-2 border-gray-400 rounded-lg shadow-[2px_2px_0px_#9ca3af]">
+                        <span class="block text-2xl mb-1">🥈</span>
+                        <strong class="text-gray-700 block text-lg font-pixel text-xs mt-2 mb-1">20</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">2do Lugar</span>
+                    </div>
+                    <div class="bg-orange-50 p-2 border-2 border-orange-500 rounded-lg shadow-[2px_2px_0px_#f97316]">
+                        <span class="block text-2xl mb-1">🥉</span>
+                        <strong class="text-orange-700 block text-lg font-pixel text-xs mt-2 mb-1">10</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">3er Lugar</span>
+                    </div>
+                    <div class="bg-green-100 p-2 border-2 border-green-400 rounded-lg shadow-[2px_2px_0px_#4ade80]">
+                        <span class="block text-2xl mb-1">⭐</span>
+                        <strong class="text-green-700 block text-lg font-pixel text-xs mt-2 mb-1">5</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">Participación</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             NIVEL 5: SUPER STAR TALENT 
+             ========================================== -->
+        <div class="manual-page p-6 md:p-10 mb-16 relative z-10 border-yellow-500" style="background-color: #fffbeb;">
+            <div class="absolute -top-5 -left-5 bg-black text-yellow-400 font-pixel p-3 border-4 border-yellow-600 shadow-[4px_4px_0_0_rgba(0,0,0,1)] transform -rotate-3 text-xs md:text-sm">MISIÓN 5</div>
+            <div class="text-center mt-6 mb-8 relative">
+                <div class="absolute top-0 right-0 md:-right-4 text-yellow-400 opacity-50"><i data-lucide="star" class="w-16 h-16 fill-yellow-400"></i></div>
+                <h2 class="block-title font-pixel text-lg md:text-xl w-full max-w-2xl mx-auto bg-yellow-500 border-black text-black">SUPER STAR TALENT</h2>
+                <p class="font-bold text-yellow-800 mt-2 bg-yellow-300 inline-block px-3 py-1 border-2 border-yellow-600 rounded drop-shadow-md">
+                    "Brilla o Game Over"
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 bg-gray-900 text-white p-4 border-4 border-yellow-500 rounded gold-shadow">
+                <div class="text-center">
+                    <i data-lucide="clock" class="w-6 h-6 mx-auto mb-2 text-yellow-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">HORA</p>
+                    <p class="font-bold text-sm">17:00 - 18:00</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="map-pin" class="w-6 h-6 mx-auto mb-2 text-red-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">SEDE</p>
+                    <p class="font-bold text-xs">Explanada UATyG</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="mic" class="w-6 h-6 mx-auto mb-2 text-purple-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">LÍMITE</p>
+                    <p class="font-bold text-sm">4 Minutos (Fase 1)</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="users" class="w-6 h-6 mx-auto mb-2 text-blue-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">JUGADORES</p>
+                    <p class="font-bold text-sm">Max 4 (F1) / 2 (F2)</p>
+                </div>
+            </div>
+
+            <!-- FASE 1: Prueba de Talentos -->
+            <div class="mb-8 border-l-4 border-yellow-500 bg-white p-5 shadow-sm rounded-r">
+                <h3 class="font-pixel text-yellow-600 text-sm mb-4 flex items-center gap-2">
+                    <i data-lucide="sparkles" class="w-5 h-5"></i> FASE 1: PRUEBA DE TALENTOS (SKILL SHOWCASE)
+                </h3>
+                <div class="grid md:grid-cols-2 gap-4 text-sm font-medium text-gray-800">
+                    <div>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="users-2" class="w-5 h-5 text-yellow-600 shrink-0"></i>
+                                <span><strong>Formación:</strong> Equipos de máximo 4 integrantes. (Los participantes de talento NO están obligados a ser los mismos de la Fase 2).</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="shirt" class="w-5 h-5 text-yellow-600 shrink-0"></i>
+                                <span><strong>Identidad:</strong> Obligatorio participar con playera del equipo o Cosplay completo.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="file-audio" class="w-5 h-5 text-yellow-600 shrink-0"></i>
+                                <span><strong>Registro:</strong> Entregar pista digital 24h antes del evento.</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-50 border border-gray-200 p-3 rounded">
+                        <strong class="text-gray-900 block mb-2 border-b border-gray-300 pb-1">Ejemplos Admitidos:</strong>
+                        <ul class="list-disc pl-5 space-y-1 text-gray-600 text-xs">
+                            <li><strong>Artes Escénicas:</strong> Canto, baile (urbano, folclor), Free Dance, poesía.</li>
+                            <li><strong>Música:</strong> Instrumento en vivo (solista/ensamble).</li>
+                            <li><strong>Performance:</strong> Actuación, mímica, stand-up.</li>
+                            <li><strong>Artes Visuales:</strong> Speed painting.</li>
+                            <li><strong>Físico:</strong> Acrobacias, malabares.</li>
+                        </ul>
+                    </div>
+                </div>
+                <p class="text-center bg-red-100 text-red-700 font-bold p-2 mt-4 rounded border border-red-300 text-xs">
+                    ⏱️ TIEMPO LÍMITE: 4 MINUTOS. Si se exceden, el cronómetro marcará GAME OVER.
+                </p>
+            </div>
+
+            <!-- FASE 2: Duelo de Baile -->
+            <div class="mb-8 border-4 border-purple-600 bg-purple-50 p-5 rounded-lg relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-500"></div>
+                <h3 class="font-pixel text-purple-800 text-sm mb-4 flex items-center gap-2 mt-2">
+                    <i data-lucide="music" class="w-5 h-5"></i> FASE 2: EL DUELO DE BAILE (FINAL BOSS BATTLE)
+                </h3>
+                <p class="text-sm text-gray-700 mb-4 font-medium italic">Al concluir las presentaciones de talento, iniciará la dinámica de resistencia y ritmo en la pista.</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm font-medium">
+                    <div class="flex gap-3 bg-white p-3 rounded shadow-sm border border-purple-200">
+                        <div class="bg-purple-100 p-2 rounded-full h-min"><i data-lucide="user-plus" class="w-4 h-4 text-purple-700"></i></div>
+                        <div>
+                            <strong class="text-purple-900 block">Participantes</strong>
+                            <span class="text-gray-600">2 integrantes obligatoriamente. Baile en pareja (H/M, M/M o H/H).</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 bg-white p-3 rounded shadow-sm border border-purple-200">
+                        <div class="bg-purple-100 p-2 rounded-full h-min"><i data-lucide="disc-3" class="w-4 h-4 text-purple-700"></i></div>
+                        <div>
+                            <strong class="text-purple-900 block">El Reto del DJ</strong>
+                            <span class="text-gray-600">El DJ cambiará aleatoriamente los géneros (salsa, reggaetón, rock, electrónica).</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <span class="inline-block bg-purple-700 text-white font-bold px-4 py-2 rounded shadow text-xs">
+                        ⚠️ ELIMINACIÓN DIRECTA: Los jueces irán retirando parejas hasta que solo queden 3.
+                    </span>
+                </div>
+            </div>
+
+            <!-- Fair Play y Evaluación -->
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <!-- Fair Play -->
+                <div class="bg-black text-white p-5 border-4 border-gray-700 rounded-lg">
+                    <h3 class="font-pixel text-red-500 text-xs mb-3 flex items-center gap-2">
+                        <i data-lucide="gavel" class="w-4 h-4"></i> FAIR PLAY (CÓDIGO DE CONDUCTA)
+                    </h3>
+                    <ul class="space-y-3 text-sm font-medium">
+                        <li><strong class="text-yellow-400">Cero Tolerancia:</strong> No se permitirán agresiones físicas ni verbales por parte de concursantes ni porras.</li>
+                        <li><strong class="text-red-400">Sanción:</strong> Equipo o porra identificada agrediendo = DESCALIFICACIÓN INMEDIATA.</li>
+                        <li class="border-t border-gray-600 pt-2"><strong class="text-blue-300">Veredicto:</strong> La decisión de los dos jueces es INAPELABLE.</li>
+                    </ul>
+                </div>
+
+                <!-- Criterios -->
+                <div class="bg-white p-5 border-4 border-yellow-500 rounded-lg">
+                    <h3 class="font-pixel text-green-600 text-xs mb-3 flex items-center gap-2">
+                        <i data-lucide="clipboard-list" class="w-4 h-4"></i> CRITERIOS DE EVALUACIÓN
+                    </h3>
+                    <ul class="space-y-3 text-sm font-medium text-gray-700">
+                        <li class="flex gap-2">
+                            <i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-yellow-500 shrink-0 mt-0.5"></i>
+                            <span><strong>Talento:</strong> Creatividad, dificultad y ejecución de la propuesta inicial.</span>
+                        </li>
+                        <li class="flex gap-2">
+                            <i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-yellow-500 shrink-0 mt-0.5"></i>
+                            <span><strong>Baile:</strong> Ritmo, coordinación y capacidad de adaptación a los cambios de música.</span>
+                        </li>
+                        <li class="flex gap-2">
+                            <i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-yellow-500 shrink-0 mt-0.5"></i>
+                            <span><strong>Presencia:</strong> Uso correcto del uniforme de equipo o calidad del cosplay.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- PREMIACIÓN MISIÓN 5 -->
+            <div class="mt-8 bg-yellow-100 border-4 border-yellow-600 p-5 rounded-lg text-center shadow-sm relative">
+                <div class="absolute -top-4 -left-4 bg-yellow-600 border-2 border-black p-2 rounded-full rotate-[-10deg]">
+                    <i data-lucide="star" class="w-5 h-5 text-white fill-yellow-400"></i>
+                </div>
+                <h4 class="font-pixel text-yellow-900 text-sm mb-4">🏆 TABLA DE PUNTOS (Nivel Competencia)</h4>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-2">
+                    <div class="bg-white p-2 border-2 border-yellow-500 rounded-lg shadow-[2px_2px_0px_#eab308]">
+                        <span class="block text-2xl mb-1">🥇</span>
+                        <strong class="text-yellow-700 block text-lg font-pixel text-xs mt-2 mb-1">60</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">1er Lugar</span>
+                    </div>
+                    <div class="bg-white p-2 border-2 border-gray-400 rounded-lg shadow-[2px_2px_0px_#9ca3af]">
+                        <span class="block text-2xl mb-1">🥈</span>
+                        <strong class="text-gray-700 block text-lg font-pixel text-xs mt-2 mb-1">40</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">2do Lugar</span>
+                    </div>
+                    <div class="bg-white p-2 border-2 border-orange-500 rounded-lg shadow-[2px_2px_0px_#f97316]">
+                        <span class="block text-2xl mb-1">🥉</span>
+                        <strong class="text-orange-700 block text-lg font-pixel text-xs mt-2 mb-1">25</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">3er Lugar</span>
+                    </div>
+                    <div class="bg-white p-2 border-2 border-yellow-400 rounded-lg shadow-[2px_2px_0px_#facc15]">
+                        <span class="block text-2xl mb-1">⭐</span>
+                        <strong class="text-yellow-700 block text-lg font-pixel text-xs mt-2 mb-1">10</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">Participación</span>
+                    </div>
+                </div>
+                <p class="text-[10px] text-gray-600">Aplica tanto para la prueba de baile como para el resultado general de talentos.</p>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             NIVEL 6: GALA REAL DEL REINO (DIVA DRAG) 
+             ========================================== -->
+        <div class="manual-page p-6 md:p-10 mb-16 relative z-10 border-pink-600" style="background-color: #fdf2f8;">
+            <div class="absolute -top-5 -left-5 bg-black text-pink-400 font-pixel p-3 border-4 border-pink-600 shadow-[4px_4px_0_0_rgba(0,0,0,1)] transform -rotate-3 text-xs md:text-sm">MISIÓN 6</div>
+            <div class="text-center mt-6 mb-8 relative">
+                <div class="absolute top-0 right-0 md:-right-4 text-pink-400 opacity-30"><i data-lucide="crown" class="w-16 h-16 fill-pink-400"></i></div>
+                <h2 class="block-title font-pixel text-lg md:text-xl w-full max-w-2xl mx-auto bg-pink-600 border-black text-white">GALA REAL DEL REINO</h2>
+                <p class="font-bold text-pink-900 mt-2 bg-pink-200 inline-block px-3 py-1 border-2 border-pink-500 rounded drop-shadow-md">
+                    DIVA: Concurso Drag
+                </p>
+            </div>
+
+            <p class="text-center text-lg font-bold text-pink-800 mb-8 italic px-4">
+                "Prepárense para una noche llena de brillo, drama, tacones y fantasía. El arte drag se apodera del escenario y los íconos de Super Mario World cobran vida como nunca antes."
+            </p>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 bg-gray-900 text-white p-4 border-4 border-pink-600 rounded" style="box-shadow: 4px 4px 0px #db2777;">
+                <div class="text-center">
+                    <i data-lucide="clock" class="w-6 h-6 mx-auto mb-2 text-yellow-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">HORA</p>
+                    <p class="font-bold text-sm">20:00 Hrs</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="map-pin" class="w-6 h-6 mx-auto mb-2 text-red-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">SEDE</p>
+                    <p class="font-bold text-sm">Bar Mr. Ribs</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="layers" class="w-6 h-6 mx-auto mb-2 text-purple-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">FORMATO</p>
+                    <p class="font-bold text-sm">3 Fases Drag</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="users" class="w-6 h-6 mx-auto mb-2 text-blue-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">PARTICIPANTES</p>
+                    <p class="font-bold text-[10px] leading-tight mt-1">Individual<br>(Se permite +1 por equipo)</p>
+                </div>
+            </div>
+
+            <p class="text-sm font-medium mb-6 text-gray-800 bg-white p-4 border-l-4 border-pink-500 shadow-sm">
+                <strong>La Dinámica:</strong> Concurso de caracterización DRAG inspirado en el personaje asignado a su equipo, llevando su creatividad, estilo y personalidad al máximo. (Se calificará de manera individual, NO dúos).
+            </p>
+
+            <!-- LAS 3 FASES -->
+            <div class="space-y-4 mb-8">
+                <!-- Fase 1 -->
+                <div class="bg-white border-2 border-pink-300 rounded p-4 flex flex-col md:flex-row gap-4 items-start shadow-sm hover:border-pink-500 transition-colors">
+                    <div class="bg-pink-100 text-pink-800 font-pixel text-xs p-3 rounded border border-pink-400 shrink-0 text-center min-w-[120px]">
+                        FASE 1<br><span class="text-xl block mt-1">👠</span>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-pink-700 text-lg mb-1">LA PASARELA</h4>
+                        <p class="text-sm text-gray-700 mb-2">Desfile presentando el <strong>LOOK PRINCIPAL</strong> inspirado en el personaje que representan.</p>
+                        <p class="text-sm text-gray-600 bg-pink-50 p-2 rounded inline-block border border-pink-200">
+                            <i data-lucide="mic" class="w-4 h-4 inline text-pink-500 mb-1"></i> Se realizará una pregunta sobre la temática que deberán responder de manera creativa y segura.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Fase 2 -->
+                <div class="bg-white border-2 border-purple-300 rounded p-4 flex flex-col md:flex-row gap-4 items-start shadow-sm hover:border-purple-500 transition-colors">
+                    <div class="bg-purple-100 text-purple-800 font-pixel text-xs p-3 rounded border border-purple-400 shrink-0 text-center min-w-[120px]">
+                        FASE 2<br><span class="text-xl block mt-1">✨</span>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-purple-700 text-lg mb-1">EL SHOW</h4>
+                        <p class="text-sm text-gray-700 mb-2">Presentación de <strong>SHOW LIBRE</strong> (talento, baile, actuación o performance) con duración máxima de 3 minutos.</p>
+                        <ul class="text-xs text-gray-600 space-y-1 list-disc pl-4">
+                            <li>Pueden tener apoyo de su equipo (bailarines) y usar material escénico.</li>
+                            <li>¡Se permite cambio de vestuario! Siempre y cuando se mantenga el concepto drag.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Fase 3 -->
+                <div class="bg-white border-2 border-red-300 rounded p-4 flex flex-col md:flex-row gap-4 items-start shadow-sm hover:border-red-500 transition-colors">
+                    <div class="bg-red-100 text-red-800 font-pixel text-xs p-3 rounded border border-red-400 shrink-0 text-center min-w-[120px]">
+                        FASE 3<br><span class="text-xl block mt-1">🔥</span>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-red-700 text-lg mb-1">LIPSYNC BATTLE</h4>
+                        <p class="text-sm text-gray-700 mb-2">Enfrentamientos de Lipsync determinados por las juezas con canciones sorteadas. Duelos directos hasta llegar al <strong>LIPSYNC FINAL</strong>.</p>
+                        <p class="text-sm font-bold text-red-600">Al final, solo una reina sobrevivirá para llevarse la corona.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REGLAMENTO (Rule Box) -->
+            <div class="mb-8 rule-box p-6 border-4 border-black relative bg-gray-50">
+                <div class="absolute -top-4 -right-4 bg-yellow-400 border-2 border-black p-2 rounded-full rotate-12">
+                    <i data-lucide="shield-alert" class="w-6 h-6 text-black"></i>
+                </div>
+                <h3 class="font-pixel text-black text-sm md:text-base mb-4 border-b-2 border-black pb-2 inline-block">CÓDIGO DE LA REALEZA</h3>
+                
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <ul class="pixel-list text-xs md:text-sm text-gray-800 space-y-3 font-medium">
+                        <li><strong>Respeto Total:</strong> Cero faltas de respeto hacia participantes, jueces u organizadores. Cero contacto físico agresivo o interrupciones de shows ajenos.</li>
+                        <li><strong>Utilería:</strong> Cada participante es responsable de su vestuario y elementos escénicos.</li>
+                        <li><strong>Puntualidad:</strong> Llegar tarde implica penalización o descalificación.</li>
+                        <li><strong>Veredicto:</strong> Las decisiones del jurado son DEFINITIVAS e INAPELABLES.</li>
+                    </ul>
+                    
+                    <div class="bg-red-100 border-4 border-red-600 p-4 rounded flex flex-col justify-center h-full">
+                        <strong class="text-red-700 flex items-center gap-2 mb-2 uppercase text-sm"><i data-lucide="flame-kindling" class="w-5 h-5"></i> Riesgo de Fuego</strong>
+                        <p class="text-xs font-bold text-red-900 mb-2">NO ESTÁ PERMITIDO el uso de fuego ni elementos de riesgo.</p>
+                        <p class="text-xs text-red-800 bg-white p-2 border border-red-300 rounded">
+                            ✅ <em>Excepción:</em> El uso de CHISPEROS está permitido solo si se utilizan de manera responsable y segura.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="mt-4 bg-black text-white p-3 text-center text-xs font-bold uppercase rounded border border-gray-700">
+                    Cualquier acto de sabotaje o conducta antideportiva será motivo de DESCALIFICACIÓN INMEDIATA.
+                </div>
+            </div>
+
+            <!-- PREMIACIÓN MISIÓN 6 -->
+            <div class="mt-8 bg-pink-100 border-4 border-pink-600 p-5 rounded-lg text-center shadow-sm relative">
+                <div class="absolute -top-4 -left-4 bg-pink-600 border-2 border-black p-2 rounded-full rotate-[-10deg]">
+                    <i data-lucide="star" class="w-5 h-5 text-white fill-yellow-400"></i>
+                </div>
+                <h4 class="font-pixel text-pink-900 text-sm mb-4">🏆 TABLA DE PUNTOS (Nivel Estelar)</h4>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                    <div class="bg-white p-2 border-2 border-yellow-500 rounded-lg shadow-[2px_2px_0px_#eab308]">
+                        <span class="block text-2xl mb-1">🥇</span>
+                        <strong class="text-yellow-700 block text-lg font-pixel text-xs mt-2 mb-1">150</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">1er Lugar</span>
+                    </div>
+                    <div class="bg-white p-2 border-2 border-gray-400 rounded-lg shadow-[2px_2px_0px_#9ca3af]">
+                        <span class="block text-2xl mb-1">🥈</span>
+                        <strong class="text-gray-700 block text-lg font-pixel text-xs mt-2 mb-1">100</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">2do Lugar</span>
+                    </div>
+                    <div class="bg-white p-2 border-2 border-orange-500 rounded-lg shadow-[2px_2px_0px_#f97316]">
+                        <span class="block text-2xl mb-1">🥉</span>
+                        <strong class="text-orange-700 block text-lg font-pixel text-xs mt-2 mb-1">70</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">3er Lugar</span>
+                    </div>
+                    <div class="bg-white p-2 border-2 border-pink-400 rounded-lg shadow-[2px_2px_0px_#f472b6]">
+                        <span class="block text-2xl mb-1">⭐</span>
+                        <strong class="text-pink-700 block text-lg font-pixel text-xs mt-2 mb-1">40</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">Participación</span>
+                    </div>
+                </div>
+                <p class="text-xs md:text-sm font-bold text-pink-900 bg-pink-200 p-3 rounded border border-pink-500 inline-block mt-2">
+                    🎁 Además de los puntos, podrá haber premios físicos y en efectivo dependiendo de la cantidad de asistencia y apoyo de su porra. ¡Hagan ruido!
+                </p>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             NIVEL 7: BIG ISLAND VOLLEY 
+             ========================================== -->
+        <div class="manual-page p-6 md:p-10 mb-16 relative z-10 border-cyan-600" style="background-color: #ecfeff;">
+            
+            <div class="absolute -top-5 -left-5 bg-black text-cyan-300 font-pixel p-3 border-4 border-cyan-600 shadow-[4px_4px_0_0_rgba(0,0,0,1)] transform -rotate-3 text-xs md:text-sm">
+                MISIÓN 7
+            </div>
+
+            <div class="text-center mt-6 mb-8 relative">
+                <div class="absolute top-0 right-0 md:-right-4 text-cyan-400 opacity-30"><i data-lucide="waves" class="w-16 h-16"></i></div>
+                <h2 class="block-title font-pixel text-lg md:text-xl w-full max-w-2xl mx-auto bg-cyan-600 border-black text-white">
+                    BIG ISLAND VOLLEY
+                </h2>
+                <p class="font-bold text-cyan-900 mt-2 bg-cyan-200 inline-block px-3 py-1 border-2 border-cyan-500 rounded drop-shadow-md">
+                    "La Batalla de los Chomps"
+                </p>
+            </div>
+
+            <p class="text-center text-lg font-bold text-cyan-800 mb-8 italic px-4">
+                "¡Prepárense para una batalla de proporciones gigantescas! En este torneo, el tamaño de la pelota es el mayor reto. Aquí no gana el más alto, sino el equipo que mejor se coordine para mantener a la 'Bestia' en el aire."
+            </p>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 bg-gray-900 text-white p-4 border-4 border-cyan-600 rounded" style="box-shadow: 4px 4px 0px #0891b2;">
+                <div class="text-center">
+                    <i data-lucide="clock" class="w-6 h-6 mx-auto mb-2 text-yellow-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">HORA</p>
+                    <p class="font-bold text-sm">09:00 - 10:00</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="map-pin" class="w-6 h-6 mx-auto mb-2 text-red-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">SEDE</p>
+                    <p class="font-bold text-xs">Módulos Dep. UAN</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="swords" class="w-6 h-6 mx-auto mb-2 text-orange-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">FORMATO</p>
+                    <p class="font-bold text-sm">Eliminación Directa</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="users" class="w-6 h-6 mx-auto mb-2 text-cyan-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">EQUIPO</p>
+                    <p class="font-bold text-sm">5 Jugadores (Mixto)</p>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <!-- Formación -->
+                <div class="bg-white border-2 border-cyan-300 p-5 rounded-lg shadow-sm">
+                    <h3 class="font-pixel text-cyan-700 text-sm mb-4 border-b-2 border-cyan-200 pb-2">
+                        <i data-lucide="contact" class="w-4 h-4 inline mb-1"></i> 1. THE PARTY (Formación)
+                    </h3>
+                    <ul class="space-y-3 text-sm text-gray-800 font-medium">
+                        <li><strong>Integrantes:</strong> 5 jugadores obligatoriamente.</li>
+                        <li class="bg-cyan-50 p-2 rounded border border-cyan-200 text-cyan-900">
+                            <strong>⚖️ Balance de Género:</strong> <br>
+                            3 Mujeres y 2 Hombres <strong>O</strong> 2 Mujeres y 3 Hombres.
+                        </li>
+                        <li><strong>🌟 Power-Up (Docentes):</strong> ¡Los mentores pueden y deberían jugar! Una gran oportunidad para pelear codo a codo.</li>
+                    </ul>
+                </div>
+
+                <!-- Dinámica -->
+                <div class="bg-white border-2 border-blue-300 p-5 rounded-lg shadow-sm">
+                    <h3 class="font-pixel text-blue-700 text-sm mb-4 border-b-2 border-blue-200 pb-2">
+                        <i data-lucide="git-merge" class="w-4 h-4 inline mb-1"></i> 2. THE BRACKET (Dinámica)
+                    </h3>
+                    <ul class="space-y-3 text-sm text-gray-800 font-medium">
+                        <li><strong>☠️ Vida o Muerte:</strong> Eliminación directa. El que pierde, queda fuera.</li>
+                        <li><strong>🎲 Sorteo:</strong> Los encuentros se deciden al inicio (09:00 hrs).</li>
+                        <li><strong>⏰ Puntualidad:</strong> Si no estás al llamado = GAME OVER por ausencia.</li>
+                        <li><strong>🏆 Camino a la Gloria:</strong> Los ganadores avanzan hasta definir el 1er, 2do y 3er lugar.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Reglas de Juego -->
+            <div class="bg-cyan-50 border-4 border-cyan-500 p-6 rounded-lg mb-8 relative">
+                <div class="absolute -top-4 -right-4 bg-cyan-500 border-2 border-white p-2 rounded-full shadow-md">
+                    <i data-lucide="volleyball" class="w-6 h-6 text-white"></i>
+                </div>
+                <h3 class="font-pixel text-cyan-800 text-sm mb-4">3. GAMEPLAY (Reglas del Juego)</h3>
+                <p class="text-sm font-medium text-cyan-900 mb-4">Las reglas son simples, pero el desafío es enorme:</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm font-medium text-gray-800">
+                    <div class="flex items-start gap-2">
+                        <i data-lucide="arrow-down-circle" class="w-5 h-5 text-red-500 mt-0.5 shrink-0"></i>
+                        <p><strong>Puntuación:</strong> Si la pelota gigante toca el suelo dentro de tu lado de la cancha, es punto en contra.</p>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <i data-lucide="shield" class="w-5 h-5 text-green-500 mt-0.5 shrink-0"></i>
+                        <p><strong>Objetivo:</strong> ¡No dejes que la "Bestia" toque tu piso!</p>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <i data-lucide="move" class="w-5 h-5 text-blue-500 mt-0.5 shrink-0"></i>
+                        <p><strong>Límites (Rescates):</strong> Puedes salir del área para rescatar, pero debe pasar <em>obligatoriamente por encima de la red</em>.</p>
+                    </div>
+                    <div class="flex items-start gap-2 bg-yellow-100 p-2 rounded border border-yellow-400">
+                        <i data-lucide="trophy" class="w-5 h-5 text-yellow-600 mt-0.5 shrink-0"></i>
+                        <p><strong>Victoria:</strong> El primer equipo en anotar <strong>5 puntos</strong> gana y avanza.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Código de Honor (Rule Box) -->
+            <div class="mb-8 rule-box p-5 border-4 border-black bg-gray-50">
+                <h3 class="font-pixel text-red-600 text-sm mb-2 flex items-center gap-2">
+                    <i data-lucide="alert-triangle" class="w-5 h-5"></i> CÓDIGO DE HONOR
+                </h3>
+                <p class="text-sm font-medium text-gray-800">
+                    Se exige <strong>respeto total</strong> entre competidores y porras. Cualquier agresión o conducta antideportiva resultará en la <span class="text-red-600 font-bold uppercase underline">expulsión inmediata del equipo del torneo</span>.
+                </p>
+            </div>
+
+            <!-- PREMIACIÓN MISIÓN 7 -->
+            <div class="mt-8 bg-cyan-100 border-4 border-cyan-600 p-5 rounded-lg text-center shadow-sm relative">
+                <div class="absolute -top-4 -left-4 bg-cyan-600 border-2 border-black p-2 rounded-full rotate-[-10deg]">
+                    <i data-lucide="star" class="w-5 h-5 text-white fill-yellow-400"></i>
+                </div>
+                <h4 class="font-pixel text-cyan-900 text-sm mb-4">🏆 TABLA DE PUNTOS (Nivel Competencia)</h4>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="bg-white p-2 border-2 border-yellow-500 rounded-lg shadow-[2px_2px_0px_#eab308]">
+                        <span class="block text-2xl mb-1">🥇</span>
+                        <strong class="text-yellow-700 block text-lg font-pixel text-xs mt-2 mb-1">60</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">1er Lugar</span>
+                    </div>
+                    <div class="bg-white p-2 border-2 border-gray-400 rounded-lg shadow-[2px_2px_0px_#9ca3af]">
+                        <span class="block text-2xl mb-1">🥈</span>
+                        <strong class="text-gray-700 block text-lg font-pixel text-xs mt-2 mb-1">40</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">2do Lugar</span>
+                    </div>
+                    <div class="bg-white p-2 border-2 border-orange-500 rounded-lg shadow-[2px_2px_0px_#f97316]">
+                        <span class="block text-2xl mb-1">🥉</span>
+                        <strong class="text-orange-700 block text-lg font-pixel text-xs mt-2 mb-1">25</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">3er Lugar</span>
+                    </div>
+                    <div class="bg-white p-2 border-2 border-cyan-400 rounded-lg shadow-[2px_2px_0px_#22d3ee]">
+                        <span class="block text-2xl mb-1">⭐</span>
+                        <strong class="text-cyan-700 block text-lg font-pixel text-xs mt-2 mb-1">10</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">Participación</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- FINAL DE LA MISIÓN 7 -->
+
+
+        <!-- ==========================================
+             REGLAS GLOBALES: MODALIDAD SIMULTÁNEA 
+             ========================================== -->
+        <div class="bg-gray-900 text-white p-6 border-4 border-gray-500 rounded-lg mb-8 shadow-lg relative z-10">
+            <div class="text-center mb-6">
+                <i data-lucide="swords" class="w-12 h-12 mx-auto text-yellow-400 mb-2"></i>
+                <h2 class="font-pixel text-yellow-400 text-lg md:text-xl drop-shadow-[2px_2px_0_rgba(0,0,0,1)] uppercase">
+                    EL REINO EN JUEGO
+                </h2>
+                <p class="font-bold text-gray-300 mt-2">Convocatoria Deportiva Simultánea (10:00 - 12:00 hrs)</p>
+            </div>
+            
+            <div class="bg-red-900/50 border border-red-500 p-4 rounded mb-6 text-sm text-red-200">
+                <strong class="text-yellow-400">⚠️ NOTA IMPORTANTE:</strong> Al ser eventos simultáneos, los alumnos deberán decidir en qué torneo participar (o tener rosters diferentes), ya que <strong>no podrán estar en dos lugares a la vez.</strong>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-4 text-sm">
+                <div class="bg-gray-800 p-4 border-2 border-gray-600 rounded">
+                    <h3 class="font-pixel text-red-400 text-xs mb-2">1. GAME OVER (Puntualidad)</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li>⏱️ Tolerancia máxima de <strong>5 minutos</strong> después del llamado.</li>
+                        <li>☠️ Si un equipo no está completo (o no cumple el requisito de mujeres en cancha) al sonar el silbato, <strong>pierde por default (Walkover).</strong></li>
+                    </ul>
+                </div>
+                <div class="bg-gray-800 p-4 border-2 border-gray-600 rounded">
+                    <h3 class="font-pixel text-blue-400 text-xs mb-2">2. SKINS (Vestimenta)</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li>👕 <strong>Uniforme:</strong> Playera del color asignado o Cosplay deportivo que permita movilidad.</li>
+                        <li>👟 <strong>Calzado:</strong> Tenis deportivos obligatorios. (PROHIBIDO botas, sandalias o suela dura).</li>
+                    </ul>
+                </div>
+                <div class="bg-gray-800 p-4 border-2 border-gray-600 rounded">
+                    <h3 class="font-pixel text-green-400 text-xs mb-2">3. FAIR PLAY (Conducta)</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li>🛑 <strong>Cero Tolerancia:</strong> Insultos o agresiones resultan en descalificación inmediata del torneo y sanción académica.</li>
+                        <li>⚖️ <strong>Árbitros:</strong> Autoridad absoluta. Solo capitanes piden aclaraciones con respeto.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             NIVEL 8: JUMPMAN BASKETBALL CUP 
+             ========================================== -->
+        <div class="manual-page p-6 md:p-10 mb-16 relative z-10 border-orange-600" style="background-color: #fff7ed;">
+            
+            <div class="absolute -top-5 -left-5 bg-black text-orange-400 font-pixel p-3 border-4 border-orange-600 shadow-[4px_4px_0_0_rgba(0,0,0,1)] transform -rotate-3 text-xs md:text-sm">
+                MISIÓN 8
+            </div>
+
+            <div class="text-center mt-6 mb-8 relative">
+                <div class="absolute top-0 right-0 md:-right-4 text-orange-400 opacity-30"><i data-lucide="dribbble" class="w-16 h-16"></i></div>
+                <h2 class="block-title font-pixel text-lg md:text-xl w-full max-w-2xl mx-auto bg-orange-600 border-black text-white">
+                    JUMPMAN BASKETBALL CUP
+                </h2>
+                <p class="font-bold text-orange-900 mt-2 bg-orange-200 inline-block px-3 py-1 border-2 border-orange-500 rounded drop-shadow-md">
+                    Sede 1: Canchas de Básquetbol
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 bg-gray-900 text-white p-4 border-4 border-orange-600 rounded" style="box-shadow: 4px 4px 0px #ea580c;">
+                <div class="text-center">
+                    <i data-lucide="clock" class="w-6 h-6 mx-auto mb-2 text-yellow-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">HORA</p>
+                    <p class="font-bold text-sm">10:00 - 12:00</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="activity" class="w-6 h-6 mx-auto mb-2 text-orange-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">MODO</p>
+                    <p class="font-bold text-sm">Knockout</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="timer" class="w-6 h-6 mx-auto mb-2 text-blue-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">TIEMPO</p>
+                    <p class="font-bold text-sm">2x10 Min</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="users" class="w-6 h-6 mx-auto mb-2 text-green-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">EQUIPO</p>
+                    <p class="font-bold text-sm">5 vs 5 (Mixto)</p>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <!-- Roster -->
+                <div class="bg-white border-2 border-orange-300 p-5 rounded-lg shadow-sm">
+                    <h3 class="font-pixel text-orange-700 text-sm mb-4 border-b-2 border-orange-200 pb-2">
+                        1. THE ROSTER (Alineación)
+                    </h3>
+                    <ul class="space-y-3 text-sm text-gray-800 font-medium">
+                        <li><strong>Jugadores en Cancha:</strong> 5 vs 5.</li>
+                        <li class="bg-orange-50 p-3 rounded border border-orange-300 text-orange-900 shadow-sm">
+                            <strong class="text-red-600 block mb-1">⚠️ Regla de Inclusión (OBLIGATORIO):</strong> 
+                            Los equipos deben ser mixtos. Es requisito indispensable mantener al menos <strong>1 mujer en la cancha durante todo el partido.</strong>
+                        </li>
+                        <li><strong>Suplentes:</strong> Ilimitados (siempre que sean del mismo equipo/grupo).</li>
+                    </ul>
+                </div>
+
+                <!-- Configuración -->
+                <div class="bg-white border-2 border-red-300 p-5 rounded-lg shadow-sm">
+                    <h3 class="font-pixel text-red-700 text-sm mb-4 border-b-2 border-red-200 pb-2">
+                        2. SETTINGS (Configuración)
+                    </h3>
+                    <ul class="space-y-3 text-sm text-gray-800 font-medium">
+                        <li><strong>Tiempo de Juego:</strong> 2 tiempos de 10 minutos (reloj corrido) con 2 mins de descanso.</li>
+                        <li><strong>Condición de Victoria:</strong> Gana el equipo con más puntos al finalizar el tiempo.</li>
+                        <li><strong class="text-yellow-600">Overtime (Empate):</strong> Se jugará una prórroga de 3 minutos o "Canasta de Oro" (el primero que anote, gana).</li>
+                        <li>
+                            <strong>Faltas:</strong><br>
+                            - Límite de 5 faltas personales por jugador (expulsión).<br>
+                            - A la 5ª falta acumulada por equipo en cada tiempo, el rival cobra tiros libres.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- PREMIACIÓN MISIÓN 8 -->
+            <div class="mt-8 bg-orange-50 border-4 border-orange-600 p-5 rounded-lg text-center shadow-sm relative">
+                <div class="absolute -top-4 -left-4 bg-orange-600 border-2 border-black p-2 rounded-full rotate-[-10deg]">
+                    <i data-lucide="star" class="w-5 h-5 text-white fill-yellow-400"></i>
+                </div>
+                <h4 class="font-pixel text-orange-900 text-sm mb-4">🏆 TABLA DE PUNTOS (Nivel Competencia)</h4>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="bg-white p-2 border-2 border-yellow-500 rounded-lg shadow-[2px_2px_0px_#eab308]">
+                        <span class="block text-2xl mb-1">🥇</span>
+                        <strong class="text-yellow-700 block text-lg font-pixel text-xs mt-2 mb-1">60</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">1er Lugar</span>
+                    </div>
+                    <div class="bg-white p-2 border-2 border-gray-400 rounded-lg shadow-[2px_2px_0px_#9ca3af]">
+                        <span class="block text-2xl mb-1">🥈</span>
+                        <strong class="text-gray-700 block text-lg font-pixel text-xs mt-2 mb-1">40</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">2do Lugar</span>
+                    </div>
+                    <div class="bg-white p-2 border-2 border-orange-500 rounded-lg shadow-[2px_2px_0px_#f97316]">
+                        <span class="block text-2xl mb-1">🥉</span>
+                        <strong class="text-orange-700 block text-lg font-pixel text-xs mt-2 mb-1">25</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">3er Lugar</span>
+                    </div>
+                    <div class="bg-white p-2 border-2 border-orange-400 rounded-lg shadow-[2px_2px_0px_#fb923c]">
+                        <span class="block text-2xl mb-1">⭐</span>
+                        <strong class="text-orange-700 block text-lg font-pixel text-xs mt-2 mb-1">10</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">Participación</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- FINAL DE LA MISIÓN 8 -->
+
+        <!-- ==========================================
+             NIVEL 9: KOOPA BEACH VOLLEY
+             ========================================== -->
+        <div class="manual-page p-6 md:p-10 mb-16 relative z-10 border-yellow-600" style="background-color: #fefce8;">
+            
+            <div class="absolute -top-5 -left-5 bg-black text-yellow-300 font-pixel p-3 border-4 border-yellow-600 shadow-[4px_4px_0_0_rgba(0,0,0,1)] transform -rotate-3 text-xs md:text-sm">
+                MISIÓN 9
+            </div>
+
+            <div class="text-center mt-6 mb-8 relative">
+                <div class="absolute top-0 right-0 md:-right-4 text-yellow-400 opacity-30"><i data-lucide="volleyball" class="w-16 h-16"></i></div>
+                <h2 class="block-title font-pixel text-lg md:text-xl w-full max-w-2xl mx-auto bg-yellow-500 border-black text-black">
+                    KOOPA BEACH VOLLEY
+                </h2>
+                <p class="font-bold text-yellow-900 mt-2 bg-yellow-200 inline-block px-3 py-1 border-2 border-yellow-500 rounded drop-shadow-md">
+                    Sede 2: Canchas de Voleibol Tradicional
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 bg-gray-900 text-white p-4 border-4 border-yellow-600 rounded" style="box-shadow: 4px 4px 0px #ca8a04;">
+                <div class="text-center">
+                    <i data-lucide="clock" class="w-6 h-6 mx-auto mb-2 text-yellow-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">HORA</p>
+                    <p class="font-bold text-sm">10:00 - 12:00</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="activity" class="w-6 h-6 mx-auto mb-2 text-orange-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">MODO</p>
+                    <p class="font-bold text-sm">Knockout</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="flag" class="w-6 h-6 mx-auto mb-2 text-blue-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">OBJETIVO</p>
+                    <p class="font-bold text-sm">1 Set de 25 Pts</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="users" class="w-6 h-6 mx-auto mb-2 text-green-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">EQUIPO</p>
+                    <p class="font-bold text-sm">6 vs 6 (Mixto)</p>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <!-- Roster -->
+                <div class="bg-white border-2 border-yellow-300 p-5 rounded-lg shadow-sm">
+                    <h3 class="font-pixel text-yellow-700 text-sm mb-4 border-b-2 border-yellow-200 pb-2">
+                        1. THE ROSTER (Alineación)
+                    </h3>
+                    <ul class="space-y-3 text-sm text-gray-800 font-medium">
+                        <li><strong>Jugadores en Cancha:</strong> 6 vs 6.</li>
+                        <li class="bg-yellow-50 p-3 rounded border border-yellow-300 text-yellow-900 shadow-sm">
+                            <strong class="text-red-600 block mb-1">⚠️ Regla de Equilibrio (OBLIGATORIO):</strong> 
+                            Los equipos deben ser mixtos. Es requisito indispensable mantener al menos <strong>2 mujeres en la cancha en todo momento.</strong>
+                        </li>
+                        <li><strong>Recomendado:</strong> 3 Hombres / 3 Mujeres.</li>
+                        <li><strong>Mínimo:</strong> 4 Hombres / 2 Mujeres.</li>
+                    </ul>
+                </div>
+
+                <!-- Configuración -->
+                <div class="bg-white border-2 border-blue-300 p-5 rounded-lg shadow-sm">
+                    <h3 class="font-pixel text-blue-700 text-sm mb-4 border-b-2 border-blue-200 pb-2">
+                        2. SETTINGS (Configuración)
+                    </h3>
+                    <ul class="space-y-3 text-sm text-gray-800 font-medium">
+                        <li><strong>Modo de Juego:</strong> Se jugará a un solo SET de 25 puntos.</li>
+                        <li><strong>La Gran Final:</strong> Se jugará a ganar 2 de 3 sets (15 puntos cada set rápido) si el tiempo lo permite.</li>
+                        <li><strong>Ventaja:</strong> Se debe ganar con una diferencia mínima de 2 puntos (ej. 25-23).</li>
+                        <li><strong>Rotación:</strong> Obligatoria en el sentido de las manecillas del reloj.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- PREMIACIÓN MISIÓN 9 -->
+            <div class="mt-8 bg-yellow-100 border-4 border-yellow-500 p-5 rounded-lg text-center shadow-sm relative">
+                <div class="absolute -top-4 -left-4 bg-yellow-500 border-2 border-black p-2 rounded-full rotate-[-10deg]">
+                    <i data-lucide="star" class="w-5 h-5 text-white fill-yellow-400"></i>
+                </div>
+                <h4 class="font-pixel text-yellow-900 text-sm mb-4">🏆 TABLA DE PUNTOS (Nivel Competencia)</h4>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="bg-white p-2 border-2 border-yellow-500 rounded-lg shadow-[2px_2px_0px_#eab308]">
+                        <span class="block text-2xl mb-1">🥇</span>
+                        <strong class="text-yellow-700 block text-lg font-pixel text-xs mt-2 mb-1">60</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">1er Lugar</span>
+                    </div>
+                    <div class="bg-white p-2 border-2 border-gray-400 rounded-lg shadow-[2px_2px_0px_#9ca3af]">
+                        <span class="block text-2xl mb-1">🥈</span>
+                        <strong class="text-gray-700 block text-lg font-pixel text-xs mt-2 mb-1">40</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">2do Lugar</span>
+                    </div>
+                    <div class="bg-white p-2 border-2 border-orange-500 rounded-lg shadow-[2px_2px_0px_#f97316]">
+                        <span class="block text-2xl mb-1">🥉</span>
+                        <strong class="text-orange-700 block text-lg font-pixel text-xs mt-2 mb-1">25</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">3er Lugar</span>
+                    </div>
+                    <div class="bg-white p-2 border-2 border-yellow-400 rounded-lg shadow-[2px_2px_0px_#facc15]">
+                        <span class="block text-2xl mb-1">⭐</span>
+                        <strong class="text-yellow-700 block text-lg font-pixel text-xs mt-2 mb-1">10</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">Participación</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- FINAL DE LA MISIÓN 9 -->
+
+        <!-- ==========================================
+             NIVEL 10: PRINCESS PEACH DASH 
+             ========================================== -->
+        <div class="manual-page p-6 md:p-10 mb-16 relative z-10 border-pink-500" style="background-color: #fff1f2;">
+            
+            <div class="absolute -top-5 -left-5 bg-black text-pink-300 font-pixel p-3 border-4 border-pink-500 shadow-[4px_4px_0_0_rgba(0,0,0,1)] transform -rotate-3 text-xs md:text-sm">
+                MISIÓN 10
+            </div>
+
+            <div class="text-center mt-6 mb-8 relative">
+                <div class="absolute top-0 right-0 md:-right-4 text-pink-400 opacity-30"><i data-lucide="footprints" class="w-16 h-16"></i></div>
+                <h2 class="block-title font-pixel text-lg md:text-xl w-full max-w-2xl mx-auto bg-pink-500 border-black text-white">
+                    PRINCESS PEACH DASH
+                </h2>
+                <p class="font-bold text-pink-900 mt-2 bg-pink-200 inline-block px-3 py-1 border-2 border-pink-500 rounded drop-shadow-md">
+                    "Tacones de Fuego"
+                </p>
+            </div>
+
+            <p class="text-center text-lg font-bold text-pink-800 mb-8 italic px-4">
+                "¿Crees que es fácil huir del castillo de Bowser? ¡Demuéstralo! La prueba definitiva de equilibrio, velocidad y pantorrillas de acero ha llegado. En esta carrera, la elegancia no importa, lo que cuenta es llegar a la meta sin besar el suelo."
+            </p>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 bg-gray-900 text-white p-4 border-4 border-pink-500 rounded" style="box-shadow: 4px 4px 0px #be185d;">
+                <div class="text-center">
+                    <i data-lucide="clock" class="w-6 h-6 mx-auto mb-2 text-yellow-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">HORA</p>
+                    <p class="font-bold text-sm">12:00 - 13:00</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="map-pin" class="w-6 h-6 mx-auto mb-2 text-red-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">SEDE</p>
+                    <p class="font-bold text-xs">Cancha Básquet</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="zap" class="w-6 h-6 mx-auto mb-2 text-orange-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">MODO</p>
+                    <p class="font-bold text-sm">Sprints (1v1)</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="user" class="w-6 h-6 mx-auto mb-2 text-pink-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">JUGADOR</p>
+                    <p class="font-bold text-sm">"El PrincesO"</p>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <!-- Requisitos -->
+                <div class="bg-white border-2 border-pink-300 p-5 rounded-lg shadow-sm">
+                    <h3 class="font-pixel text-pink-700 text-sm mb-4 border-b-2 border-pink-200 pb-2">
+                        <i data-lucide="user-check" class="w-4 h-4 inline mb-1"></i> 1. CHARACTER SELECT
+                    </h3>
+                    <ul class="space-y-3 text-sm text-gray-800 font-medium">
+                        <li><strong>Género:</strong> Categoría exclusiva para Hombres ("Los Princesos" del equipo).</li>
+                        <li><strong>Torso:</strong> Obligatorio usar la playera del color del equipo o caracterización del personaje.</li>
+                        <li class="bg-pink-50 p-3 rounded border border-pink-300 text-pink-900 shadow-sm">
+                            <strong class="text-pink-700 block mb-1">👠 Pies (Item Obligatorio):</strong> 
+                            Uso forzoso de zapatillas de tacón. (Altura mínima sugerida 5 cm).
+                            <div class="mt-2 text-red-600 text-xs">❌ No tenis. ❌ No botas planas. ❌ No descalzo. ¡Sin tacón no hay carrera!</div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Mecánica -->
+                <div class="bg-white border-2 border-purple-300 p-5 rounded-lg shadow-sm">
+                    <h3 class="font-pixel text-purple-700 text-sm mb-4 border-b-2 border-purple-200 pb-2">
+                        <i data-lucide="gamepad-2" class="w-4 h-4 inline mb-1"></i> 2. GAMEPLAY
+                    </h3>
+                    <ul class="space-y-3 text-sm text-gray-800 font-medium">
+                        <li><strong>Formato VS:</strong> Carreras de velocidad pura (Sprints).</li>
+                        <li><strong>Enfrentamientos:</strong> Competirán 2 corredores a la vez (1 vs 1) por sorteo.</li>
+                        <li><strong>Modalidad:</strong> Muerte Súbita. El que pierde, queda eliminado.</li>
+                        <li class="bg-purple-50 p-2 rounded border border-purple-200 text-purple-900">
+                            <strong>🏁 La Meta:</strong> Gana quien cruce la línea primero con <em>ambos tacones puestos</em>. (Si se te sale el zapato, debes ponértelo antes de seguir o quedas descalificado).
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Reglas de Seguridad -->
+            <div class="bg-black text-white border-4 border-red-600 p-6 rounded-lg mb-8 relative shadow-[8px_8px_0px_rgba(220,38,38,0.5)]">
+                <div class="absolute -top-4 -right-4 bg-red-600 border-2 border-white p-2 rounded-full animate-pulse">
+                    <i data-lucide="siren" class="w-6 h-6 text-white"></i>
+                </div>
+                <h3 class="font-pixel text-red-500 text-sm mb-4 text-center">⚠️ SAFETY & FAIR PLAY WARNING</h3>
+                <div class="space-y-4 text-sm font-medium">
+                    <div class="border border-red-800 p-3 bg-red-950/50 rounded">
+                        <strong class="text-orange-400 block mb-1">🩹 CUIDADO CON EL TERRENO:</strong>
+                        Correr en tacones altera el centro de gravedad. Se recomienda a los participantes vendarse los tobillos si lo consideran necesario. ¡Corren bajo su propio riesgo!
+                    </div>
+                    <div class="border border-red-800 p-3 bg-red-950/50 rounded">
+                        <strong class="text-yellow-400 block mb-1">🛑 CERO EMPUJONES:</strong>
+                        Cualquier contacto físico intencional para derribar al oponente es <strong>Descalificación Inmediata</strong>. Queremos carreras limpias, no lucha libre.
+                    </div>
+                    <div class="border border-red-800 p-3 bg-red-950/50 rounded">
+                        <strong class="text-blue-300 block mb-1">🤕 CAÍDAS:</strong>
+                        Si un corredor cae, puede levantarse y continuar (si su orgullo se lo permite), siempre y cuando no obstruya al rival.
+                    </div>
+                </div>
+            </div>
+
+            <!-- PREMIACIÓN MISIÓN 10 -->
+            <div class="mt-8 bg-pink-50 border-4 border-pink-500 p-5 rounded-lg text-center shadow-sm relative">
+                <div class="absolute -top-4 -left-4 bg-pink-500 border-2 border-black p-2 rounded-full rotate-[-10deg]">
+                    <i data-lucide="star" class="w-5 h-5 text-white fill-yellow-400"></i>
+                </div>
+                <h4 class="font-pixel text-pink-900 text-sm mb-4">🏆 LEADERBOARD (Nivel Minijuego)</h4>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="bg-white p-2 border-2 border-yellow-500 rounded-lg shadow-[2px_2px_0px_#eab308]">
+                        <span class="block text-2xl mb-1">🥇</span>
+                        <strong class="text-yellow-700 block text-lg font-pixel text-xs mt-2 mb-1">30</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">Puntos Oro + Gloria</span>
+                    </div>
+                    <div class="bg-white p-2 border-2 border-gray-400 rounded-lg shadow-[2px_2px_0px_#9ca3af]">
+                        <span class="block text-2xl mb-1">🥈</span>
+                        <strong class="text-gray-700 block text-lg font-pixel text-xs mt-2 mb-1">20</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">Puntos Plata</span>
+                    </div>
+                    <div class="bg-white p-2 border-2 border-orange-500 rounded-lg shadow-[2px_2px_0px_#f97316]">
+                        <span class="block text-2xl mb-1">🥉</span>
+                        <strong class="text-orange-700 block text-lg font-pixel text-xs mt-2 mb-1">10</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">Puntos Bronce</span>
+                    </div>
+                    <div class="bg-red-50 p-2 border-2 border-red-500 rounded-lg shadow-[2px_2px_0px_#ef4444]">
+                        <span class="block text-2xl mb-1">💀</span>
+                        <strong class="text-red-700 block text-lg font-pixel text-xs mt-2 mb-1">0</strong>
+                        <span class="text-[9px] text-red-600 font-bold uppercase">Ausencia / No Corredor</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- FINAL DE LA MISIÓN 10 -->
+
+        <!-- ==========================================
+             NIVEL 11: CHEEP CHEEP SPLASH 
+             ========================================== -->
+        <div class="manual-page p-6 md:p-10 mb-16 relative z-10 border-blue-500" style="background-color: #eff6ff;">
+            
+            <div class="absolute -top-5 -left-5 bg-black text-blue-300 font-pixel p-3 border-4 border-blue-500 shadow-[4px_4px_0_0_rgba(0,0,0,1)] transform -rotate-3 text-xs md:text-sm">
+                MISIÓN 11
+            </div>
+
+            <div class="text-center mt-6 mb-8 relative">
+                <div class="absolute top-0 right-0 md:-right-4 text-blue-400 opacity-30"><i data-lucide="droplets" class="w-16 h-16"></i></div>
+                <h2 class="block-title font-pixel text-lg md:text-xl w-full max-w-2xl mx-auto bg-blue-500 border-black text-white">
+                    CHEEP CHEEP SPLASH
+                </h2>
+                <p class="font-bold text-blue-900 mt-2 bg-blue-200 inline-block px-3 py-1 border-2 border-blue-500 rounded drop-shadow-md">
+                    Guerra Acuática
+                </p>
+            </div>
+
+            <p class="text-center text-lg font-bold text-blue-800 mb-8 italic px-4">
+                "Olvídate de lanzar con la mano. Aquí la estrategia es la catapulta cooperativa. Dos equipos, globos llenos de agua y toallas tensadas. El objetivo: mojar al rival o hacer que fallen."
+            </p>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 bg-gray-900 text-white p-4 border-4 border-blue-500 rounded" style="box-shadow: 4px 4px 0px #3b82f6;">
+                <div class="text-center">
+                    <i data-lucide="clock" class="w-6 h-6 mx-auto mb-2 text-yellow-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">HORA</p>
+                    <p class="font-bold text-sm">13:00 - 14:00</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="map-pin" class="w-6 h-6 mx-auto mb-2 text-red-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">SEDE</p>
+                    <p class="font-bold text-[10px] leading-tight mt-1">Cancha Básquet<br>(Zona de Batalla)</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="crosshair" class="w-6 h-6 mx-auto mb-2 text-orange-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">OBJETIVO</p>
+                    <p class="font-bold text-sm">El primero a 5 Pts.</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="users" class="w-6 h-6 mx-auto mb-2 text-blue-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">EQUIPO</p>
+                    <p class="font-bold text-[10px] leading-tight mt-1">4 Integrantes<br>(2 Parejas Mixtas)</p>
+                </div>
+            </div>
+
+            <!-- Requisitos y Gameplay -->
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <!-- Loadout -->
+                <div class="bg-white border-2 border-blue-300 p-5 rounded-lg shadow-sm">
+                    <h3 class="font-pixel text-blue-700 text-sm mb-4 border-b-2 border-blue-200 pb-2">
+                        <i data-lucide="backpack" class="w-4 h-4 inline mb-1"></i> 1. LOADOUT (Equipo)
+                    </h3>
+                    <ul class="space-y-3 text-sm text-gray-800 font-medium">
+                        <li><strong>Escuadrón:</strong> 4 integrantes por equipo (Obligatorio: 2 Hombres y 2 Mujeres).</li>
+                        <li><strong>Formación:</strong> Se dividirán en 2 parejas mixtas (Hombre y Mujer).</li>
+                        <li class="bg-blue-50 p-2 rounded border border-blue-200">
+                            <strong>🗡️ El Arma (Item):</strong> Cada pareja debe traer su propia toalla o tela resistente (~1m de largo x 50cm de ancho).<br>
+                            <span class="text-blue-700 text-xs">Requisito: Tela del color del equipo o alusiva al personaje.</span>
+                        </li>
+                        <li><strong>Skin:</strong> Uso obligatorio de la playera del equipo.</li>
+                    </ul>
+                </div>
+
+                <!-- Gameplay -->
+                <div class="bg-white border-2 border-cyan-300 p-5 rounded-lg shadow-sm">
+                    <h3 class="font-pixel text-cyan-700 text-sm mb-4 border-b-2 border-cyan-200 pb-2">
+                        <i data-lucide="gamepad-2" class="w-4 h-4 inline mb-1"></i> 2. GAMEPLAY
+                    </h3>
+                    <ul class="space-y-3 text-sm text-gray-800 font-medium">
+                        <li>
+                            <strong>🚀 La Catapulta:</strong> Parejas sostienen la toalla por los extremos. El globo va al centro. ¡Un movimiento coordinado de "estira y afloja" para lanzarlo al enemigo!
+                        </li>
+                        <li>
+                            <strong>👐 La Recepción:</strong> El equipo contrario intenta atrapar el globo en el aire usando ÚNICAMENTE su toalla. <span class="text-red-600 font-bold">¡No se valen las manos!</span>
+                        </li>
+                        <li><strong>☠️ Muerte Súbita:</strong> Torneo de eliminación directa. El que pierde, queda fuera.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Hitbox / Puntuación -->
+            <div class="mb-8 border-4 border-blue-600 bg-blue-50 p-6 rounded-lg relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-blue-600 text-white font-pixel text-[10px] p-2 rounded-bl-lg">HITBOX</div>
+                <h3 class="font-pixel text-blue-800 text-sm mb-4">3. SISTEMA DE PUNTUACIÓN</h3>
+                <p class="text-sm font-bold text-blue-900 mb-4 bg-white inline-block p-2 rounded border border-blue-300">
+                    🏆 El juego es a ganar 5 PUNTOS. El primero en lograrlo gana la partida.
+                </p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm font-medium text-gray-800">
+                    <div class="flex items-start gap-2 bg-white p-3 rounded border border-green-200">
+                        <i data-lucide="target" class="w-5 h-5 text-green-600 mt-0.5 shrink-0"></i>
+                        <p><strong>Impacto Directo:</strong> Globo se rompe al caer en el campo rival o al golpearlos. <span class="text-green-600 font-bold block">+ Punto para ti</span></p>
+                    </div>
+                    <div class="flex items-start gap-2 bg-white p-3 rounded border border-green-200">
+                        <i data-lucide="droplet-off" class="w-5 h-5 text-green-600 mt-0.5 shrink-0"></i>
+                        <p><strong>Fallo de Recepción:</strong> Rival intenta atraparlo pero se rompe en su toalla o cae al suelo. <span class="text-green-600 font-bold block">+ Punto para ti</span></p>
+                    </div>
+                    <div class="flex items-start gap-2 bg-white p-3 rounded border border-red-200">
+                        <i data-lucide="bomb" class="w-5 h-5 text-red-600 mt-0.5 shrink-0"></i>
+                        <p><strong>Fuego Amigo (Fail):</strong> Globo se revienta en tu propia toalla al intentar lanzarlo. <span class="text-red-600 font-bold block">+ Punto al rival</span></p>
+                    </div>
+                    <div class="flex items-start gap-2 bg-white p-3 rounded border border-red-200">
+                        <i data-lucide="signpost" class="w-5 h-5 text-red-600 mt-0.5 shrink-0"></i>
+                        <p><strong>Fuera de Límites:</strong> Lanzas el globo y cae fuera de la cancha (mala puntería). <span class="text-red-600 font-bold block">+ Punto al rival</span></p>
+                    </div>
+                </div>
+
+                <div class="mt-4 bg-yellow-100 border-l-4 border-yellow-500 p-3 rounded text-sm">
+                    <strong class="text-yellow-800 font-pixel text-xs block mb-1">👾 THE GLITCH (Nota Especial)</strong>
+                    Si el globo cae al suelo o es atrapado y <strong>NO se rompe</strong>, ¡el juego continúa! Deben recogerlo rápido (con toalla o mano con cuidado hacia la toalla) y contraatacar.
+                </div>
+            </div>
+
+            <!-- Reglas de Seguridad -->
+            <div class="bg-black text-white p-5 border-4 border-cyan-500 rounded-lg shadow-lg">
+                <h3 class="font-pixel text-cyan-400 text-sm mb-3 flex items-center gap-2">
+                    <i data-lucide="shield-alert" class="w-5 h-5"></i> SAFETY RULES
+                </h3>
+                <ul class="space-y-2 text-sm font-medium text-gray-300">
+                    <li><strong class="text-red-400">🚫 Prohibido:</strong> Lanzar los globos con la mano (tiro directo). Solo se permite el impulso con la toalla.</li>
+                    <li><strong class="text-orange-400">🤝 Respeto:</strong> No se permite apuntar intencionalmente a la cara a corta distancia.</li>
+                    <li><strong class="text-blue-300">💦 Wet Floor:</strong> Se recomienda mucha precaución al correr, la cancha estará mojada y resbalosa.</li>
+                </ul>
+            </div>
+
+            <!-- PREMIACIÓN MISIÓN 11 -->
+            <div class="mt-8 bg-blue-100 border-4 border-blue-600 p-5 rounded-lg text-center shadow-sm relative">
+                <div class="absolute -top-4 -left-4 bg-blue-600 border-2 border-black p-2 rounded-full rotate-[-10deg]">
+                    <i data-lucide="star" class="w-5 h-5 text-white fill-yellow-400"></i>
+                </div>
+                <h4 class="font-pixel text-blue-900 text-sm mb-4">🏆 LEADERBOARD (Nivel Minijuego)</h4>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="bg-white p-2 border-2 border-yellow-500 rounded-lg shadow-[2px_2px_0px_#eab308]">
+                        <span class="block text-2xl mb-1">🥇</span>
+                        <strong class="text-yellow-700 block text-lg font-pixel text-xs mt-2 mb-1">30</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">1er Lugar</span>
+                    </div>
+                    <div class="bg-white p-2 border-2 border-gray-400 rounded-lg shadow-[2px_2px_0px_#9ca3af]">
+                        <span class="block text-2xl mb-1">🥈</span>
+                        <strong class="text-gray-700 block text-lg font-pixel text-xs mt-2 mb-1">20</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">2do Lugar</span>
+                    </div>
+                    <div class="bg-white p-2 border-2 border-orange-500 rounded-lg shadow-[2px_2px_0px_#f97316]">
+                        <span class="block text-2xl mb-1">🥉</span>
+                        <strong class="text-orange-700 block text-lg font-pixel text-xs mt-2 mb-1">10</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">3er Lugar</span>
+                    </div>
+                    <div class="bg-blue-50 p-2 border-2 border-blue-500 rounded-lg shadow-[2px_2px_0px_#3b82f6]">
+                        <span class="block text-2xl mb-1">⭐</span>
+                        <strong class="text-blue-700 block text-lg font-pixel text-xs mt-2 mb-1">5</strong>
+                        <span class="text-[9px] text-blue-800 font-bold uppercase">Participación</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- FINAL DE LA MISIÓN 11 -->
+
+        <!-- ==========================================
+             NIVEL 12: COPA TOADSWORTH 
+             ========================================== -->
+        <div class="manual-page p-6 md:p-10 mb-16 relative z-10 border-amber-600" style="background-color: #fffbeb;">
+            
+            <div class="absolute -top-5 -left-5 bg-black text-amber-400 font-pixel p-3 border-4 border-amber-600 shadow-[4px_4px_0_0_rgba(0,0,0,1)] transform -rotate-3 text-xs md:text-sm">
+                MISIÓN 12
+            </div>
+
+            <div class="text-center mt-6 mb-8 relative">
+                <div class="absolute top-0 right-0 md:-right-4 text-amber-500 opacity-20"><i data-lucide="graduation-cap" class="w-16 h-16"></i></div>
+                <h2 class="block-title font-pixel text-lg md:text-xl w-full max-w-2xl mx-auto bg-amber-600 border-black text-white">
+                    COPA TOADSWORTH
+                </h2>
+                <p class="font-bold text-amber-900 mt-2 bg-amber-200 inline-block px-3 py-1 border-2 border-amber-500 rounded drop-shadow-md">
+                    "Maestros del Reino"
+                </p>
+            </div>
+
+            <p class="text-center text-lg font-bold text-amber-800 mb-8 italic px-4">
+                "¡Es hora de que los sabios del reino demuestren su destreza! Este espacio está dedicado a la convivencia, la risa y la estrategia. Aquí no solo juegan los alumnos, los Docentes Mentores son los protagonistas."
+            </p>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 bg-gray-900 text-white p-4 border-4 border-amber-600 rounded" style="box-shadow: 4px 4px 0px #d97706;">
+                <div class="text-center">
+                    <i data-lucide="clock" class="w-6 h-6 mx-auto mb-2 text-yellow-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">HORA</p>
+                    <p class="font-bold text-sm">16:00 - 17:00</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="map-pin" class="w-6 h-6 mx-auto mb-2 text-red-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">SEDE</p>
+                    <p class="font-bold text-[10px] leading-tight mt-1">Fútbol Bardas</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="split-square-horizontal" class="w-6 h-6 mx-auto mb-2 text-orange-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">MODO</p>
+                    <p class="font-bold text-sm">2 Fases (Tiempos)</p>
+                </div>
+                <div class="text-center">
+                    <i data-lucide="users" class="w-6 h-6 mx-auto mb-2 text-amber-400"></i>
+                    <p class="font-pixel text-[10px] text-gray-400 mb-1">PROTAGONISTAS</p>
+                    <p class="font-bold text-[10px] leading-tight mt-1">Docentes<br>Mentores</p>
+                </div>
+            </div>
+
+            <!-- PRIMER TIEMPO -->
+            <div class="mb-8 border-l-4 border-amber-500 bg-white p-5 shadow-sm rounded-r">
+                <h3 class="font-pixel text-amber-700 text-sm mb-4 flex items-center gap-2">
+                    <i data-lucide="flag" class="w-5 h-5"></i> 1er TIEMPO: EL SALTO DE YOSHI
+                </h3>
+                <p class="text-sm font-medium text-gray-600 mb-4 italic">"Antes de que ruede el balón, los mentores deberán cruzar el valle de los obstáculos en carrera de encostalados."</p>
+                
+                <div class="grid md:grid-cols-2 gap-4 text-sm font-medium text-gray-800">
+                    <div>
+                        <strong class="text-amber-800 border-b border-amber-200 block mb-2 pb-1">Participantes (Exclusive Content)</strong>
+                        <ul class="space-y-2">
+                            <li><strong>Solo Mentores:</strong> Participan obligatoriamente los 2 docentes de cada equipo.</li>
+                            <li><strong>Skin:</strong> Deben portar la playera de su equipo.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <strong class="text-amber-800 border-b border-amber-200 block mb-2 pb-1">Mecánica y Caídas</strong>
+                        <ul class="space-y-2">
+                            <li><strong>Salida:</strong> Introducidos en costales desde línea de fondo, avanzan saltando.</li>
+                            <li><strong>Regla Co-op:</strong> ¡Deben cruzar la meta LOS DOS! No cuenta si llega uno y el otro se queda atrás.</li>
+                            <li><strong>Caídas:</strong> Si caes, te levantas con dignidad (y ayuda) y sigues. <span class="text-red-500 font-bold">PROHIBIDO salirse o caminar.</span></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-4 bg-amber-50 border border-amber-200 p-2 text-center text-xs text-amber-900 rounded">
+                    <strong>¡Buff de Energía!</strong> El ruido de la grada cuenta. ¡Se valen todas las porras y gritos para los profes! Se premia a las primeras 3 parejas.
+                </div>
+            </div>
+
+            <!-- MEDIO TIEMPO: BATTLE ROYALE -->
+            <div class="mb-8 border-4 border-red-600 bg-red-50 p-5 rounded-lg relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-red-600 text-white font-pixel text-[10px] p-2 rounded-bl-lg">PVP ZONE</div>
+                <h3 class="font-pixel text-red-800 text-sm mb-4 flex items-center gap-2 mt-2">
+                    <i data-lucide="swords" class="w-5 h-5"></i> MEDIO TIEMPO: BATTLE ROYALE DE PAÑUELOS
+                </h3>
+                <p class="text-sm text-gray-700 mb-4 font-medium italic">A la mitad del evento, la música dictará el destino en una batalla de todos contra todos.</p>
+                
+                <div class="space-y-4 text-sm font-medium text-gray-800">
+                    <div class="bg-white p-3 rounded shadow-sm border border-red-200">
+                        <strong class="text-red-700 block mb-1">🛡️ Formación (Party de 3)</strong>
+                        Cada equipo designa a 3 gladiadores: <strong>1 Docente Mentor (H o M) + 1 Alumno (H) + 1 Alumna (M)</strong>. Todos con un pañuelo/cinta en la cintura tipo "cola de zorro".
+                    </div>
+                    
+                    <div class="grid sm:grid-cols-2 gap-3">
+                        <div class="bg-white p-3 rounded shadow-sm border border-red-200">
+                            <strong class="text-red-700 block mb-1">🎵 Musical Chaos (Gameplay)</strong>
+                            <ul class="space-y-1">
+                                <li><strong>Music ON:</strong> Muévete y quita pañuelos al rival. Si te lo quitan = <em>GAME OVER</em> (Sacas de la cancha).</li>
+                                <li><strong>Music OFF:</strong> ¡Congelados! Nadie se mueve.</li>
+                                <li><strong>Reset:</strong> Todos al centro y la cacería sigue.</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-3 rounded shadow-sm border border-red-200">
+                            <strong class="text-red-700 block mb-1">🧠 Estrategia y Victoria</strong>
+                            <ul class="space-y-1">
+                                <li><strong>Diplomacia:</strong> ¡Se valen alianzas temporales y traiciones! (Únanse contra el más fuerte).</li>
+                                <li><strong>Ganador:</strong> El último equipo con al menos 1 integrante vivo en la cancha.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fair Play -->
+            <div class="bg-black text-white p-5 border-4 border-gray-700 rounded-lg">
+                <h3 class="font-pixel text-yellow-400 text-sm mb-3 flex items-center gap-2">
+                    <i data-lucide="shield-alert" class="w-5 h-5"></i> FAIR PLAY (REGLAS DE CONVIVENCIA)
+                </h3>
+                <div class="grid md:grid-cols-2 gap-4 text-sm font-medium text-gray-300">
+                    <div>
+                        <strong class="text-red-400 block mb-1">🚫 Cero Agresiones</strong>
+                        <ul class="space-y-1 list-disc pl-4">
+                            <li>Prohibido fuerza excesiva, tacleadas, empujones fuertes o golpes.</li>
+                            <li>El objetivo es <em>quitar el pañuelo</em>, no derribar al oponente.</li>
+                            <li><strong>Sanción:</strong> Expulsión inmediata y descalificación.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <strong class="text-green-400 block mb-1">🤝 Juego Limpio</strong>
+                        <ul class="space-y-1 list-disc pl-4">
+                            <li>Prohibido nudos ciegos o imposibles (debe ser agarre estándar).</li>
+                            <li>Prohibido esconder el pañuelo con las manos o la ropa.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PREMIACIÓN MISIÓN 12 -->
+            <div class="mt-8 bg-amber-100 border-4 border-amber-500 p-5 rounded-lg text-center shadow-sm relative">
+                <div class="absolute -top-4 -left-4 bg-amber-500 border-2 border-black p-2 rounded-full rotate-[-10deg]">
+                    <i data-lucide="star" class="w-5 h-5 text-white fill-yellow-400"></i>
+                </div>
+                <h4 class="font-pixel text-amber-900 text-sm mb-4">🏆 LEADERBOARD (Nivel Competencia)</h4>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="bg-white p-2 border-2 border-yellow-500 rounded-lg shadow-[2px_2px_0px_#eab308]">
+                        <span class="block text-2xl mb-1">🥇</span>
+                        <strong class="text-yellow-700 block text-lg font-pixel text-xs mt-2 mb-1">60</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">1er Lugar</span>
+                    </div>
+                    <div class="bg-white p-2 border-2 border-gray-400 rounded-lg shadow-[2px_2px_0px_#9ca3af]">
+                        <span class="block text-2xl mb-1">🥈</span>
+                        <strong class="text-gray-700 block text-lg font-pixel text-xs mt-2 mb-1">40</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">2do Lugar</span>
+                    </div>
+                    <div class="bg-white p-2 border-2 border-orange-500 rounded-lg shadow-[2px_2px_0px_#f97316]">
+                        <span class="block text-2xl mb-1">🥉</span>
+                        <strong class="text-orange-700 block text-lg font-pixel text-xs mt-2 mb-1">25</strong>
+                        <span class="text-[9px] text-gray-600 font-bold uppercase">3er Lugar</span>
+                    </div>
+                    <div class="bg-amber-50 p-2 border-2 border-amber-600 rounded-lg shadow-[2px_2px_0px_#d97706]">
+                        <span class="block text-2xl mb-1">⭐</span>
+                        <strong class="text-amber-700 block text-lg font-pixel text-xs mt-2 mb-1">10</strong>
+                        <span class="text-[9px] text-amber-800 font-bold uppercase">Participación</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- FINAL DE LA MISIÓN 12 -->
+
+        <!-- Aquí prepararemos un espacio para la Misión 13 -->
+        <div class="text-center opacity-50 mb-12">
+            <p class="font-pixel text-xs text-white">CARGANDO SIGUIENTE NIVEL...</p>
+            <div class="w-8 h-8 border-4 border-white rounded-full border-t-transparent animate-spin mx-auto mt-4"></div>
+        </div>
+
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
