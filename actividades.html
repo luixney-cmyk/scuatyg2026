@@ -394,7 +394,7 @@
             </div>
         </div>
 
-        <!-- ==========================================
+         <!-- ==========================================
              NIVEL 3: BOWSER'S CASTLE 
              ========================================== -->
         <div class="manual-page p-6 md:p-10 mb-16 relative z-10 border-red-900" style="background-color: #fff5f5;">
@@ -403,11 +403,11 @@
                 <h2 class="block-title font-pixel text-lg md:text-xl w-full max-w-2xl mx-auto bg-red-800 border-black text-white">BOWSER'S CASTLE: EL CIRCUITO DE LAVA</h2>
             </div>
 
-            <p class="text-center text-lg md:text-xl font-bold text-red-900 mb-8 italic">
-                "¿Listos para enfrentar el calor? Una carrera de obstáculos y resistencia física donde solo los más fuertes sobrevivirán."
+            <p class="text-center text-lg md:text-xl font-bold text-red-900 mb-8 italic px-4">
+                "Bowser ha secuestrado las estrellas y ha llenado el camino de trampas. Este no es un circuito para débiles. Aquí se requiere fuerza, agilidad y trabajo en equipo. El objetivo es cruzar el 'Mar de Lava' acumulando todos los Power-Ups sin perder ninguno en el camino."
             </p>
 
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8 bg-gray-900 text-white p-4 border-4 border-red-800 rounded">
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8 bg-gray-900 text-white p-4 border-4 border-red-800 rounded" style="box-shadow: 4px 4px 0px #991b1b;">
                 <div class="text-center">
                     <i data-lucide="clock" class="w-6 h-6 mx-auto mb-2 text-yellow-400"></i>
                     <p class="font-pixel text-[10px] text-gray-400 mb-1">HORA</p>
@@ -416,23 +416,121 @@
                 <div class="text-center">
                     <i data-lucide="map-pin" class="w-6 h-6 mx-auto mb-2 text-red-400"></i>
                     <p class="font-pixel text-[10px] text-gray-400 mb-1">SEDE</p>
-                    <p class="font-bold text-sm">Cancha de Fútbol</p>
+                    <p class="font-bold text-[10px] leading-tight mt-1">Cancha de Fútbol<br><span class="text-[8px] font-normal text-gray-400">Frente Artes Gráficas</span></p>
                 </div>
                 <div class="text-center col-span-2 md:col-span-1">
                     <i data-lucide="flame" class="w-6 h-6 mx-auto mb-2 text-orange-500"></i>
                     <p class="font-pixel text-[10px] text-gray-400 mb-1">TIPO</p>
-                    <p class="font-bold text-sm">Obstáculos / Física</p>
+                    <p class="font-bold text-sm">Obstáculos / Relevo</p>
                 </div>
             </div>
 
-            <!-- Placeholder -->
-            <div class="bg-black text-white p-8 border-4 border-red-600 rounded text-center relative overflow-hidden mt-8 shadow-[8px_8px_0px_rgba(220,38,38,0.3)]">
-                <div class="relative z-10">
-                    <i data-lucide="lock" class="w-12 h-12 mx-auto mb-4 text-gray-500"></i>
-                    <h3 class="font-pixel text-yellow-500 text-lg mb-2 drop-shadow-md">ÁREA RESTRINGIDA</h3>
-                    <p class="font-medium text-gray-300 mb-4">El reglamento está siendo forjado en la lava por los secuaces de Bowser.</p>
-                    <div class="inline-block bg-red-900 text-red-200 text-xs font-pixel p-2 border-2 border-red-500 animate-pulse">
-                        [ REGLAMENTO PENDIENTE ]
+            <!-- El Escuadrón -->
+            <div class="bg-white border-2 border-red-300 p-5 rounded-lg mb-8 shadow-sm">
+                <h3 class="font-pixel text-red-700 text-sm mb-4 border-b-2 border-red-200 pb-2">
+                    <i data-lucide="users" class="w-4 h-4 inline mb-1"></i> 1. PARTY SETUP (El Escuadrón)
+                </h3>
+                <ul class="space-y-3 text-sm text-gray-800 font-medium">
+                    <li><strong>Alineación:</strong> Equipo de <strong>6 integrantes obligatorios</strong>.</li>
+                    <li class="bg-red-50 p-3 rounded border border-red-200 text-red-900 shadow-sm">
+                        <strong class="text-red-800 block mb-2">Roles Requeridos:</strong>
+                        <ul class="list-disc pl-5 text-xs space-y-2 text-gray-700">
+                            <li><strong class="text-red-600">1 Cosplayer (OBLIGATORIO):</strong> Debe correr con su traje completo (personaje seleccionado).</li>
+                            <li><strong class="text-red-600">1 Docente Mentor (OBLIGATORIO):</strong> ¡El profe también suda la camiseta!</li>
+                            <li><strong>2 Hombres</strong> y <strong>2 Mujeres</strong>.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Skin:</strong> Todos deben portar la playera del equipo (excepto el cosplayer, que lleva su traje).</li>
+                </ul>
+            </div>
+
+            <!-- El Circuito -->
+            <div class="bg-white border-2 border-orange-300 p-5 rounded-lg mb-8 shadow-sm">
+                <h3 class="font-pixel text-orange-700 text-sm mb-4 border-b-2 border-orange-200 pb-2">
+                    <i data-lucide="map" class="w-4 h-4 inline mb-1"></i> 2. LEVEL DESIGN (El Circuito)
+                </h3>
+                <p class="text-xs text-gray-600 mb-4 font-bold bg-orange-50 p-2 rounded border border-orange-200">
+                    🔄 Relevo progresivo. Cada corredor supera su obstáculo, encuentra su ítem y lo entrega al siguiente compañero, quien deberá cargar con lo acumulado.
+                </p>
+                
+                <div class="space-y-3 text-sm font-medium text-gray-800">
+                    <div class="bg-gray-50 p-3 rounded border border-gray-200 flex items-start gap-3 hover:border-red-400 transition-colors">
+                        <span class="text-2xl shrink-0 mt-1">🍄</span>
+                        <div>
+                            <strong class="text-red-600 block mb-1">Nivel 1 (Agilidad):</strong> 
+                            Obstáculos: Paso rápido por llantas y pecho tierra bajo cuerdas.<br>
+                            <span class="text-xs text-gray-600">Misión: Encontrar SUPER HONGO ➔ Pasa Hongo a Jugador 2.</span>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded border border-gray-200 flex items-start gap-3 hover:border-orange-400 transition-colors">
+                        <span class="text-2xl shrink-0 mt-1">🌻</span>
+                        <div>
+                            <strong class="text-orange-600 block mb-1">Nivel 2 (Equilibrio):</strong> 
+                            Obstáculos: Cruzar el Brincolín Resbaladizo (The Slippery Slope).<br>
+                            <span class="text-xs text-gray-600">Misión: Encontrar FLOR DE FUEGO ➔ Pasa Hongo + Flor a Jugador 3.</span>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded border border-gray-200 flex items-start gap-3 hover:border-yellow-400 transition-colors">
+                        <span class="text-2xl shrink-0 mt-1">⭐</span>
+                        <div>
+                            <strong class="text-yellow-600 block mb-1">Nivel 3 (Búsqueda Ciega):</strong> 
+                            Obstáculos: La Fosa de Aserrín.<br>
+                            <span class="text-xs text-gray-600">Misión: Buscar enterrada la ESTRELLA DORADA ➔ Pasa H+F+E a Jugador 4.</span>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded border border-gray-200 flex items-start gap-3 hover:border-green-400 transition-colors">
+                        <span class="text-2xl shrink-0 mt-1">🥚</span>
+                        <div>
+                            <strong class="text-green-600 block mb-1">Nivel 4 (Precisión):</strong> 
+                            Obstáculos: Segundo Brincolín / Circuito de salto.<br>
+                            <span class="text-xs text-gray-600">Misión: Encontrar el HUEVO DE YOSHI (Debe ser del color de tu equipo) ➔ Pasa H+F+E+H a Jugador 5.</span>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded border border-gray-200 flex items-start gap-3 hover:border-blue-400 transition-colors">
+                        <span class="text-2xl shrink-0 mt-1">🛡️</span>
+                        <div>
+                            <strong class="text-blue-600 block mb-1">Nivel 5 (Resistencia - Mentor/Cosplayer):</strong> 
+                            <span class="text-xs text-gray-600">Misión: Trasladar los 4 ítems en un slalom de conos sin tirar nada hasta la zona final.</span>
+                        </div>
+                    </div>
+                    <div class="bg-red-50 p-3 rounded border-2 border-red-400 flex items-start gap-3 shadow-sm">
+                        <span class="text-2xl shrink-0 mt-1">🏁</span>
+                        <div>
+                            <strong class="text-red-700 block mb-1">Nivel 6 (Velocidad Pura - Final Sprint):</strong> 
+                            El Jugador 6 (el más veloz) recibe los 4 ítems y corre a máxima velocidad hacia la Meta Final.<br>
+                            <strong class="text-xs text-black uppercase mt-1 inline-block bg-yellow-300 px-2 py-1 rounded border border-yellow-500 shadow-sm">Victoria: 1ro en cruzar con los 4 ítems.</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reglas y Tiempos -->
+            <div class="bg-black text-white p-6 border-4 border-red-600 rounded-lg mb-8 relative shadow-[8px_8px_0px_rgba(220,38,38,0.5)]">
+                <div class="absolute -top-4 -right-4 bg-red-600 border-2 border-white p-2 rounded-full animate-bounce">
+                    <i data-lucide="alert-octagon" class="w-6 h-6 text-white"></i>
+                </div>
+                <h3 class="font-pixel text-red-500 text-sm mb-4 text-center">⚠️ RULES & TIME LIMIT</h3>
+                
+                <div class="space-y-4 text-sm font-medium text-gray-200">
+                    <div class="border border-red-800 p-3 bg-red-950/50 rounded">
+                        <strong class="text-orange-400 block mb-1">🛑 Sin Ítem No Hay Avance:</strong>
+                        Si se le cae un objeto o no lo encuentra, NO PUEDE AVANZAR hasta recuperarlo. Llegar a meta sin uno de los 4 ítems = <strong class="text-red-500 underline">Descalificación automática</strong>.
+                    </div>
+                    
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        <div class="border border-red-800 p-3 bg-red-950/50 rounded">
+                            <strong class="text-yellow-400 block mb-1">🥊 Game Over (Violencia):</strong>
+                            Empujar, jalar, golpear o insultar a un compañero o rival es expulsión inmediata.
+                        </div>
+                        <div class="border border-red-800 p-3 bg-red-950/50 rounded">
+                            <strong class="text-green-400 block mb-1">🥚 Huevo Podrido:</strong>
+                            Traer un Huevo de Yoshi de otro color anula la victoria.
+                        </div>
+                    </div>
+                    
+                    <div class="border border-red-800 p-3 bg-gray-900 rounded text-center">
+                        <strong class="text-blue-400 block mb-1 uppercase">⏰ Cronograma y Walkover:</strong>
+                        Arranque: Todos en línea de salida a las 13:00 hrs. Equipo no completo al silbatazo inicial = <strong>Pierde por default</strong>. (Abandono no suma puntos).
                     </div>
                 </div>
             </div>
@@ -2774,3 +2872,4 @@
     </script>
 </body>
 </html>
+
