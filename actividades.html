@@ -86,28 +86,51 @@
 </head>
 <body class="min-h-screen text-gray-800 pb-16">
 
-    <!-- Navbar Simple -->
-    <nav class="bg-red-600 border-b-4 border-black p-4 sticky top-0 z-50 shadow-lg flex justify-between items-center">
-        <a href="index.html" class="text-white font-pixel text-[10px] md:text-xs hover:text-yellow-300 no-underline flex items-center gap-2 transition-colors">
-            <i data-lucide="arrow-left" class="w-4 h-4 md:w-5 md:h-5"></i> START
-        </a>
-        <span class="text-white font-pixel text-[10px] md:text-xs text-center flex-1">INSTRUCTION MANUAL</span>
-        <div class="w-16"></div>
-    </nav>
-
-    <div class="container mx-auto mt-8 px-4 max-w-4xl">
-
-        <!-- Portada del Manual -->
-        <div class="text-center mb-10">
-            <h1 class="font-pixel text-2xl md:text-4xl text-white drop-shadow-[4px_4px_0_rgba(0,0,0,1)] uppercase leading-relaxed mt-2 mb-4">
-                GUÍA DEL JUGADOR
-            </h1>
-            <p class="font-bold text-yellow-300 text-lg md:text-xl drop-shadow-[2px_2px_0_rgba(0,0,0,1)] bg-black/50 inline-block px-4 py-2 rounded border-2 border-black">
-                Reglamento y Misiones Oficiales
-            </p>
+    <!-- ==========================================
+         PANTALLA DE BLOQUEO (ACCESO POR CÓDIGO)
+         ========================================== -->
+    <div id="lock-screen" class="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 bg-[#5c94fc] overflow-y-auto" style="background-image: linear-gradient(transparent 95%, rgba(255, 255, 255, 0.2) 95%), linear-gradient(90deg, transparent 95%, rgba(255, 255, 255, 0.2) 95%); background-size: 20px 20px;">
+        <div class="nes-container text-center max-w-md w-full bg-white p-8 border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)]">
+            <i data-lucide="lock" class="w-12 h-12 mx-auto mb-4 text-red-600 animate-bounce"></i>
+            <h2 class="font-pixel text-red-600 text-lg md:text-xl mb-2">ACCESO RESTRINGIDO</h2>
+            <p class="text-sm font-bold text-gray-700 mb-6">Ingresa el código secreto de tu equipo para desbloquear el manual de misiones.</p>
+            
+            <input type="text" id="access-code-input" class="w-full border-4 border-black p-3 mb-2 font-pixel text-center uppercase focus:outline-none focus:border-blue-600 transition-colors" placeholder="CÓDIGO AQUÍ" autocomplete="off">
+            <p id="error-message" class="text-red-600 font-bold text-xs mb-4 h-4 hidden animate-pulse">¡CÓDIGO INCORRECTO!</p>
+            
+            <button id="unlock-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-pixel py-3 px-4 border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] active:translate-y-1 active:translate-x-1 active:shadow-none transition-all mt-2">
+                DESBLOQUEAR
+            </button>
         </div>
+    </div>
 
-        <!-- ==========================================
+    <!-- ==========================================
+         CONTENIDO PRINCIPAL DEL MANUAL (Oculto al inicio)
+         ========================================== -->
+    <div id="main-content" class="hidden">
+        
+        <!-- Navbar Simple -->
+        <nav class="bg-red-600 border-b-4 border-black p-4 sticky top-0 z-50 shadow-lg flex justify-between items-center">
+            <a href="index.html" class="text-white font-pixel text-[10px] md:text-xs hover:text-yellow-300 no-underline flex items-center gap-2 transition-colors">
+                <i data-lucide="arrow-left" class="w-4 h-4 md:w-5 md:h-5"></i> START
+            </a>
+            <span class="text-white font-pixel text-[10px] md:text-xs text-center flex-1">INSTRUCTION MANUAL</span>
+            <div class="w-16"></div>
+        </nav>
+
+        <div class="container mx-auto mt-8 px-4 max-w-4xl">
+
+            <!-- Portada del Manual -->
+            <div class="text-center mb-10">
+                <h1 class="font-pixel text-2xl md:text-4xl text-white drop-shadow-[4px_4px_0_rgba(0,0,0,1)] uppercase leading-relaxed mt-2 mb-4">
+                    GUÍA DEL JUGADOR
+                </h1>
+                <p class="font-bold text-yellow-300 text-lg md:text-xl drop-shadow-[2px_2px_0_rgba(0,0,0,1)] bg-black/50 inline-block px-4 py-2 rounded border-2 border-black">
+                    Reglamento y Misiones Oficiales
+                </p>
+            </div>
+
+            <!-- ==========================================
              NIVEL 1: PRESENTACIÓN DE EQUIPOS 
              ========================================== -->
         <div class="manual-page p-6 md:p-10 mb-16 relative z-10">
@@ -2913,10 +2936,77 @@
         </div>
         <!-- FINAL DE LA MISIÓN 20 (CLAUSURA) -->
 
-    </div>
+        </div> <!-- Cierre del contenedor principal max-w-4xl -->
+    </div> <!-- Cierre del div oculto (main-content) -->
 
     <script>
+        // --- 1. INICIALIZAR ICONOS ---
         lucide.createIcons();
+
+        // --- 2. SISTEMA DE PANTALLA DE BLOQUEO (LOCK SCREEN) ---
+        
+        // Aquí debes colocar los 10 códigos reales que asignarás a los equipos. 
+        // Puedes usar mayúsculas, números, etc. Asegúrate de ponerlos entre comillas simples.
+        const codigosValidos = [
+            'EQUIPO01', 
+            'EQUIPO02', 
+            'EQUIPO03', 
+            'EQUIPO04', 
+            'EQUIPO05', 
+            'EQUIPO06', 
+            'EQUIPO07', 
+            'EQUIPO08', 
+            'EQUIPO09', 
+            'EQUIPO10',
+            'ADMIN' // Código maestro por si necesitas entrar tú sin problemas
+        ];
+        
+        const lockScreen = document.getElementById('lock-screen');
+        const mainContent = document.getElementById('main-content');
+        const codeInput = document.getElementById('access-code-input');
+        const unlockBtn = document.getElementById('unlock-btn');
+        const errorMsg = document.getElementById('error-message');
+
+        function intentarDesbloqueo() {
+            // Convierte lo que escriban a mayúsculas y quita los espacios
+            const inputVal = codeInput.value.trim().toUpperCase();
+            
+            if (codigosValidos.includes(inputVal)) {
+                // Código Correcto: Ocultar bloqueo y mostrar el manual
+                lockScreen.classList.add('hidden');
+                lockScreen.classList.remove('flex'); // Quitamos flex para que desaparezca
+                mainContent.classList.remove('hidden'); // Mostramos todo el contenido
+                
+                // Guardar en la sesión (el navegador recordará que ya puso la contraseña mientras no cierre la pestaña)
+                sessionStorage.setItem('manual_desbloqueado', 'true');
+            } else {
+                // Código Incorrecto: Mostrar mensaje de error
+                errorMsg.classList.remove('hidden');
+                codeInput.classList.add('border-red-600', 'animate-pulse');
+                
+                setTimeout(() => {
+                    errorMsg.classList.add('hidden');
+                    codeInput.classList.remove('border-red-600', 'animate-pulse');
+                }, 2000);
+            }
+        }
+
+        // Revisar si ya estaba desbloqueado previamente en esta sesión
+        if (sessionStorage.getItem('manual_desbloqueado') === 'true') {
+            lockScreen.classList.add('hidden');
+            lockScreen.classList.remove('flex');
+            mainContent.classList.remove('hidden');
+        }
+
+        // Configurar los botones
+        unlockBtn.addEventListener('click', intentarDesbloqueo);
+        
+        // Permitir desbloquear presionando la tecla "Enter"
+        codeInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                intentarDesbloqueo();
+            }
+        });
     </script>
 </body>
 </html>
