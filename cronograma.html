@@ -127,6 +127,22 @@
             transform: rotate(180deg) scale(1.1);
             background: #ef4444; /* Rojo al abrir */
         }
+        /* Botón de registro */
+        .btn-register {
+            display: inline-block;
+            background-color: #ef4444;
+            color: white;
+            border: 4px solid black;
+            padding: 10px 20px;
+            text-decoration: none;
+            box-shadow: 4px 4px 0px black;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .btn-register:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px black;
+        }
     </style>
 </head>
 <body class="min-h-screen text-gray-800 pb-12">
@@ -672,4 +688,5 @@
 </body>
 
 </html>
+
 
