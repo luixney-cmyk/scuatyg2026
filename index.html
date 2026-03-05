@@ -77,6 +77,19 @@
         @keyframes blinker {
             50% { opacity: 0; }
         }
+
+        /* Estilo para el contador discreto */
+        #discreet-counter {
+            position: fixed;
+            bottom: 5px;
+            right: 8px;
+            font-size: 8px;
+            color: rgba(0, 0, 0, 0.2); /* Muy tenue */
+            z-index: 1000;
+            pointer-events: none;
+            user-select: none;
+            font-family: monospace;
+        }
     </style>
 </head>
 <body class="min-h-screen text-gray-800 pb-12 relative">
@@ -118,7 +131,6 @@
 
             <p class="mb-6 max-w-2xl mx-auto relative z-10">El Reino Champiñón ha llegado. ¿Estás listo para el nivel más difícil, divertido y épico? Olvídate de las aulas por tres días: ¡Es hora de jugar!</p>
             
-            <!-- BOTONES DE NAVEGACIÓN PRINCIPAL -->
             <div class="flex flex-col sm:flex-row justify-center items-center gap-4 relative z-10">
                 <a href="#registro" class="nes-btn bg-red-500 text-white font-pixel py-4 px-6 inline-block hover:bg-red-600 no-underline text-xs md:text-sm w-full sm:w-auto">
                     INSERT COIN (Registro)
@@ -269,7 +281,7 @@
         <p id="here-we-go-text" class="font-pixel text-lg mt-2 animate-bounce cursor-pointer hover:text-yellow-400 transition-colors">"Here we go!"</p>
     </footer>
 
-    <!-- Social Media Section (AHORA AL FINAL DE TODO Y AMARILLO) -->
+    <!-- Social Media Section -->
     <div class="container mx-auto mt-8 px-4 pb-12">
         <section class="bg-yellow-400 border-4 border-black p-8 rounded-lg shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-center">
             <img src="https://github.com/luixney-cmyk/scuatyg2026/blob/main/logo%20cetyg%20azul%20transparente.png?raw=true" alt="Logo CETyG" class="w-24 h-24 mx-auto mb-4 object-contain drop-shadow-sm" onerror="this.onerror=null; this.src='https://placehold.co/100x100?text=CETyG';">
@@ -284,6 +296,68 @@
             </div>
         </section>
     </div>
+
+    <!-- Elemento del contador discreto -->
+    <div id="discreet-counter">S-2026.1.000</div>
+
+    <script type="module">
+        // Importar Firebase para el contador persistente
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // Configuración de Firebase proporcionada por el entorno
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        async function initVisitCounter() {
+            try {
+                // REGLA 3: Autenticación ANTES de cualquier operación de Firestore
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                
+                // Escuchar cambios de estado para asegurar que el usuario esté autenticado
+                onAuthStateChanged(auth, async (user) => {
+                    if (!user) return;
+
+                    // REGLA 1: Ruta estricta de Firestore
+                    const statsDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'stats', 'visits');
+
+                    try {
+                        // Intentar incrementar el contador
+                        await setDoc(statsDocRef, { 
+                            count: increment(1),
+                            lastUpdate: new Date().toISOString()
+                        }, { merge: true });
+
+                        // Leer el valor actualizado
+                        const snap = await getDoc(statsDocRef);
+                        if (snap.exists()) {
+                            const totalVisits = snap.data().count;
+                            const counterEl = document.getElementById('discreet-counter');
+                            if (counterEl) {
+                                counterEl.innerText = `S-2026.1.${totalVisits}`;
+                            }
+                        }
+                    } catch (fsError) {
+                        // Silenciar errores de permisos en producción para mantener la sutileza
+                        console.debug("Firestore silent error:", fsError.message);
+                    }
+                });
+            } catch (err) {
+                console.debug("Auth silent error:", err.message);
+            }
+        }
+
+        // Ejecutar inmediatamente
+        initVisitCounter();
+    </script>
 
     <script>
         // --- 1. ICONOS ---
@@ -315,101 +389,65 @@
         }
 
         let hasPlayedOnLoad = false;
-
         const playOnFirstInteraction = () => {
             if (!hasPlayedOnLoad) {
                 play8BitTheme();
                 hasPlayedOnLoad = true;
                 document.removeEventListener('click', playOnFirstInteraction);
                 document.removeEventListener('touchstart', playOnFirstInteraction);
-                document.removeEventListener('keydown', playOnFirstInteraction);
             }
         };
 
         document.addEventListener('click', playOnFirstInteraction);
         document.addEventListener('touchstart', playOnFirstInteraction);
-        document.addEventListener('keydown', playOnFirstInteraction);
-
-        const pressStartBtn = document.getElementById('press-start-btn');
-        if(pressStartBtn) {
-            pressStartBtn.addEventListener('click', (e) => {
-                e.stopPropagation(); 
-                play8BitTheme();
-                hasPlayedOnLoad = true; 
-            });
-        }
 
         function playBloopSound() {
             if (!audioCtx || audioCtx.state === 'suspended') return;
-
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            
             osc.type = 'triangle'; 
             osc.frequency.setValueAtTime(800, audioCtx.currentTime); 
             osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.1); 
-
             gain.gain.setValueAtTime(0.05, audioCtx.currentTime); 
             gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.1);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
         }
 
         function playCoinSound() {
             if (!audioCtx || audioCtx.state === 'suspended') return;
-
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            
             osc.type = 'square'; 
-            
             osc.frequency.setValueAtTime(987.77, audioCtx.currentTime); 
             osc.frequency.setValueAtTime(1318.51, audioCtx.currentTime + 0.1);
-
             gain.gain.setValueAtTime(0.05, audioCtx.currentTime); 
             gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3); 
-
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.4);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.4);
         }
 
         const treasureBox = document.getElementById('treasure-box');
         if(treasureBox) {
-            treasureBox.addEventListener('mouseenter', playCoinSound, { once: true });
             treasureBox.addEventListener('click', playCoinSound);
         }
 
         function playHereWeGoSound() {
             if (!audioCtx || audioCtx.state === 'suspended') return;
-
             const notes = [
                 { f: 523.25, d: 0.1 }, { f: 659.25, d: 0.1 }, 
                 { f: 783.99, d: 0.1 }, { f: 1046.50, d: 0.3 } 
             ];
-
             let startTime = audioCtx.currentTime;
             notes.forEach(note => {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
-                
                 osc.type = 'square';
                 osc.frequency.value = note.f;
-                
                 gain.gain.setValueAtTime(0.05, startTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, startTime + note.d - 0.02);
-                
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                
-                osc.start(startTime);
-                osc.stop(startTime + note.d);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(startTime); osc.stop(startTime + note.d);
                 startTime += note.d;
             });
         }
@@ -417,17 +455,6 @@
         const hereWeGoText = document.getElementById('here-we-go-text');
         if (hereWeGoText) {
             hereWeGoText.addEventListener('click', playHereWeGoSound);
-
-            const observer = new IntersectionObserver((entries, obs) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        playHereWeGoSound();
-                        obs.unobserve(entry.target); 
-                    }
-                });
-            }, { threshold: 0.5 });
-
-            observer.observe(hereWeGoText);
         }
 
         // --- 3. PERSONAJES ---
@@ -454,14 +481,13 @@
             const div = document.createElement('div');
             div.className = `${char.color} ${char.border} ${char.text || 'text-white'} border-b-4 p-3 rounded cursor-pointer hover:scale-105 transition-transform flex flex-col items-center justify-center min-h-[80px]`;
             div.innerHTML = `<span class="font-pixel text-[10px] mb-1">SELECT</span><span class="font-bold uppercase tracking-wider text-sm">${char.name}</span>`;
-            
             div.addEventListener('mouseenter', playBloopSound);
-
             charGrid.appendChild(div);
         });
     </script>
 </body>
 </html>
+
 
 
 
