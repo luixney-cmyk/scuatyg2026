@@ -34,6 +34,10 @@
             transition: all 0.1s;
             box-shadow: 4px 4px 0px black;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
         }
         .nes-btn:active {
             transform: translate(4px, 4px);
@@ -90,6 +94,7 @@
             </div>
             <div class="flex items-center gap-4">
                 <a href="cronograma.html" class="text-white font-pixel text-[10px] md:text-xs hover:text-yellow-300 transition-colors hidden md:inline-block">Programa</a>
+                <a href="score.html" class="text-white font-pixel text-[10px] md:text-xs hover:text-yellow-300 transition-colors hidden md:inline-block uppercase">Puntos</a>
                 <a href="actividades.html" class="text-white font-pixel text-[10px] md:text-xs blink cursor-pointer hover:text-yellow-300 transition-colors">ACTIVIDADES</a>
             </div>
         </div>
@@ -118,13 +123,16 @@
 
             <p class="mb-6 max-w-2xl mx-auto relative z-10">El Reino Champiñón ha llegado. ¿Estás listo para el nivel más difícil, divertido y épico? Olvídate de las aulas por tres días: ¡Es hora de jugar!</p>
             
-            <!-- BOTONES DE NAVEGACIÓN PRINCIPAL -->
-            <div class="flex flex-col sm:flex-row justify-center items-center gap-4 relative z-10">
-                <a href="#registro" class="nes-btn bg-red-500 text-white font-pixel py-4 px-6 inline-block hover:bg-red-600 no-underline text-xs md:text-sm w-full sm:w-auto">
+            <!-- BOTONES DE NAVEGACIÓN PRINCIPAL IGUALADOS -->
+            <div class="flex flex-col md:flex-row justify-center items-stretch gap-4 relative z-10 max-w-5xl mx-auto">
+                <a href="#registro" class="nes-btn bg-red-500 text-white font-pixel py-4 px-2 hover:bg-red-600 no-underline text-[9px] md:text-[11px] w-full md:flex-1">
                     INSERT COIN (Registro)
                 </a>
-                <a href="cronograma.html" class="nes-btn bg-blue-500 text-white font-pixel py-4 px-6 flex items-center justify-center gap-2 hover:bg-blue-600 no-underline text-xs md:text-sm w-full sm:w-auto">
-                    <i data-lucide="map" class="w-5 h-5"></i> WORLD MAP (Programa)
+                <a href="cronograma.html" class="nes-btn bg-blue-500 text-white font-pixel py-4 px-2 gap-2 hover:bg-blue-600 no-underline text-[9px] md:text-[11px] w-full md:flex-1">
+                    <i data-lucide="map" class="w-4 h-4"></i> WORLD MAP (Programa)
+                </a>
+                <a href="score.html" class="nes-btn bg-green-600 text-white font-pixel py-4 px-2 gap-2 hover:bg-green-700 no-underline text-[9px] md:text-[11px] w-full md:flex-1">
+                    <i data-lucide="award" class="w-4 h-4"></i> TABLA DE PUNTOS
                 </a>
             </div>
         </div>
@@ -269,7 +277,7 @@
         <p id="here-we-go-text" class="font-pixel text-lg mt-2 animate-bounce cursor-pointer hover:text-yellow-400 transition-colors">"Here we go!"</p>
     </footer>
 
-    <!-- Social Media Section (AHORA AL FINAL DE TODO Y AMARILLO) -->
+    <!-- Social Media Section -->
     <div class="container mx-auto mt-8 px-4 pb-12">
         <section class="bg-yellow-400 border-4 border-black p-8 rounded-lg shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-center">
             <img src="https://github.com/luixney-cmyk/scuatyg2026/blob/main/logo%20cetyg%20azul%20transparente.png?raw=true" alt="Logo CETyG" class="w-24 h-24 mx-auto mb-4 object-contain drop-shadow-sm" onerror="this.onerror=null; this.src='https://placehold.co/100x100?text=CETyG';">
@@ -315,7 +323,6 @@
         }
 
         let hasPlayedOnLoad = false;
-
         const playOnFirstInteraction = () => {
             if (!hasPlayedOnLoad) {
                 play8BitTheme();
@@ -330,52 +337,32 @@
         document.addEventListener('touchstart', playOnFirstInteraction);
         document.addEventListener('keydown', playOnFirstInteraction);
 
-        const pressStartBtn = document.getElementById('press-start-btn');
-        if(pressStartBtn) {
-            pressStartBtn.addEventListener('click', (e) => {
-                e.stopPropagation(); 
-                play8BitTheme();
-                hasPlayedOnLoad = true; 
-            });
-        }
-
         function playBloopSound() {
             if (!audioCtx || audioCtx.state === 'suspended') return;
-
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            
             osc.type = 'triangle'; 
             osc.frequency.setValueAtTime(800, audioCtx.currentTime); 
             osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.1); 
-
             gain.gain.setValueAtTime(0.05, audioCtx.currentTime); 
             gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-
             osc.connect(gain);
             gain.connect(audioCtx.destination);
-
             osc.start();
             osc.stop(audioCtx.currentTime + 0.1);
         }
 
         function playCoinSound() {
             if (!audioCtx || audioCtx.state === 'suspended') return;
-
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            
             osc.type = 'square'; 
-            
             osc.frequency.setValueAtTime(987.77, audioCtx.currentTime); 
             osc.frequency.setValueAtTime(1318.51, audioCtx.currentTime + 0.1);
-
             gain.gain.setValueAtTime(0.05, audioCtx.currentTime); 
             gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3); 
-
             osc.connect(gain);
             gain.connect(audioCtx.destination);
-
             osc.start();
             osc.stop(audioCtx.currentTime + 0.4);
         }
@@ -388,26 +375,20 @@
 
         function playHereWeGoSound() {
             if (!audioCtx || audioCtx.state === 'suspended') return;
-
             const notes = [
                 { f: 523.25, d: 0.1 }, { f: 659.25, d: 0.1 }, 
                 { f: 783.99, d: 0.1 }, { f: 1046.50, d: 0.3 } 
             ];
-
             let startTime = audioCtx.currentTime;
             notes.forEach(note => {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
-                
                 osc.type = 'square';
                 osc.frequency.value = note.f;
-                
                 gain.gain.setValueAtTime(0.05, startTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, startTime + note.d - 0.02);
-                
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
-                
                 osc.start(startTime);
                 osc.stop(startTime + note.d);
                 startTime += note.d;
@@ -417,7 +398,6 @@
         const hereWeGoText = document.getElementById('here-we-go-text');
         if (hereWeGoText) {
             hereWeGoText.addEventListener('click', playHereWeGoSound);
-
             const observer = new IntersectionObserver((entries, obs) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -426,7 +406,6 @@
                     }
                 });
             }, { threshold: 0.5 });
-
             observer.observe(hereWeGoText);
         }
 
@@ -447,7 +426,7 @@
             { name: "Birdo", color: "bg-pink-600", border: "border-pink-800" },
             { name: "Boo", color: "bg-blue-100", border: "border-blue-300", text: "text-black" },
             { name: "Shy Guy", color: "bg-blue-900", border: "border-blue-950" },
-            { name: "Huesitos", color: "bg-gray-500", border: "border-gray-700" },
+            { name: "Huesitos", color: "bg-gray-400", border: "border-gray-600", text: "text-black" },
         ];
 
         const charGrid = document.getElementById('character-grid');
@@ -455,14 +434,13 @@
             const div = document.createElement('div');
             div.className = `${char.color} ${char.border} ${char.text || 'text-white'} border-b-4 p-3 rounded cursor-pointer hover:scale-105 transition-transform flex flex-col items-center justify-center min-h-[80px]`;
             div.innerHTML = `<span class="font-pixel text-[10px] mb-1">SELECT</span><span class="font-bold uppercase tracking-wider text-sm">${char.name}</span>`;
-            
             div.addEventListener('mouseenter', playBloopSound);
-
             charGrid.appendChild(div);
         });
     </script>
 </body>
 </html>
+
 
 
 
