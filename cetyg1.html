@@ -71,6 +71,15 @@
         /* Ocultar scrollbar horizontal */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Animación de carga */
+        .loading-pulse {
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
     </style>
 </head>
 <body class="min-h-screen text-gray-800 pb-12 relative">
@@ -119,51 +128,29 @@
 
     <main class="container mx-auto mt-8 px-4 max-w-4xl">
         
+        <!-- Indicador de Offline -->
+        <div id="offline-indicator" class="hidden mb-4 flex justify-center items-center gap-2 text-xs font-bold text-yellow-800 bg-yellow-200 border border-yellow-400 py-2 px-4 rounded-lg w-max mx-auto shadow-sm">
+            <i data-lucide="wifi-off" class="w-4 h-4"></i>
+            MODO OFFLINE (Mostrando últimos datos guardados)
+        </div>
+
         <!-- LEADERBOARD (Fondo Oscuro para resaltar el Podio) -->
-        <section class="nes-container bg-gray-900 text-white rounded-lg border-4 border-black p-6 md:p-8 mb-10 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-            <h3 class="font-pixel text-center text-yellow-400 text-sm md:text-base mb-2">LIVE LEADERBOARD</h3>
-            <p class="text-center text-xs mb-4 text-gray-400 uppercase">Tabla General de Posiciones en Vivo</p>
+        <section class="nes-container bg-gray-900 text-white rounded-lg border-4 border-black p-6 md:p-8 mb-10 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative min-h-[400px]">
+            
+            <h3 class="font-pixel text-center text-yellow-400 text-sm md:text-base mb-2 flex justify-center items-center gap-2">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-ping hidden" id="live-dot"></span> LIVE LEADERBOARD
+            </h3>
+            <p class="text-center text-xs mb-4 text-gray-400 uppercase">Tabla General de Posiciones</p>
 
-            <!-- PODIO (1er, 2do y 3er Lugar) - ALTURA CORREGIDA PARA EVITAR TRASLAPE -->
-            <div class="flex items-end justify-center gap-2 md:gap-4 h-72 md:h-80 mt-10 md:mt-12 mb-8 px-2">
-                
-                <!-- 2do Lugar (Plata) -->
-                <div class="w-1/3 flex flex-col items-center">
-                    <div class="bg-white border-4 border-green-500 rounded-full w-10 h-10 md:w-14 md:h-14 flex items-center justify-center mb-2 shadow-[0_0_10px_rgba(34,197,94,0.5)] z-10">
-                        <span class="font-bold text-green-600 text-xs md:text-sm">LUI</span>
-                    </div>
-                    <div class="font-bold text-[10px] md:text-xs mb-2 text-gray-300 uppercase text-center h-8">Equipo Luigi</div>
-                    <div class="podium-2 w-full h-28 md:h-32 border-4 border-b-0 border-black flex flex-col justify-start items-center pt-2 md:pt-4 shadow-[inset_-4px_0_0_rgba(0,0,0,0.3)] relative">
-                        <span class="font-pixel text-xl md:text-2xl text-gray-800">2</span>
-                        <span class="text-[9px] md:text-xs font-bold mt-2 text-gray-800 bg-gray-100 px-2 rounded-full border border-gray-400">850 pts</span>
-                    </div>
-                </div>
+            <!-- Pantalla de carga inicial -->
+            <div id="loading-state" class="absolute inset-0 bg-gray-900 flex flex-col items-center justify-center z-40 rounded-lg loading-pulse">
+                <i data-lucide="joystick" class="w-12 h-12 text-yellow-400 mb-4 animate-bounce"></i>
+                <p class="font-pixel text-white text-xs md:text-sm">SINCRONIZANDO PODIO...</p>
+            </div>
 
-                <!-- 1er Lugar (Oro) -->
-                <div class="w-1/3 flex flex-col items-center z-20">
-                    <i data-lucide="crown" class="w-8 h-8 md:w-10 md:h-10 text-yellow-400 fill-yellow-400 mb-1 drop-shadow-[0_0_10px_rgba(250,204,21,0.8)] animate-bounce"></i>
-                    <div class="bg-white border-4 border-red-500 rounded-full w-14 h-14 md:w-16 md:h-16 flex items-center justify-center mb-2 shadow-[0_0_15px_rgba(239,68,68,0.8)]">
-                        <span class="font-bold text-red-600 text-sm md:text-base">MAR</span>
-                    </div>
-                    <div class="font-bold text-[10px] md:text-xs mb-2 text-yellow-400 uppercase text-center h-8 drop-shadow-md">Equipo Mario</div>
-                    <div class="podium-1 w-full h-40 md:h-44 border-4 border-b-0 border-black flex flex-col justify-start items-center pt-2 md:pt-4 shadow-[inset_-4px_0_0_rgba(0,0,0,0.2)] relative">
-                        <span class="font-pixel text-2xl md:text-3xl text-yellow-900 drop-shadow-sm">1</span>
-                        <span class="text-[10px] md:text-xs font-bold mt-2 text-yellow-900 bg-yellow-100 px-2 rounded-full border border-yellow-600 shadow-sm">1200 pts</span>
-                    </div>
-                </div>
-
-                <!-- 3er Lugar (Bronce) -->
-                <div class="w-1/3 flex flex-col items-center">
-                    <div class="bg-white border-4 border-pink-500 rounded-full w-10 h-10 md:w-14 md:h-14 flex items-center justify-center mb-2 shadow-[0_0_10px_rgba(236,72,153,0.5)] z-10">
-                        <span class="font-bold text-pink-600 text-xs md:text-sm">PEA</span>
-                    </div>
-                    <div class="font-bold text-[10px] md:text-xs mb-2 text-orange-300 uppercase text-center h-8">Equipo Peach</div>
-                    <div class="podium-3 w-full h-20 md:h-24 border-4 border-b-0 border-black flex flex-col justify-start items-center pt-2 md:pt-4 shadow-[inset_-4px_0_0_rgba(0,0,0,0.3)] relative">
-                        <span class="font-pixel text-lg md:text-xl text-orange-950">3</span>
-                        <span class="text-[8px] md:text-[10px] font-bold mt-2 text-orange-950 bg-orange-100 px-2 rounded-full border border-orange-700">720 pts</span>
-                    </div>
-                </div>
-
+            <!-- PODIO (1er, 2do y 3er Lugar) -->
+            <div id="podium-container" class="flex items-end justify-center gap-2 md:gap-4 h-72 md:h-80 mt-10 md:mt-12 mb-8 px-2 hidden opacity-0 transition-opacity duration-500">
+                <!-- Se llena con JavaScript -->
             </div>
             
             <!-- Base negra del podio -->
@@ -171,47 +158,15 @@
 
             <!-- RESTO DE LUGARES (Listado horizontal) -->
             <div class="bg-gray-800 p-4 border-4 border-black rounded shadow-inner">
-                <p class="text-left text-[10px] text-gray-400 font-pixel mb-3 uppercase border-b-2 border-gray-700 pb-2">
-                    <i data-lucide="users" class="w-4 h-4 inline mb-1 text-blue-400"></i> RESTO DE EQUIPOS
-                </p>
-                <div class="flex overflow-x-auto gap-3 pb-2 snap-x hide-scrollbar">
-                    
-                    <!-- 4to Lugar -->
-                    <div class="flex-shrink-0 flex items-center bg-gray-900 border-2 border-orange-500 p-2 rounded snap-start min-w-[140px] shadow-sm">
-                        <div class="font-pixel text-gray-400 text-xs mr-3">#4</div>
-                        <div>
-                            <div class="font-bold text-xs text-orange-400 uppercase">Daisy</div>
-                            <div class="text-[10px] text-gray-300 font-pixel mt-1">600 pts</div>
-                        </div>
-                    </div>
-
-                    <!-- 5to Lugar -->
-                    <div class="flex-shrink-0 flex items-center bg-gray-900 border-2 border-green-400 p-2 rounded snap-start min-w-[140px] shadow-sm">
-                        <div class="font-pixel text-gray-400 text-xs mr-3">#5</div>
-                        <div>
-                            <div class="font-bold text-xs text-green-400 uppercase">Yoshi</div>
-                            <div class="text-[10px] text-gray-300 font-pixel mt-1">550 pts</div>
-                        </div>
-                    </div>
-
-                    <!-- 6to Lugar -->
-                    <div class="flex-shrink-0 flex items-center bg-gray-900 border-2 border-gray-300 p-2 rounded snap-start min-w-[140px] shadow-sm">
-                        <div class="font-pixel text-gray-400 text-xs mr-3">#6</div>
-                        <div>
-                            <div class="font-bold text-xs text-gray-200 uppercase">Toad</div>
-                            <div class="text-[10px] text-gray-300 font-pixel mt-1">420 pts</div>
-                        </div>
-                    </div>
-
-                    <!-- 7mo Lugar -->
-                    <div class="flex-shrink-0 flex items-center bg-gray-900 border-2 border-yellow-600 p-2 rounded snap-start min-w-[140px] shadow-sm">
-                        <div class="font-pixel text-gray-400 text-xs mr-3">#7</div>
-                        <div>
-                            <div class="font-bold text-xs text-yellow-500 uppercase">Bowser</div>
-                            <div class="text-[10px] text-gray-300 font-pixel mt-1">300 pts</div>
-                        </div>
-                    </div>
-
+                <div class="flex justify-between items-center border-b-2 border-gray-700 pb-2 mb-3">
+                    <p class="text-left text-[10px] text-gray-400 font-pixel uppercase">
+                        <i data-lucide="users" class="w-4 h-4 inline mb-1 text-blue-400"></i> RESTO DE EQUIPOS
+                    </p>
+                    <a href="score.html" class="text-[8px] md:text-[10px] font-pixel text-yellow-400 hover:text-yellow-200">VER TODOS ▶</a>
+                </div>
+                
+                <div id="horizontal-list" class="flex overflow-x-auto gap-3 pb-2 snap-x hide-scrollbar">
+                    <!-- Se llena con JavaScript -->
                 </div>
             </div>
         </section>
@@ -247,9 +202,235 @@
         <p class="text-xs font-bold text-blue-800 uppercase">Universidad Autónoma de Nayarit</p>
     </footer>
 
-    <script>
-        // Inicializar los iconos de Lucide
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    lucide.createIcons();
+
+    // ==========================================
+    // CONFIGURACIÓN DE FIREBASE
+    // ==========================================
+    const firebaseConfig = {
+        apiKey: "AIzaSyAWvlKYMuFlxL88OrSOzGPzXk0w_HUTGQ8",
+        authDomain: "scuatyg2026.firebaseapp.com",
+        projectId: "scuatyg2026",
+        storageBucket: "scuatyg2026.firebasestorage.app",
+        messagingSenderId: "321639282182",
+        appId: "1:321639282182:web:6803746ad3ff4c8e8e3587"
+    };
+
+    const isCanvasEnv = typeof __firebase_config !== 'undefined';
+    const currentAppId = typeof __app_id !== 'undefined' ? __app_id : 'scuatyg2026-app';
+
+    // --- BASE DE DATOS DE EQUIPOS (Aspecto visual) ---
+    const baseTeamsInfo = [
+        { name: "Mario", color: "bg-red-600", border: "border-red-800", text: "text-white" },
+        { name: "Luigi", color: "bg-green-600", border: "border-green-800", text: "text-white" },
+        { name: "Peach", color: "bg-pink-400", border: "border-pink-600", text: "text-white" },
+        { name: "Daisy", color: "bg-orange-400", border: "border-orange-600", text: "text-white" },
+        { name: "Yoshi", color: "bg-lime-400", border: "border-lime-600", text: "text-black" },
+        { name: "Toad", color: "bg-gray-100", border: "border-gray-400", text: "text-black" },
+        { name: "Wario", color: "bg-yellow-400", border: "border-yellow-600", text: "text-black" },
+        { name: "Waluigi", color: "bg-purple-600", border: "border-purple-800", text: "text-white" },
+        { name: "Bowser", color: "bg-red-900", border: "border-red-950", text: "text-white" },
+        { name: "DK", color: "bg-amber-800", border: "border-amber-950", text: "text-white" },
+        { name: "Rosalina", color: "bg-teal-300", border: "border-teal-500", text: "text-black" },
+        { name: "Koopa", color: "bg-gray-800", border: "border-black", text: "text-white" },
+        { name: "Birdo", color: "bg-pink-600", border: "border-pink-800", text: "text-white" },
+        { name: "Boo", color: "bg-blue-100", border: "border-blue-300", text: "text-black" },
+        { name: "Shy Guy", color: "bg-blue-900", border: "border-blue-950", text: "text-white" },
+        { name: "Huesitos", color: "bg-gray-500", border: "border-gray-700", text: "text-white" }
+    ];
+
+    let db = null, auth = null;
+    let globalTeamsData = []; 
+
+    // --- FUNCIÓN PARA PROCESAR DATOS Y DIBUJAR ---
+    const renderizarPodioIndex = (registrosNube) => {
+        let equiposProcesados = baseTeamsInfo.map(t => ({ ...t, points: 0 }));
+
+        // Sumar puntos
+        registrosNube.forEach(registro => {
+            if (registro.oro) { let eq = equiposProcesados.find(t => t.name === registro.oro); if (eq) eq.points += (registro.ptsOro || 0); }
+            if (registro.plata) { let eq = equiposProcesados.find(t => t.name === registro.plata); if (eq) eq.points += (registro.ptsPlata || 0); }
+            if (registro.bronce) { let eq = equiposProcesados.find(t => t.name === registro.bronce); if (eq) eq.points += (registro.ptsBronce || 0); }
+            if (registro.participantes && Array.isArray(registro.participantes)) {
+                registro.participantes.forEach(participante => {
+                    let eq = equiposProcesados.find(t => t.name === participante);
+                    if (eq && registro.ptsParticipacion > 0) eq.points += registro.ptsParticipacion;
+                });
+            }
+        });
+
+        // Ordenar
+        equiposProcesados.sort((a, b) => b.points - a.points);
+        globalTeamsData = equiposProcesados;
+
+        // Ocultar Carga
+        document.getElementById('loading-state').classList.add('hidden');
+        const podioContainer = document.getElementById('podium-container');
+        podioContainer.classList.remove('hidden');
+        podioContainer.classList.remove('opacity-0');
+
+        // Si no hay datos (todo en 0), mostrar un mensaje amigable en el podio
+        const puntosTotales = globalTeamsData.reduce((sum, team) => sum + team.points, 0);
+        if (puntosTotales === 0) {
+            podioContainer.innerHTML = `
+                <div class="flex flex-col items-center justify-center w-full h-full pb-8">
+                    <i data-lucide="gamepad" class="w-16 h-16 text-gray-600 mb-4"></i>
+                    <p class="font-pixel text-gray-400 text-xs md:text-sm text-center leading-relaxed">Esperando los primeros<br>resultados oficiales...</p>
+                </div>
+            `;
+            lucide.createIcons();
+            return;
+        }
+
+        // --- DIBUJAR PODIO (Top 3) ---
+        const t1 = globalTeamsData[0];
+        const t2 = globalTeamsData.length > 1 ? globalTeamsData[1] : null;
+        const t3 = globalTeamsData.length > 2 ? globalTeamsData[2] : null;
+
+        let podioHTML = '';
+
+        // 2DO LUGAR
+        if (t2 && t2.points > 0) {
+            podioHTML += `
+            <div class="w-1/3 flex flex-col items-center">
+                <div class="${t2.color} ${t2.border} border-4 rounded-full w-10 h-10 md:w-14 md:h-14 flex items-center justify-center mb-2 shadow-[0_0_10px_rgba(255,255,255,0.3)] z-10">
+                    <span class="font-bold ${t2.text} text-xs md:text-sm">${t2.name.substring(0,3).toUpperCase()}</span>
+                </div>
+                <div class="font-bold text-[10px] md:text-xs mb-2 text-gray-300 uppercase text-center h-8">${t2.name}</div>
+                <div class="podium-2 w-full h-28 md:h-32 border-4 border-b-0 border-black flex flex-col justify-start items-center pt-2 md:pt-4 shadow-[inset_-4px_0_0_rgba(0,0,0,0.3)] relative">
+                    <span class="font-pixel text-xl md:text-2xl text-gray-800">2</span>
+                    <span class="text-[9px] md:text-xs font-bold mt-2 text-gray-800 bg-gray-100 px-2 rounded-full border border-gray-400">${t2.points} pts</span>
+                </div>
+            </div>`;
+        } else { podioHTML += `<div class="w-1/3 h-28"></div>`; } // Espaciador
+
+        // 1ER LUGAR
+        if (t1 && t1.points > 0) {
+            podioHTML += `
+            <div class="w-1/3 flex flex-col items-center z-20">
+                <i data-lucide="crown" class="w-8 h-8 md:w-10 md:h-10 text-yellow-400 fill-yellow-400 mb-1 drop-shadow-[0_0_10px_rgba(250,204,21,0.8)] animate-bounce"></i>
+                <div class="${t1.color} ${t1.border} border-4 rounded-full w-14 h-14 md:w-16 md:h-16 flex items-center justify-center mb-2 shadow-[0_0_15px_rgba(255,255,255,0.4)]">
+                    <span class="font-bold ${t1.text} text-sm md:text-base">${t1.name.substring(0,3).toUpperCase()}</span>
+                </div>
+                <div class="font-bold text-[10px] md:text-xs mb-2 text-yellow-400 uppercase text-center h-8 drop-shadow-md">${t1.name}</div>
+                <div class="podium-1 w-full h-40 md:h-44 border-4 border-b-0 border-black flex flex-col justify-start items-center pt-2 md:pt-4 shadow-[inset_-4px_0_0_rgba(0,0,0,0.2)] relative">
+                    <span class="font-pixel text-2xl md:text-3xl text-yellow-900 drop-shadow-sm">1</span>
+                    <span class="text-[10px] md:text-xs font-bold mt-2 text-yellow-900 bg-yellow-100 px-2 rounded-full border border-yellow-600 shadow-sm">${t1.points} pts</span>
+                </div>
+            </div>`;
+        }
+
+        // 3ER LUGAR
+        if (t3 && t3.points > 0) {
+            podioHTML += `
+            <div class="w-1/3 flex flex-col items-center">
+                <div class="${t3.color} ${t3.border} border-4 rounded-full w-10 h-10 md:w-14 md:h-14 flex items-center justify-center mb-2 shadow-[0_0_10px_rgba(255,255,255,0.2)] z-10">
+                    <span class="font-bold ${t3.text} text-xs md:text-sm">${t3.name.substring(0,3).toUpperCase()}</span>
+                </div>
+                <div class="font-bold text-[10px] md:text-xs mb-2 text-orange-300 uppercase text-center h-8">${t3.name}</div>
+                <div class="podium-3 w-full h-20 md:h-24 border-4 border-b-0 border-black flex flex-col justify-start items-center pt-2 md:pt-4 shadow-[inset_-4px_0_0_rgba(0,0,0,0.3)] relative">
+                    <span class="font-pixel text-lg md:text-xl text-orange-950">3</span>
+                    <span class="text-[8px] md:text-[10px] font-bold mt-2 text-orange-950 bg-orange-100 px-2 rounded-full border border-orange-700">${t3.points} pts</span>
+                </div>
+            </div>`;
+        } else { podioHTML += `<div class="w-1/3 h-20"></div>`; }
+
+        podioContainer.innerHTML = podioHTML;
+
+        // --- DIBUJAR LISTA HORIZONTAL (Del 4to en adelante) ---
+        const horizList = document.getElementById('horizontal-list');
+        horizList.innerHTML = '';
+        
+        const restoEquipos = globalTeamsData.slice(3).filter(t => t.points > 0); // Solo los que tengan puntos
+
+        if (restoEquipos.length === 0) {
+            horizList.innerHTML = '<p class="text-xs text-gray-500 italic p-2">Los demás equipos aún no suman puntos.</p>';
+        } else {
+            restoEquipos.forEach((team, index) => {
+                const realRank = index + 4;
+                horizList.innerHTML += `
+                    <div class="flex-shrink-0 flex items-center bg-gray-900 border-2 border-gray-600 p-2 rounded snap-start min-w-[140px] shadow-sm">
+                        <div class="font-pixel text-gray-400 text-xs mr-3">#${realRank}</div>
+                        <div>
+                            <div class="font-bold text-xs text-gray-200 uppercase">${team.name}</div>
+                            <div class="text-[10px] text-gray-400 font-pixel mt-1">${team.points} pts</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
         lucide.createIcons();
-    </script>
+    };
+
+    // --- CONEXIÓN A LA NUBE ---
+    const initIndexCloud = async () => {
+        let finalConfig = isCanvasEnv ? JSON.parse(__firebase_config) : firebaseConfig;
+
+        if (!finalConfig || !finalConfig.apiKey || finalConfig.apiKey.includes("TU_API_KEY")) {
+            console.warn("Modo Offline activado por falta de API Key.");
+            document.getElementById('offline-indicator').classList.remove('hidden');
+            const localData = JSON.parse(localStorage.getItem('uatyg_comite_votos')) || [];
+            renderizarPodioIndex(localData);
+            return;
+        }
+
+        try {
+            const app = initializeApp(finalConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            try {
+                if (isCanvasEnv && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (authError) {
+                console.error("Fallo autenticación:", authError);
+                document.getElementById('offline-indicator').classList.remove('hidden');
+                const localData = JSON.parse(localStorage.getItem('uatyg_comite_votos')) || [];
+                renderizarPodioIndex(localData);
+                return;
+            }
+
+            onAuthStateChanged(auth, (currentUser) => {
+                if (currentUser) {
+                    const comiteCollectionRef = collection(db, isCanvasEnv ? `artifacts/${currentAppId}/public/data/votos_comite` : 'votos_comite');
+                    
+                    onSnapshot(comiteCollectionRef, (snapshot) => {
+                        const registrosNube = [];
+                        snapshot.forEach((doc) => { registrosNube.push({ id: doc.id, ...doc.data() }); });
+                        
+                        document.getElementById('live-dot').classList.remove('hidden');
+                        document.getElementById('offline-indicator').classList.add('hidden');
+                        localStorage.setItem('uatyg_comite_votos_backup', JSON.stringify(registrosNube));
+                        
+                        renderizarPodioIndex(registrosNube);
+                        
+                    }, (error) => {
+                        console.error("Error leyendo Firebase:", error);
+                        document.getElementById('offline-indicator').classList.remove('hidden');
+                        const backup = JSON.parse(localStorage.getItem('uatyg_comite_votos_backup')) || [];
+                        renderizarPodioIndex(backup);
+                    });
+                }
+            });
+        } catch (e) {
+            console.error("Error iniciando Firebase Index:", e);
+            document.getElementById('offline-indicator').classList.remove('hidden');
+            const backup = JSON.parse(localStorage.getItem('uatyg_comite_votos_backup')) || [];
+            renderizarPodioIndex(backup);
+        }
+    };
+
+    initIndexCloud();
+
+</script>
 </body>
 </html>
