@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel del Comité - UATyG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Fredoka:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #5c94fc; /* Mario Sky Blue */
+            background-image: 
+                linear-gradient(transparent 95%, rgba(255, 255, 255, 0.2) 95%),
+                linear-gradient(90deg, transparent 95%, rgba(255, 255, 255, 0.2) 95%);
+            background-size: 20px 20px;
+        }
+        .font-pixel { font-family: 'Press Start 2P', cursive; }
+        
+        .nes-container {
+            border: 4px solid black;
+            background: white;
+            box-shadow: 8px 8px 0px rgba(0,0,0,1);
+        }
+
+        .btn-pixel {
+            border: 4px solid black;
+            box-shadow: 4px 4px 0px rgba(0,0,0,1);
+            transition: all 0.1s;
+        }
+        .btn-pixel:active {
+            transform: translate(4px, 4px);
+            box-shadow: none;
+        }
+        
+        .medal-gold { background-color: #facc15; border-color: #ca8a04; }
+        .medal-silver { background-color: #e5e7eb; border-color: #9ca3af; }
+        .medal-bronze { background-color: #fb923c; border-color: #c2410c; }
+
+        /* Estilo para los checkboxes de participación */
+        .participant-checkbox:checked + label {
+            background-color: #bfdbfe;
+            border-color: #2563eb;
+            color: #1e3a8a;
+            transform: scale(1.05);
+            box-shadow: 2px 2px 0px rgba(0,0,0,1);
+        }
+        
+        /* Estilo para checkboxes bloqueados dinámicamente */
+        .disabled-checkbox {
+            opacity: 0.4;
+            cursor: not-allowed;
+            text-decoration: line-through;
+            background-color: #f3f4f6 !important;
+            border-color: #d1d5db !important;
+            color: #9ca3af !important;
+            box-shadow: none !important;
+            transform: none !important;
+        }
+    </style>
+</head>
+<body class="p-4 flex flex-col items-center min-h-screen mt-4 pb-12">
+
+    <!-- ==========================================
+         MODALES DEL SISTEMA (Reemplazo de Alerts)
+         ========================================== -->
+         
+    <!-- Modal de Alerta Custom -->
+    <div id="custom-alert-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+        <div class="nes-container bg-white p-6 text-center max-w-sm w-full rounded-lg border-4 border-red-600 shadow-[8px_8px_0_0_rgba(220,38,38,1)]">
+            <i data-lucide="alert-octagon" class="w-12 h-12 mx-auto text-red-600 mb-4 animate-pulse"></i>
+            <h3 class="font-pixel text-red-600 text-sm mb-4">ATENCIÓN</h3>
+            <p class="font-bold text-gray-700 mb-6 text-sm" id="custom-alert-msg">Mensaje de error aquí.</p>
+            <button type="button" onclick="cerrarAlerta()" class="btn-pixel bg-red-600 hover:bg-red-700 text-white font-pixel py-3 px-4 w-full text-xs border-2 border-black">
+                ENTENDIDO
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación Custom (RESET) -->
+    <div id="custom-reset-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
+        <div class="nes-container bg-black p-6 text-center max-w-sm w-full rounded-lg border-4 border-red-600 shadow-[8px_8px_0_0_rgba(220,38,38,1)]">
+            <i data-lucide="siren" class="w-12 h-12 mx-auto text-red-500 mb-4 animate-pulse"></i>
+            <h3 class="font-pixel text-red-500 text-sm mb-4">ADVERTENCIA MÁXIMA</h3>
+            <p class="font-bold text-white mb-6 text-sm">¿Estás seguro de borrar TODOS los podios y puntajes registrados en la base de datos? Esto no se puede deshacer.</p>
+            <div class="flex gap-4">
+                <button type="button" onclick="cerrarModalReset()" class="btn-pixel w-1/2 bg-gray-600 hover:bg-gray-500 text-white font-pixel py-3 px-2 text-[10px] border-2 border-gray-400">CANCELAR</button>
+                <button type="button" id="btn-ejecutar-reset" onclick="ejecutarReset()" class="btn-pixel w-1/2 bg-red-600 hover:bg-red-700 text-white font-pixel py-3 px-2 text-[10px] border-2 border-red-800">SÍ, BORRAR TODO</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Éxito -->
+    <div id="success-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+        <div class="nes-container bg-white p-6 text-center max-w-sm w-full rounded-lg">
+            <i data-lucide="trophy" class="w-12 h-12 mx-auto text-yellow-500 fill-yellow-400 mb-4"></i>
+            <h3 class="font-pixel text-green-600 text-sm md:text-base mb-4 leading-relaxed">¡PODIO REGISTRADO!</h3>
+            <p class="font-bold text-gray-700 mb-6 text-sm">Los lugares han sido guardados exitosamente en la base de datos central.</p>
+            <button type="button" onclick="cerrarModalExito()" class="btn-pixel bg-blue-600 hover:bg-blue-700 text-white font-pixel py-3 px-4 w-full text-xs">
+                ENTENDIDO
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación de Salida -->
+    <div id="confirm-exit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
+        <div class="nes-container bg-white p-6 text-center max-w-sm w-full rounded-lg">
+            <i data-lucide="alert-triangle" class="w-12 h-12 mx-auto text-red-500 mb-4"></i>
+            <h3 class="font-pixel text-red-600 text-sm md:text-base mb-4 leading-relaxed">¿CERRAR SESIÓN?</h3>
+            <p class="font-bold text-gray-700 mb-6 text-sm">Tu registro quedará guardado de forma permanente.</p>
+            <div class="flex gap-4">
+                <button type="button" onclick="cerrarConfirmarSalida()" class="btn-pixel w-1/2 bg-gray-400 hover:bg-gray-500 text-white font-pixel py-3 px-2 text-[10px] md:text-xs">CANCELAR</button>
+                <button type="button" onclick="ejecutarSalida()" class="btn-pixel w-1/2 bg-red-600 hover:bg-red-700 text-white font-pixel py-3 px-2 text-[10px] md:text-xs">SÍ, SALIR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Resultados de la Misión -->
+    <div id="resultados-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md overflow-y-auto">
+        <div class="nes-container bg-white border-4 border-black p-6 w-full max-w-md my-auto rounded-lg shadow-[8px_8px_0_0_rgba(0,0,0,1)]">
+            <div class="flex justify-between items-center mb-4 border-b-4 border-gray-200 pb-2">
+                <h3 class="font-pixel text-blue-600 text-sm" id="modal-header-titulo">PODIO REGISTRADO</h3>
+                <button type="button" onclick="cerrarResultados()" class="text-red-500 hover:text-red-700"><i data-lucide="x-circle" class="w-6 h-6"></i></button>
+            </div>
+            
+            <p id="titulo-resultados" class="font-bold text-gray-700 mb-4 text-sm text-center">Resultados de la Misión</p>
+            
+            <div id="tabla-resultados" class="space-y-2 mb-6">
+                <!-- Los resultados se insertarán aquí por JavaScript -->
+            </div>
+
+            <button type="button" onclick="cerrarResultados()" class="btn-pixel bg-gray-200 hover:bg-gray-300 text-black font-pixel py-3 px-4 w-full text-xs border-2 border-black">
+                CERRAR
+            </button>
+        </div>
+    </div>
+
+    <!-- Pantalla de Agradecimiento -->
+    <div id="thank-you-screen" class="hidden nes-container w-full max-w-md p-6 relative bg-white mt-10 text-center border-4 border-blue-600 rounded-lg">
+        <h2 class="font-pixel text-blue-600 text-sm md:text-base mb-6 leading-relaxed">¡MUNDO COMPLETADO!</h2>
+        <p class="font-bold text-gray-800 mb-8 text-sm md:text-base leading-relaxed uppercase">
+            EL COMITÉ ESTUDIANTIL DE TURISMO Y GASTRONOMÍA AGRADECE TU GRAN LABOR EN NUESTRA SÚPER SEMANA CULTURAL UATyG
+        </p>
+        
+        <div class="flex justify-center items-center gap-4 mb-8">
+            <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/logo%20uan%20azul%20transparente%20unidad.png" alt="Logo UAN" class="h-16 md:h-20 object-contain drop-shadow-md">
+            <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/mario2.png" alt="Mario" class="h-24 md:h-28 object-contain drop-shadow-xl z-10 hover:scale-110 transition-transform">
+            <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/logo%20cetyg%20azul%20transparente.png" alt="Logo CETyG" class="h-16 md:h-20 object-contain drop-shadow-md">
+        </div>
+        
+        <button type="button" onclick="location.reload()" class="btn-pixel bg-green-500 hover:bg-green-600 text-white font-pixel py-3 px-4 w-full text-xs">
+            VOLVER AL INICIO
+        </button>
+    </div>
+
+    <!-- Pantalla de Login -->
+    <div id="login-screen" class="nes-container w-full max-w-md p-6 md:p-8 relative bg-blue-600 mt-10 border-4 border-black text-center rounded-lg">
+        
+        <div class="absolute -top-5 left-1/2 transform -translate-x-1/2 bg-yellow-400 text-black font-pixel px-4 py-2 border-4 border-black text-xs md:text-sm shadow-[4px_4px_0_0_rgba(0,0,0,1)] whitespace-nowrap z-20">
+            PANEL DEL COMITÉ
+        </div>
+
+        <div class="absolute inset-0 overflow-hidden rounded-lg pointer-events-none z-0">
+            <div class="absolute -top-2 -right-4 text-blue-800 opacity-30"><i data-lucide="shield-check" class="w-32 h-32"></i></div>
+            <div class="absolute -bottom-2 -left-4 text-blue-800 opacity-30"><i data-lucide="award" class="w-32 h-32"></i></div>
+        </div>
+
+        <h1 class="font-pixel text-white text-sm md:text-base mt-6 mb-5 leading-relaxed uppercase relative z-10 drop-shadow-md">
+            Súper Semana Cultural<br>UATyG 2026
+        </h1>
+
+        <div class="flex justify-center items-center gap-4 mb-6 relative z-10">
+            <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/logo%20uan%20azul%20transparente%20unidad.png" alt="Logo UAN" class="h-12 md:h-14 object-contain drop-shadow-lg filter brightness-0 invert">
+            <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/mario2.png" alt="Mario" class="h-20 md:h-24 object-contain drop-shadow-xl z-10">
+            <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/logo%20cetyg%20azul%20transparente.png" alt="Logo CETyG" class="h-12 md:h-14 object-contain drop-shadow-lg filter brightness-0 invert">
+        </div>
+
+        <div class="bg-white border-4 border-black p-3 mb-6 relative z-10 rounded">
+            <i data-lucide="shield" class="w-5 h-5 absolute -top-3 -left-3 text-blue-600 bg-white rounded-full"></i>
+            <p class="font-bold text-gray-800 text-xs md:text-sm uppercase leading-relaxed">
+                Centro de mando maestro.<br>Ingresa la clave oficial del comité.
+            </p>
+        </div>
+        
+        <h2 class="font-bold text-blue-100 text-xs mb-2 relative z-10">Código de Autorización:</h2>
+        
+        <input type="text" id="codigo-comite" class="w-full border-4 border-black p-3 mb-2 font-pixel text-center uppercase focus:outline-none focus:border-yellow-400 transition-colors shadow-inner relative z-10" placeholder="CLAVE" autocomplete="off" onkeypress="if(event.key === 'Enter') iniciarSesionComite()">
+        
+        <p id="error-login" class="text-red-300 font-pixel text-[9px] mb-4 h-4 hidden animate-pulse relative z-10">¡ACCESO DENEGADO!</p>
+        
+        <div id="aviso-offline" class="hidden bg-yellow-100 border border-yellow-400 text-yellow-800 text-[10px] p-2 rounded mb-4 text-center font-bold relative z-10">
+            ⚠️ MODO OFFLINE: Sin conexión a Firebase.
+        </div>
+
+        <button id="btn-login" type="button" onclick="iniciarSesionComite()" class="btn-pixel w-full bg-yellow-400 hover:bg-yellow-500 text-black font-pixel py-4 px-4 text-xs mt-2 flex items-center justify-center gap-2 relative z-10 border-2 border-black">
+            <i data-lucide="key" class="w-5 h-5"></i> INGRESAR
+        </button>
+    </div>
+
+    <!-- Contenedor Principal (App del Comité) -->
+    <div id="main-app" class="nes-container w-full max-w-md p-6 relative hidden bg-white border-4 border-black rounded-lg mt-10">
+        <div class="absolute -top-5 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white font-pixel px-4 py-2 border-4 border-black text-xs md:text-sm shadow-[4px_4px_0_0_rgba(0,0,0,1)] whitespace-nowrap">
+            ADMIN PODIO
+        </div>
+
+        <div class="text-center mt-6 mb-6">
+            <i data-lucide="medal" class="w-10 h-10 mx-auto text-blue-600 mb-2"></i>
+            <h2 class="font-bold text-gray-800 text-lg uppercase">Comité Organizador</h2>
+        </div>
+
+        <form id="podio-form" class="space-y-6">
+
+            <!-- SELECTOR GENERAL DE MISIÓN -->
+            <div class="bg-blue-50 p-4 border-4 border-blue-600 rounded relative shadow-md">
+                <i class="w-5 h-5 absolute top-3 right-3 text-blue-400" data-lucide="list-todo"></i>
+                <label class="block font-pixel text-blue-800 text-[9px] md:text-[10px] mb-2 drop-shadow-sm">1. SELECCIONA ACTIVIDAD:</label>
+                <select id="mision-select" onchange="cambiarMision()" class="w-full border-2 border-black p-2 font-bold text-gray-700 outline-none focus:border-blue-500 bg-white text-sm md:text-base cursor-pointer">
+                    <option value="">-- Elige una Misión --</option>
+                    <optgroup label="Misiones Regulares">
+                        <option value="m1">M1: Presentación de Equipos</option>
+                        <option value="m2">M2: Torneo Smash Bros / Karts</option>
+                        <option value="m3">M3: Bowser's Castle (Lava)</option>
+                        <option value="m4">M4: El Paladar de Yoshi</option>
+                        <option value="m5">M5: Super Star Talent</option>
+                        <option value="m6">M6: Gala Real (Diva Drag)</option>
+                        <option value="m7">M7: Big Island Volley</option>
+                        <option value="m8">M8: Jumpman Basketball Cup</option>
+                        <option value="m9">M9: Koopa Beach Volley</option>
+                        <option value="m10">M10: Princess Peach Dash</option>
+                        <option value="m11">M11: Cheep Cheep Splash</option>
+                        <option value="m12">M12: Copa Toadsworth</option>
+                        <option value="m13">M13: Super Mario Strikers</option>
+                        <option value="m14">M14: Chef Toad's Kitchen</option>
+                        <option value="m15">M15: Donkey Kong Feast</option>
+                        <option value="m16">M16: Dr. Mario's Brain Challenge</option>
+                        <option value="m17">M17: Lucky ? Block</option>
+                        <option value="m18">M18: The Star Hunt (Rally)</option>
+                        <option value="m19">M19: Gran Premio Final (Caravana)</option>
+                    </optgroup>
+                    <optgroup label="🌟 Misiones Secretas (Sin pts participación)">
+                        <option value="s1">S1: Misión Secreta 1 (Huevo Pascua)</option>
+                        <option value="s2">S2: Misión Secreta 2 (Reto Sorpresa)</option>
+                        <option value="s3">S3: Misión Secreta 3 (Desafío Flash)</option>
+                        <option value="s4">S4: Misión Secreta 4 (Infiltración)</option>
+                        <option value="s5">S5: Misión Secreta 5 (Jefe Oculto)</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <!-- CONTENEDOR DINÁMICO -->
+            <div id="contenedor-evaluacion" class="hidden space-y-6 pt-2">
+                
+                <!-- Mensaje de Bloqueo (Si ya fue evaluada) -->
+                <div id="estado-registro" class="hidden bg-red-100 border-4 border-red-500 p-4 text-center mb-4 rounded">
+                    <i data-lucide="lock" class="w-8 h-8 mx-auto text-red-600 mb-2"></i>
+                    <p class="font-bold text-red-800 text-sm uppercase">Los resultados de esta misión ya fueron subidos a la red. No se pueden modificar.</p>
+                </div>
+
+                <div id="formulario-campos" class="space-y-6">
+                    <p class="text-center text-xs text-gray-500 font-bold mb-4 uppercase border-b-2 border-gray-200 pb-2">Selecciona a los equipos ganadores:</p>
+
+                    <!-- 1ER LUGAR (ORO) -->
+                    <div class="medal-gold p-4 border-4 rounded relative shadow-md">
+                        <i class="w-6 h-6 absolute -top-3 -left-3 text-yellow-600 fill-yellow-500 bg-white rounded-full border-2 border-yellow-600" data-lucide="crown"></i>
+                        <label class="block font-pixel text-yellow-900 text-[10px] mb-2 drop-shadow-sm">1ER LUGAR (ORO):</label>
+                        <select id="oro-select" onchange="actualizarSelectores()" class="w-full border-2 border-black p-2 font-bold text-gray-800 outline-none focus:border-black bg-white/90 text-sm md:text-base cursor-pointer shadow-inner">
+                            <option value="">-- Seleccionar Equipo --</option>
+                            <!-- Opciones se inyectan en JS -->
+                        </select>
+                    </div>
+
+                    <!-- 2DO LUGAR (PLATA) -->
+                    <div class="medal-silver p-4 border-4 rounded relative shadow-md">
+                        <label class="block font-pixel text-gray-700 text-[10px] mb-2 drop-shadow-sm">2DO LUGAR (PLATA):</label>
+                        <select id="plata-select" onchange="actualizarSelectores()" class="w-full border-2 border-black p-2 font-bold text-gray-800 outline-none focus:border-black bg-white/90 text-sm md:text-base cursor-pointer shadow-inner">
+                            <option value="">-- Seleccionar Equipo --</option>
+                            <!-- Opciones se inyectan en JS -->
+                        </select>
+                    </div>
+
+                    <!-- 3ER LUGAR (BRONCE) -->
+                    <div class="medal-bronze p-4 border-4 rounded relative shadow-md">
+                        <label class="block font-pixel text-orange-950 text-[10px] mb-2 drop-shadow-sm">3ER LUGAR (BRONCE):</label>
+                        <select id="bronce-select" onchange="actualizarSelectores()" class="w-full border-2 border-black p-2 font-bold text-gray-800 outline-none focus:border-black bg-white/90 text-sm md:text-base cursor-pointer shadow-inner">
+                            <option value="">-- Seleccionar Equipo --</option>
+                            <!-- Opciones se inyectan en JS -->
+                        </select>
+                    </div>
+
+                    <!-- PARTICIPACIÓN -->
+                    <div id="seccion-participacion" class="mt-8 border-t-4 border-dashed border-gray-300 pt-6">
+                        <h3 class="font-bold text-sm text-center text-gray-700 mb-2"><i data-lucide="users" class="w-5 h-5 inline mr-1 text-blue-500"></i> PUNTOS DE PARTICIPACIÓN</h3>
+                        <p class="text-center text-[10px] text-gray-500 font-bold mb-4 uppercase">Marca los demás equipos que compitieron en la actividad:</p>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2" id="participantes-grid">
+                            <!-- Los checkboxes se inyectan con JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Botón de Envío -->
+                    <button type="button" id="btn-enviar" onclick="validarYEnviarResultados()" class="btn-pixel w-full bg-green-500 hover:bg-green-600 text-white font-pixel py-4 px-4 text-xs md:text-sm flex justify-center items-center gap-2 mt-6">
+                        <i data-lucide="save" class="w-5 h-5"></i> GUARDAR PODIO
+                    </button>
+                </div>
+            </div> 
+
+        </form>
+
+        <div class="mt-8 pt-4 border-t-2 border-gray-300 space-y-3">
+            <button type="button" onclick="mostrarResultados()" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-800 font-bold py-3 px-4 border-2 border-blue-400 border-dashed rounded-lg flex justify-center items-center gap-2 transition-colors shadow-sm">
+                <i data-lucide="trophy" class="w-5 h-5"></i> Ver Podio de la Misión
+            </button>
+
+            <!-- Botón de Tabla General -->
+            <button type="button" onclick="mostrarTablaGeneral()" class="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-pixel py-3 px-4 border-4 border-black rounded-lg flex justify-center items-center gap-2 transition-transform hover:-translate-y-1 shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
+                <i data-lucide="bar-chart-2" class="w-5 h-5"></i> TABLA GENERAL
+            </button>
+
+            <button type="button" onclick="confirmarSalida()" class="btn-pixel w-full bg-red-500 hover:bg-red-600 text-white font-pixel py-3 px-4 text-xs flex justify-center items-center gap-2">
+                <i data-lucide="log-out" class="w-5 h-5"></i> CERRAR SESIÓN
+            </button>
+        </div>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, onSnapshot, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // =====================================================================
+    // 🔴 TUS DATOS OFICIALES DE FIREBASE 🔴
+    // =====================================================================
+    const firebaseConfig = {
+        apiKey: "AIzaSyAWvlKYMuFlxL88OrSOzGPzXk0w_HUTGQ8",
+        authDomain: "scuatyg2026.firebaseapp.com",
+        projectId: "scuatyg2026",
+        storageBucket: "scuatyg2026.firebasestorage.app",
+        messagingSenderId: "321639282182",
+        appId: "1:321639282182:web:6803746ad3ff4c8e8e3587"
+    };
+
+    const isCanvasEnv = typeof __firebase_config !== 'undefined';
+    const currentAppId = typeof __app_id !== 'undefined' ? __app_id : 'scuatyg2026-app';
+
+    let db = null, auth = null, user = null, comiteCollection = null;
+    window.baseDeDatosComite = JSON.parse(localStorage.getItem('uatyg_comite_votos')) || []; 
+    let modoOffline = false; 
+
+    const CODIGO_MAESTRO = "COMITE26";
+
+    // --- LISTA DE TODOS LOS EQUIPOS Y LLENADO ---
+    const listaEquipos = ["Mario", "Luigi", "Peach", "Daisy", "Yoshi", "Toad", "Wario", "Waluigi", "Bowser", "DK", "Rosalina", "Koopa", "Birdo", "Boo", "Shy Guy", "Huesitos"];
+    
+    const selectsPodio = ['oro-select', 'plata-select', 'bronce-select'];
+    selectsPodio.forEach(selectId => {
+        const sel = document.getElementById(selectId);
+        listaEquipos.forEach(eq => sel.innerHTML += `<option value="${eq}">${eq}</option>`);
+    });
+
+    const gridParticipantes = document.getElementById('participantes-grid');
+    listaEquipos.forEach(equipo => {
+        gridParticipantes.innerHTML += `
+            <div class="relative">
+                <input type="checkbox" id="part-${equipo}" value="${equipo}" class="hidden participant-checkbox">
+                <label for="part-${equipo}" class="block w-full text-center py-2 border-2 border-gray-300 bg-white rounded font-bold text-gray-500 cursor-pointer text-[10px] md:text-xs transition-all">${equipo}</label>
+            </div>
+        `;
+    });
+
+    const puntosMisiones = {
+        m1:  { oro: 100, plata: 70,  bronce: 50, participacion: 20 },
+        m2:  { oro: 100, plata: 70,  bronce: 50, participacion: 20 },
+        m3:  { oro: 60,  plata: 40,  bronce: 25, participacion: 10 },
+        m4:  { oro: 30,  plata: 20,  bronce: 10, participacion: 5 },
+        m5:  { oro: 60,  plata: 40,  bronce: 25, participacion: 10 },
+        m6:  { oro: 150, plata: 100, bronce: 70, participacion: 40 },
+        m7:  { oro: 60,  plata: 40,  bronce: 25, participacion: 10 },
+        m8:  { oro: 60,  plata: 40,  bronce: 25, participacion: 10 },
+        m9:  { oro: 60,  plata: 40,  bronce: 25, participacion: 10 },
+        m10: { oro: 30,  plata: 20,  bronce: 10, participacion: 0 }, 
+        m11: { oro: 30,  plata: 20,  bronce: 10, participacion: 5 },
+        m12: { oro: 60,  plata: 40,  bronce: 25, participacion: 10 },
+        m13: { oro: 60,  plata: 40,  bronce: 25, participacion: 10 },
+        m14: { oro: 100, plata: 70,  bronce: 50, participacion: 20 },
+        m15: { oro: 30,  plata: 20,  bronce: 10, participacion: 5 },
+        m16: { oro: 60,  plata: 40,  bronce: 25, participacion: 10 },
+        m17: { oro: 30,  plata: 20,  bronce: 10, participacion: 5 },
+        m18: { oro: 100, plata: 70,  bronce: 50, participacion: 20 },
+        m19: { oro: 100, plata: 70,  bronce: 50, participacion: 20 },
+        s1:  { oro: 50,  plata: 30,  bronce: 15, participacion: 0 },
+        s2:  { oro: 50,  plata: 30,  bronce: 15, participacion: 0 },
+        s3:  { oro: 50,  plata: 30,  bronce: 15, participacion: 0 },
+        s4:  { oro: 50,  plata: 30,  bronce: 15, participacion: 0 },
+        s5:  { oro: 50,  plata: 30,  bronce: 15, participacion: 0 }
+    };
+
+    // --- 1. INICIALIZAR LA NUBE ---
+    const initCloud = async () => {
+        let finalConfig = isCanvasEnv ? JSON.parse(__firebase_config) : firebaseConfig;
+
+        if (!finalConfig || !finalConfig.apiKey || finalConfig.apiKey.includes("TU_API_KEY")) {
+            modoOffline = true;
+            return;
+        }
+
+        try {
+            const app = initializeApp(finalConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            try {
+                if (isCanvasEnv && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (authError) {
+                console.warn("⚠️ Fallo en autenticación. Activando Modo Offline.");
+                modoOffline = true;
+                if (!isCanvasEnv) document.getElementById('aviso-offline').classList.remove('hidden');
+                return;
+            }
+
+            onAuthStateChanged(auth, (currentUser) => {
+                if (currentUser) {
+                    user = currentUser;
+                    comiteCollection = collection(db, isCanvasEnv ? `artifacts/${currentAppId}/public/data/votos_comite` : 'votos_comite');
+                    
+                    try {
+                        onSnapshot(comiteCollection, (snapshot) => {
+                            window.baseDeDatosComite = [];
+                            snapshot.forEach((doc) => {
+                                window.baseDeDatosComite.push({ id: doc.id, ...doc.data() });
+                            });
+                            localStorage.setItem('uatyg_comite_votos', JSON.stringify(window.baseDeDatosComite));
+                            
+                            const misionId = document.getElementById('mision-select').value;
+                            if (misionId) window.verificarEstadoRegistro(misionId);
+                        }, (error) => {
+                            modoOffline = true;
+                        });
+                    } catch (dbError) {
+                         modoOffline = true;
+                    }
+                }
+            });
+        } catch (e) {
+            modoOffline = true;
+        }
+    };
+    initCloud();
+
+    // --- SISTEMA DE ALERTAS CUSTOM (Sustituye a alert y confirm) ---
+    window.mostrarAlerta = function(mensaje) {
+        document.getElementById('custom-alert-msg').innerText = mensaje;
+        document.getElementById('custom-alert-modal').classList.remove('hidden');
+    };
+    window.cerrarAlerta = function() {
+        document.getElementById('custom-alert-modal').classList.add('hidden');
+    };
+    window.cerrarModalReset = function() {
+        document.getElementById('custom-reset-modal').classList.add('hidden');
+    };
+
+    window.ejecutarReset = async function() {
+        const btn = document.getElementById('btn-ejecutar-reset');
+        btn.innerText = "Borrando...";
+        btn.disabled = true;
+
+        if (db && comiteCollection && !modoOffline) {
+            try {
+                const snapshot = await getDocs(comiteCollection);
+                const promesasBorrado = [];
+                snapshot.forEach(d => promesasBorrado.push(deleteDoc(d.ref))); 
+                await Promise.all(promesasBorrado); 
+            } catch(e) {
+                console.error("Error al limpiar la base de datos:", e);
+            }
+        }
+        localStorage.removeItem('uatyg_comite_votos'); 
+        localStorage.removeItem('uatyg_comite_sesion'); 
+        window.baseDeDatosComite = [];
+        
+        document.getElementById('codigo-comite').value = "";
+        location.reload(); 
+    };
+
+    // --- 2. LÓGICA DE INTERFAZ Y BLOQUEO DINÁMICO ---
+    window.onload = function() {
+        if (localStorage.getItem('uatyg_comite_sesion') === "ACTIVA") {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+        }
+    };
+
+    window.iniciarSesionComite = function() {
+        const codigoInput = document.getElementById('codigo-comite');
+        const codigo = codigoInput.value.trim().toUpperCase();
+        const errorMsg = document.getElementById('error-login');
+
+        if (codigo === "RESET2026") {
+            document.getElementById('custom-reset-modal').classList.remove('hidden');
+            return; 
+        }
+
+        if (codigo === CODIGO_MAESTRO) {
+            if (modoOffline) document.getElementById('aviso-offline').classList.remove('hidden');
+            localStorage.setItem('uatyg_comite_sesion', "ACTIVA");
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('mision-select').value = "";
+            document.getElementById('contenedor-evaluacion').classList.add('hidden');
+        } else {
+            errorMsg.classList.remove('hidden');
+            codigoInput.classList.add('border-red-600');
+            setTimeout(() => {
+                errorMsg.classList.add('hidden');
+                codigoInput.classList.remove('border-red-600');
+            }, 2000);
+        }
+    };
+
+    window.actualizarSelectores = function() {
+        const oro = document.getElementById('oro-select').value;
+        const plata = document.getElementById('plata-select').value;
+        const bronce = document.getElementById('bronce-select').value;
+        
+        const elegidos = [oro, plata, bronce].filter(v => v !== "");
+
+        ['oro-select', 'plata-select', 'bronce-select'].forEach(selectId => {
+            const selectElement = document.getElementById(selectId);
+            Array.from(selectElement.options).forEach(opt => {
+                if (opt.value !== "") {
+                    if (elegidos.includes(opt.value) && selectElement.value !== opt.value) {
+                        opt.disabled = true;
+                        opt.text = `${opt.value} (Ya en podio)`;
+                    } else {
+                        opt.disabled = false;
+                        opt.text = opt.value;
+                    }
+                }
+            });
+        });
+
+        document.querySelectorAll('.participant-checkbox').forEach(cb => {
+            const label = document.querySelector(`label[for="${cb.id}"]`);
+            if (elegidos.includes(cb.value)) {
+                cb.disabled = true;
+                cb.checked = false; 
+                label.classList.add('disabled-checkbox'); 
+            } else {
+                cb.disabled = false;
+                label.classList.remove('disabled-checkbox');
+            }
+        });
+    };
+
+    window.cambiarMision = function() {
+        const misionId = document.getElementById('mision-select').value;
+        const contenedorEvaluacion = document.getElementById('contenedor-evaluacion');
+        const seccionParticipacion = document.getElementById('seccion-participacion');
+        
+        if (!misionId) {
+            contenedorEvaluacion.classList.add('hidden');
+            return;
+        }
+
+        contenedorEvaluacion.classList.remove('hidden');
+        
+        if (misionId.startsWith('s')) {
+            seccionParticipacion.classList.add('hidden');
+        } else {
+            seccionParticipacion.classList.remove('hidden');
+        }
+        
+        window.verificarEstadoRegistro(misionId);
+    };
+
+    window.verificarEstadoRegistro = function(misionId) {
+        const yaRegistrado = window.baseDeDatosComite.some(r => r.misionId === misionId);
+        const estadoRegistroMsg = document.getElementById('estado-registro');
+        const formularioCampos = document.getElementById('formulario-campos');
+        const btnEnviar = document.getElementById('btn-enviar');
+
+        if(yaRegistrado) {
+            estadoRegistroMsg.classList.remove('hidden');
+            formularioCampos.classList.add('opacity-60', 'pointer-events-none'); 
+            btnEnviar.classList.add('hidden');
+            
+            const registro = window.baseDeDatosComite.find(r => r.misionId === misionId);
+            if(registro) {
+                document.getElementById('oro-select').value = registro.oro;
+                document.getElementById('plata-select').value = registro.plata || "";
+                document.getElementById('bronce-select').value = registro.bronce || "";
+                
+                document.querySelectorAll('.participant-checkbox').forEach(cb => cb.checked = false);
+                if(registro.participantes) {
+                    registro.participantes.forEach(equipo => {
+                        const cb = document.getElementById(`part-${equipo}`);
+                        if(cb) cb.checked = true;
+                    });
+                }
+            }
+        } else {
+            estadoRegistroMsg.classList.add('hidden');
+            formularioCampos.classList.remove('opacity-60', 'pointer-events-none');
+            btnEnviar.classList.remove('hidden');
+            
+            document.getElementById('oro-select').value = "";
+            document.getElementById('plata-select').value = "";
+            document.getElementById('bronce-select').value = "";
+            document.querySelectorAll('.participant-checkbox').forEach(cb => cb.checked = false);
+        }
+        
+        window.actualizarSelectores();
+    };
+
+    window.validarYEnviarResultados = async function() {
+        const selectElement = document.getElementById('mision-select');
+        const misionId = selectElement.value;
+        const tituloMision = selectElement.options[selectElement.selectedIndex].text;
+
+        const oro = document.getElementById('oro-select').value;
+        const plata = document.getElementById('plata-select').value;
+        const bronce = document.getElementById('bronce-select').value;
+        
+        if (!oro) {
+            window.mostrarAlerta("Debes asignar al menos el 1er Lugar (Medalla de Oro).");
+            return;
+        }
+
+        const participantes = [];
+        if (!misionId.startsWith('s')) {
+            document.querySelectorAll('.participant-checkbox:checked').forEach(cb => {
+                participantes.push(cb.value);
+            });
+        }
+
+        const pts = puntosMisiones[misionId];
+
+        const registroComite = {
+            misionId: misionId,
+            titulo: tituloMision,
+            oro: oro,
+            ptsOro: pts.oro,
+            plata: plata || null,
+            ptsPlata: plata ? pts.plata : 0,
+            bronce: bronce || null,
+            ptsBronce: bronce ? pts.bronce : 0,
+            participantes: participantes,
+            ptsParticipacion: pts.participacion,
+            timestamp: new Date().toISOString()
+        };
+
+        if (!modoOffline && db && user && comiteCollection) {
+            try {
+                await addDoc(comiteCollection, registroComite);
+                document.getElementById('success-modal').classList.remove('hidden');
+            } catch(e) {
+                console.error("Error guardando podio en nube:", e);
+                window.baseDeDatosComite.push(registroComite);
+                localStorage.setItem('uatyg_comite_votos', JSON.stringify(window.baseDeDatosComite));
+                document.getElementById('success-modal').classList.remove('hidden');
+            }
+        } else {
+            window.baseDeDatosComite.push(registroComite);
+            localStorage.setItem('uatyg_comite_votos', JSON.stringify(window.baseDeDatosComite));
+            document.getElementById('success-modal').classList.remove('hidden');
+        }
+    };
+
+    window.cerrarModalExito = function() {
+        document.getElementById('success-modal').classList.add('hidden');
+        const misionId = document.getElementById('mision-select').value;
+        window.verificarEstadoRegistro(misionId);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.mostrarResultados = function() {
+        const selectElement = document.getElementById('mision-select');
+        const misionId = selectElement.value;
+        
+        if (!misionId) {
+            window.mostrarAlerta("Por favor selecciona una misión del menú primero para ver su podio.");
+            return;
+        }
+        
+        document.getElementById('modal-header-titulo').innerText = "PODIO REGISTRADO";
+        document.getElementById('titulo-resultados').innerText = selectElement.options[selectElement.selectedIndex].text;
+        const tabla = document.getElementById('tabla-resultados');
+        tabla.innerHTML = '';
+
+        const registro = window.baseDeDatosComite.find(r => r.misionId === misionId);
+
+        if (!registro) {
+            tabla.innerHTML = '<p class="text-center text-gray-500 text-sm italic">Aún no se ha registrado el podio para esta actividad en la base de datos.</p>';
+        } else {
+            if (registro.oro) {
+                tabla.innerHTML += `
+                    <div class="flex justify-between items-center p-3 border-2 rounded-lg bg-yellow-100 border-yellow-400 text-yellow-900 shadow-sm mb-2">
+                        <div class="font-bold text-sm flex items-center gap-2"><span class="text-xl">🥇 1º</span> ${registro.oro}</div>
+                        <div class="font-pixel text-[10px] text-yellow-700 bg-yellow-200 px-2 py-1 rounded">+${registro.ptsOro} pts</div>
+                    </div>`;
+            }
+            if (registro.plata) {
+                tabla.innerHTML += `
+                    <div class="flex justify-between items-center p-3 border-2 rounded-lg bg-gray-100 border-gray-400 text-gray-800 shadow-sm mb-2">
+                        <div class="font-bold text-sm flex items-center gap-2"><span class="text-xl">🥈 2º</span> ${registro.plata}</div>
+                        <div class="font-pixel text-[10px] text-gray-600 bg-gray-200 px-2 py-1 rounded">+${registro.ptsPlata} pts</div>
+                    </div>`;
+            }
+            if (registro.bronce) {
+                tabla.innerHTML += `
+                    <div class="flex justify-between items-center p-3 border-2 rounded-lg bg-orange-100 border-orange-400 text-orange-900 shadow-sm mb-2">
+                        <div class="font-bold text-sm flex items-center gap-2"><span class="text-xl">🥉 3º</span> ${registro.bronce}</div>
+                        <div class="font-pixel text-[10px] text-orange-700 bg-orange-200 px-2 py-1 rounded">+${registro.ptsBronce} pts</div>
+                    </div>`;
+            }
+            if (registro.participantes && registro.participantes.length > 0) {
+                tabla.innerHTML += `<div class="mt-4 mb-2 font-bold text-[10px] text-gray-500 uppercase border-b-2 border-gray-200 pb-1">Participantes (+${registro.ptsParticipacion} pts c/u):</div>`;
+                registro.participantes.forEach(participante => {
+                    tabla.innerHTML += `
+                        <div class="flex justify-between items-center p-2 border border-gray-300 rounded bg-gray-50 text-gray-600 mb-1">
+                            <div class="font-bold text-xs flex items-center gap-2"><span class="text-blue-500">🏅</span> ${participante}</div>
+                        </div>`;
+                });
+            }
+        }
+
+        document.getElementById('resultados-modal').classList.remove('hidden');
+        lucide.createIcons();
+    };
+
+    window.mostrarTablaGeneral = function() {
+        document.getElementById('modal-header-titulo').innerText = "SCORE GLOBAL";
+        document.getElementById('titulo-resultados').innerText = "RANKING SEMANA CULTURAL";
+        
+        const tabla = document.getElementById('tabla-resultados');
+        tabla.innerHTML = '';
+
+        if (window.baseDeDatosComite.length === 0) {
+            tabla.innerHTML = '<p class="text-center text-gray-500 text-sm italic">Aún no hay puntos registrados en ninguna misión.</p>';
+            document.getElementById('resultados-modal').classList.remove('hidden');
+            return;
+        }
+
+        const puntajesGlobales = {};
+        listaEquipos.forEach(eq => puntajesGlobales[eq] = 0);
+
+        window.baseDeDatosComite.forEach(registro => {
+            if (registro.oro) puntajesGlobales[registro.oro] += (registro.ptsOro || 0);
+            if (registro.plata) puntajesGlobales[registro.plata] += (registro.ptsPlata || 0);
+            if (registro.bronce) puntajesGlobales[registro.bronce] += (registro.ptsBronce || 0);
+            if (registro.participantes && Array.isArray(registro.participantes)) {
+                registro.participantes.forEach(participante => {
+                    puntajesGlobales[participante] += (registro.ptsParticipacion || 0);
+                });
+            }
+        });
+
+        const ranking = Object.keys(puntajesGlobales).map(equipo => {
+            return { nombre: equipo, puntos: puntajesGlobales[equipo] };
+        }).sort((a, b) => b.puntos - a.puntos);
+
+        ranking.forEach((equipo, index) => {
+            let medalla = '';
+            let color = 'bg-gray-50 border-gray-300 text-gray-700';
+            
+            if(index === 0) { medalla = '👑'; color = 'bg-yellow-200 border-yellow-500 text-yellow-900 border-4 shadow-md transform scale-105 my-3'; }
+            else if(index === 1) { medalla = '🥈'; color = 'bg-gray-200 border-gray-400 text-gray-800 border-2 font-bold'; }
+            else if(index === 2) { medalla = '🥉'; color = 'bg-orange-100 border-orange-400 text-orange-900 border-2 font-bold'; }
+            else { medalla = `${index + 1}.`; }
+
+            tabla.innerHTML += `
+                <div class="flex justify-between items-center p-3 rounded-lg ${color} shadow-sm mb-2">
+                    <div class="font-bold text-sm flex items-center gap-2">
+                        <span class="text-xl w-6 text-center">${medalla}</span>
+                        ${equipo.nombre}
+                    </div>
+                    <div class="font-pixel text-[10px] ${index === 0 ? 'text-yellow-800' : 'text-blue-700'}">
+                        ${equipo.puntos} pts
+                    </div>
+                </div>
+            `;
+        });
+
+        document.getElementById('resultados-modal').classList.remove('hidden');
+        lucide.createIcons();
+    };
+
+    window.cerrarResultados = function() { document.getElementById('resultados-modal').classList.add('hidden'); };
+    window.confirmarSalida = function() { document.getElementById('confirm-exit-modal').classList.remove('hidden'); };
+    window.cerrarConfirmarSalida = function() { document.getElementById('confirm-exit-modal').classList.add('hidden'); };
+    
+    window.ejecutarSalida = function() {
+        document.getElementById('confirm-exit-modal').classList.add('hidden');
+        document.getElementById('main-app').classList.add('hidden');
+        localStorage.removeItem('uatyg_comite_sesion');
+        document.getElementById('codigo-comite').value = "";
+        document.getElementById('thank-you-screen').classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    lucide.createIcons();
+</script>
+</body>
+</html>
