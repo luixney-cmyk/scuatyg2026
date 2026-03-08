@@ -233,67 +233,80 @@
         </form>
     </div>
 
-<script>
-    // --- CONTROL DE ACCESO (LOGIN DE JUECES) ---
+<script type="module">
+    // --- IMPORTACIÓN DEL MOTOR DE BASE DE DATOS EN LA NUBE ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, onSnapshot, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    let sesionActual = null; // Guardará los datos del juez logueado
+    let db, auth, user, appId, votosCollection;
+    window.baseDeDatosNube = []; // Aquí se guardarán los datos compartidos de todos
+    window.sesionActual = null; 
 
-    function iniciarSesionJuez() {
-        const codigoInput = document.getElementById('codigo-juez');
-        const codigo = codigoInput.value.trim().toUpperCase();
-        const errorMsg = document.getElementById('error-login');
-
-        // --- NUEVA FUNCIÓN: CÓDIGO SECRETO PARA BORRAR DATOS DE PRUEBA ---
-        if (codigo === "RESET2026") {
-            if(confirm("⚠️ ADVERTENCIA: ¿Estás seguro de que quieres BORRAR TODAS LAS CALIFICACIONES en este dispositivo? El sistema quedará totalmente en 0.")) {
-                localStorage.removeItem('uatyg_votos'); // Borra la memoria del navegador
-                baseDeDatosLocal = []; // Vacía la lista actual
-                alert("✅ Sistema reiniciado. Base de datos limpia y lista para el evento real.");
-                codigoInput.value = "";
+    // --- 1. INICIALIZAR LA NUBE EN TIEMPO REAL ---
+    async function initCloud() {
+        try {
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+            if (!firebaseConfig) {
+                console.warn("Ejecutando en modo local (sin conexión a la nube).");
+                return;
             }
-            return; // Detiene la función aquí para no continuar con el login
-        }
-        // -----------------------------------------------------------------
+            appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
 
-        if (accesosJueces[codigo]) {
-            sesionActual = accesosJueces[codigo];
-            
-            // Ocultar pantalla de login y mostrar la app principal
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
 
-            // Personalizar la interfaz con los datos del juez
-            document.getElementById('display-nombre-juez').innerText = sesionActual.nombre;
-            document.getElementById('display-mision-juez').innerText = configuracionMisiones[sesionActual.mision].titulo;
-
-            // Cargar las etapas de esta misión
-            cargarEtapas();
-        } else {
-            errorMsg.classList.remove('hidden');
-            codigoInput.classList.add('border-red-600');
-            setTimeout(() => {
-                errorMsg.classList.add('hidden');
-                codigoInput.classList.remove('border-red-600');
-            }, 2000);
+            onAuthStateChanged(auth, (currentUser) => {
+                if (currentUser) {
+                    user = currentUser;
+                    // Conectamos a la carpeta pública de votos donde todos los jueces guardarán
+                    votosCollection = collection(db, 'artifacts', appId, 'public', 'data', 'votos_jueces');
+                    
+                    // ESCUCHADOR EN VIVO: Si alguien en otro celular vota, esto se actualiza solo
+                    onSnapshot(votosCollection, (snapshot) => {
+                        window.baseDeDatosNube = [];
+                        snapshot.forEach((doc) => {
+                            window.baseDeDatosNube.push({ id: doc.id, ...doc.data() });
+                        });
+                        
+                        // Si el juez está logueado, actualizamos sus listas
+                        if (window.sesionActual) {
+                            window.actualizarEquiposDisponibles();
+                            
+                            // Si tiene la ventana de resultados abierta, ¡la actualizamos en vivo!
+                            if (!document.getElementById('resultados-modal').classList.contains('hidden')) {
+                                window.mostrarResultados();
+                            }
+                        }
+                    }, (error) => {
+                        console.error("Error al escuchar la nube:", error);
+                    });
+                }
+            });
+        } catch (e) {
+            console.error("Error inicializando la nube:", e);
         }
     }
+    initCloud();
 
-    // --- CONFIGURACIÓN DEL EVENTO Y RÚBRICAS ---
-    // Base de Datos de Accesos Oficiales para Jueces
+    // --- 2. CONFIGURACIÓN DEL EVENTO Y RÚBRICAS ---
     const accesosJueces = {
-        // --- Misión 1: Presentación de Equipos (5 Jueces) ---
         "COREO8821": { nombre: "Juez Baile (Profe Alex)", mision: "m1", juezId: "Juez 1" },
         "RITMO5590": { nombre: "Juez Ritmo (Mtra. Silvia)", mision: "m1", juezId: "Juez 2" },
         "SWAG3347":  { nombre: "Juez Expresión (Invitado A)", mision: "m1", juezId: "Juez 3" },
         "DANCE1102": { nombre: "Juez Vestuario (Mtra. Carmen)", mision: "m1", juezId: "Juez 4" },
         "STEP9945":  { nombre: "Juez Escénico (Profe Luis)", mision: "m1", juezId: "Juez 5" },
 
-        // --- Misión 5: Super Star Talent (3 Jueces) ---
         "TALENT4410": { nombre: "Juez Estrella (Mtra. Diana)", mision: "m5", juezId: "Juez 1" },
         "SHOW7732":   { nombre: "Juez Showman (Profe Carlos)", mision: "m5", juezId: "Juez 2" },
         "SKILL2298":  { nombre: "Juez de Técnica (Invitado B)", mision: "m5", juezId: "Juez 3" },
 
-        // --- Misión 6: Gala Real Diva Drag (6 Jueces) ---
         "VALENTIN26": { nombre: "Mr. Valentin (Juez VIP)", mision: "m6", juezId: "Juez 1" },
         "QUEEN6651":  { nombre: "Reina Madre (Mtra. Rosa)", mision: "m6", juezId: "Juez 2" },
         "FIERCE9934": { nombre: "Juez Actitud (Profe Hugo)", mision: "m6", juezId: "Juez 3" },
@@ -301,12 +314,10 @@
         "LIPSYNC442": { nombre: "Juez Lipsync (Mtra. Elena)", mision: "m6", juezId: "Juez 5" },
         "FASHION889": { nombre: "Juez Pasarela (Profe Omar)", mision: "m6", juezId: "Juez 6" },
 
-        // --- Misión 14: Chef Toad's Kitchen (3 Jueces) ---
         "CHEFGORDON": { nombre: "Chef Gordon (Mtro. Gastronomía)", mision: "m14", juezId: "Juez 1" },
         "SABOR3367":  { nombre: "Chef Degustador (Invitado Chef)", mision: "m14", juezId: "Juez 2" },
         "PLATING551": { nombre: "Chef Estética (Mtra. Cocina)", mision: "m14", juezId: "Juez 3" },
 
-        // --- Misión 19: Gran Premio Final Caravana (3 Jueces) ---
         "KART7743":   { nombre: "Juez Diseño Taller (Profe Ing.)", mision: "m19", juezId: "Juez 1" },
         "PARADE2289": { nombre: "Juez Animación (Mtra. Turismo)", mision: "m19", juezId: "Juez 2" },
         "DRIFT9910":  { nombre: "Juez Resistencia (Profe Deportes)", mision: "m19", juezId: "Juez 3" }
@@ -316,102 +327,102 @@
         "m1": {
             titulo: "Presentación de Equipos",
             jueces: 5,
-            etapas: [
-                {
-                    id: "e1",
-                    nombre: "Evaluación General",
-                    criterios: [
-                        { id: "c1", nombre: "Coordinación y sincronización", icono: "users" },
-                        { id: "c2", nombre: "Creatividad y originalidad", icono: "lightbulb" },
-                        { id: "c3", nombre: "Expresión corporal y escénica", icono: "activity" },
-                        { id: "c4", nombre: "Vestuario y presentación", icono: "shirt" },
-                        { id: "c5", nombre: "Uso del espacio escénico", icono: "move" }
-                    ]
-                }
-            ]
+            etapas: [{ id: "e1", nombre: "Evaluación General", criterios: [
+                { id: "c1", nombre: "Coordinación y sincronización", icono: "users" },
+                { id: "c2", nombre: "Creatividad y originalidad", icono: "lightbulb" },
+                { id: "c3", nombre: "Expresión corporal y escénica", icono: "activity" },
+                { id: "c4", nombre: "Vestuario y presentación", icono: "shirt" },
+                { id: "c5", nombre: "Uso del espacio escénico", icono: "move" }
+            ]}]
         },
         "m5": {
             titulo: "Super Star Talent",
             jueces: 3,
-            etapas: [
-                {
-                    id: "e1",
-                    nombre: "Evaluación General",
-                    criterios: [
-                        { id: "c1", nombre: "Talento (Creatividad y ejecución)", icono: "star" },
-                        { id: "c2", nombre: "Baile (Ritmo y adaptación)", icono: "music" },
-                        { id: "c3", nombre: "Presencia (Cosplay/Uniforme)", icono: "shirt" }
-                    ]
-                }
-            ]
+            etapas: [{ id: "e1", nombre: "Evaluación General", criterios: [
+                { id: "c1", nombre: "Talento (Creatividad y ejecución)", icono: "star" },
+                { id: "c2", nombre: "Baile (Ritmo y adaptación)", icono: "music" },
+                { id: "c3", nombre: "Presencia (Cosplay/Uniforme)", icono: "shirt" }
+            ]}]
         },
         "m6": {
             titulo: "Gala Real (Diva Drag)",
             jueces: 6,
             etapas: [
-                {
-                    id: "e1",
-                    nombre: "Fase 1: La Pasarela",
-                    criterios: [ { id: "c1", nombre: "Pasarela (Look y respuesta)", icono: "mic" } ]
-                },
-                {
-                    id: "e2",
-                    nombre: "Fase 2: Show Libre",
-                    criterios: [ { id: "c2", nombre: "Show Libre (Performance)", icono: "sparkles" } ]
-                },
-                {
-                    id: "e3",
-                    nombre: "Fase 3: Lipsync Battle",
-                    criterios: [ { id: "c3", nombre: "Lipsync Battle", icono: "flame" } ]
-                }
+                { id: "e1", nombre: "Fase 1: La Pasarela", criterios: [ { id: "c1", nombre: "Pasarela (Look y respuesta)", icono: "mic" } ] },
+                { id: "e2", nombre: "Fase 2: Show Libre", criterios: [ { id: "c2", nombre: "Show Libre (Performance)", icono: "sparkles" } ] },
+                { id: "e3", nombre: "Fase 3: Lipsync Battle", criterios: [ { id: "c3", nombre: "Lipsync Battle", icono: "flame" } ] }
             ]
         },
         "m14": {
             titulo: "Chef Toad's Kitchen",
             jueces: 3,
-            etapas: [
-                {
-                    id: "e1",
-                    nombre: "Evaluación General",
-                    criterios: [
-                        { id: "c1", nombre: "Sabor y Textura", icono: "utensils" },
-                        { id: "c2", nombre: "Creatividad y Concepto", icono: "lightbulb" },
-                        { id: "c3", nombre: "Presentación y Emplatado", icono: "eye" }
-                    ]
-                }
-            ]
+            etapas: [{ id: "e1", nombre: "Evaluación General", criterios: [
+                { id: "c1", nombre: "Sabor y Textura", icono: "utensils" },
+                { id: "c2", nombre: "Creatividad y Concepto", icono: "lightbulb" },
+                { id: "c3", nombre: "Presentación y Emplatado", icono: "eye" }
+            ]}]
         },
         "m19": {
             titulo: "Gran Premio Final (Caravana)",
             jueces: 3,
             etapas: [
-                {
-                    id: "e1",
-                    nombre: "Fase 1: Taller (Diseño)",
-                    criterios: [
-                        { id: "c1", nombre: "Diseño y Fidelidad", icono: "palette" },
-                        { id: "c2", nombre: "Técnica, Luces y Sonido", icono: "wrench" }
-                    ]
-                },
-                {
-                    id: "e2",
-                    nombre: "Fase 2: Desfile",
-                    criterios: [
-                        { id: "c3", nombre: "Resistencia (Desfile)", icono: "shield-check" },
-                        { id: "c4", nombre: "Ambiente, Energía y Cosplay", icono: "flame" }
-                    ]
-                }
+                { id: "e1", nombre: "Fase 1: Taller (Diseño)", criterios: [
+                    { id: "c1", nombre: "Diseño y Fidelidad", icono: "palette" },
+                    { id: "c2", nombre: "Técnica, Luces y Sonido", icono: "wrench" }
+                ]},
+                { id: "e2", nombre: "Fase 2: Desfile", criterios: [
+                    { id: "c3", nombre: "Resistencia (Desfile)", icono: "shield-check" },
+                    { id: "c4", nombre: "Ambiente, Energía y Cosplay", icono: "flame" }
+                ]}
             ]
         }
     };
 
-    // Memoria persistente usando LocalStorage para guardar las calificaciones
-    let baseDeDatosLocal = JSON.parse(localStorage.getItem('uatyg_votos')) || [];
+    // --- 3. FUNCIONES GLOBALES (Expuestas para los botones HTML) ---
+    
+    window.iniciarSesionJuez = async function() {
+        const codigoInput = document.getElementById('codigo-juez');
+        const codigo = codigoInput.value.trim().toUpperCase();
+        const errorMsg = document.getElementById('error-login');
 
-    // --- LÓGICA DE INTERFAZ DINÁMICA ---
-    function cargarEtapas() {
-        if (!sesionActual) return;
-        const misionConfig = configuracionMisiones[sesionActual.mision];
+        // BOTÓN DE PÁNICO: RESETEAR LA BASE DE DATOS DE LA NUBE
+        if (codigo === "RESET2026") {
+            if(confirm("⚠️ ADVERTENCIA MÁXIMA: ¿Estás seguro de borrar TODAS las calificaciones de la base de datos global?")) {
+                if (votosCollection) {
+                    const snapshot = await getDocs(votosCollection);
+                    snapshot.forEach(doc => deleteDoc(doc.ref)); // Borra todos los documentos
+                    alert("✅ Nube reiniciada con éxito. Todos los jueces inician de 0.");
+                } else {
+                    alert("No estás conectado a la nube en este momento.");
+                }
+                codigoInput.value = "";
+            }
+            return; 
+        }
+
+        if (accesosJueces[codigo]) {
+            window.sesionActual = accesosJueces[codigo];
+            
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+
+            document.getElementById('display-nombre-juez').innerText = window.sesionActual.nombre;
+            document.getElementById('display-mision-juez').innerText = configuracionMisiones[window.sesionActual.mision].titulo;
+
+            window.cargarEtapas();
+        } else {
+            errorMsg.classList.remove('hidden');
+            codigoInput.classList.add('border-red-600');
+            setTimeout(() => {
+                errorMsg.classList.add('hidden');
+                codigoInput.classList.remove('border-red-600');
+            }, 2000);
+        }
+    };
+
+    window.cargarEtapas = function() {
+        if (!window.sesionActual) return;
+        const misionConfig = configuracionMisiones[window.sesionActual.mision];
         const selectEtapa = document.getElementById('etapa-select');
         const contenedorEtapa = document.getElementById('contenedor-etapa');
 
@@ -420,26 +431,23 @@
             selectEtapa.innerHTML += `<option value="${etapa.id}">${etapa.nombre}</option>`;
         });
 
-        // Si la misión tiene más de 1 etapa, mostramos el menú de Fases
         if(misionConfig.etapas.length > 1) {
             contenedorEtapa.classList.remove('hidden');
         } else {
             contenedorEtapa.classList.add('hidden');
         }
+        window.cambiarEtapa(); 
+    };
 
-        cambiarEtapa(); // Cargar rúbrica de la primera etapa por defecto
-    }
-
-    function cambiarEtapa() {
-        if (!sesionActual) return;
-        const misionConfig = configuracionMisiones[sesionActual.mision];
+    window.cambiarEtapa = function() {
+        if (!window.sesionActual) return;
+        const misionConfig = configuracionMisiones[window.sesionActual.mision];
         const etapaId = document.getElementById('etapa-select').value;
         const etapaConfig = misionConfig.etapas.find(e => e.id === etapaId);
         
         const contenedorCriterios = document.getElementById('criterios-dinamicos');
-
-        // Generar Rúbrica de Criterios para la ETAPA
         contenedorCriterios.innerHTML = '';
+        
         etapaConfig.criterios.forEach(crit => {
             let botonesScore = '';
             for(let i = 1; i <= 10; i++) {
@@ -463,43 +471,38 @@
             `;
         });
 
-        lucide.createIcons(); // Recargar nuevos iconos
-        
-        // Limpiar selección de equipo al cambiar de etapa
+        lucide.createIcons(); 
         document.getElementById('equipo-select').value = ""; 
-        actualizarEquiposDisponibles(); // Bloquear los ya calificados en esta etapa
-    }
+        window.actualizarEquiposDisponibles(); 
+    };
 
-    // --- BLOQUEAR EQUIPOS YA CALIFICADOS ---
-    function actualizarEquiposDisponibles() {
-        if (!sesionActual) return;
-        const misionId = sesionActual.mision;
-        const juez = sesionActual.juezId;
+    window.actualizarEquiposDisponibles = function() {
+        if (!window.sesionActual) return;
+        const misionId = window.sesionActual.mision;
+        const juez = window.sesionActual.juezId;
         const etapaId = document.getElementById('etapa-select').value;
         const selectEquipo = document.getElementById('equipo-select');
 
         Array.from(selectEquipo.options).forEach(opt => {
             if (opt.value !== "") {
-                // Limpiamos el texto y lo habilitamos por defecto
                 opt.disabled = false;
                 opt.text = opt.text.replace(" (✓ Ya calificado)", "");
                 
-                // Buscamos si ya existe una calificación de este juez para este equipo, misión y etapa
-                const yaCalificado = baseDeDatosLocal.some(r => r.mision === misionId && r.etapa === etapaId && r.equipo === opt.value && r.juez === juez);
+                // VALIDACIÓN CONTRA LA BASE DE DATOS EN LA NUBE
+                const yaCalificado = window.baseDeDatosNube.some(r => r.mision === misionId && r.etapa === etapaId && r.equipo === opt.value && r.juez === juez);
                 
                 if (yaCalificado) {
-                    opt.disabled = true; // Bloquea la opción
-                    opt.text = opt.text + " (✓ Ya calificado)"; // Le pone una marca visual
+                    opt.disabled = true; 
+                    opt.text = opt.text + " (✓ Ya calificado)"; 
                 }
             }
         });
-    }
+    };
 
-    // --- LÓGICA DE CALIFICACIÓN Y SUMA ---
-    function enviarCalificacion() {
-        if (!sesionActual) return;
-        const misionId = sesionActual.mision;
-        const juez = sesionActual.juezId;
+    window.enviarCalificacion = async function() {
+        if (!window.sesionActual) return;
+        const misionId = window.sesionActual.mision;
+        const juez = window.sesionActual.juezId;
         const etapaId = document.getElementById('etapa-select').value;
         const equipo = document.getElementById('equipo-select').value;
         const observaciones = document.getElementById('observaciones').value;
@@ -509,8 +512,7 @@
             return;
         }
 
-        // Validación de seguridad: Evitar doble calificación en la misma etapa
-        const yaCalificado = baseDeDatosLocal.some(r => r.mision === misionId && r.etapa === etapaId && r.equipo === equipo && r.juez === juez);
+        const yaCalificado = window.baseDeDatosNube.some(r => r.mision === misionId && r.etapa === etapaId && r.equipo === equipo && r.juez === juez);
         if (yaCalificado) {
             alert("¡Acción bloqueada! Ya has registrado una calificación para este equipo en esta fase.");
             return;
@@ -521,7 +523,6 @@
         let sumaPuntos = 0;
         let todasContestadas = true;
 
-        // Revisar que haya calificado todos los criterios
         etapaConfig.criterios.forEach(crit => {
             const seleccionado = document.querySelector(`input[name="${crit.id}"]:checked`);
             if(seleccionado) {
@@ -536,91 +537,71 @@
             return;
         }
 
-        // Guardar en la "Base de datos"
-        baseDeDatosLocal.push({
+        const nuevoVoto = {
             mision: misionId,
             etapa: etapaId,
             equipo: equipo,
             juez: juez,
             total: sumaPuntos,
-            notas: observaciones
-        });
+            notas: observaciones,
+            timestamp: new Date().toISOString()
+        };
 
-        // Guardar en el almacenamiento del navegador para que no se borre al salir
-        localStorage.setItem('uatyg_votos', JSON.stringify(baseDeDatosLocal));
+        // ENVIAR A LA BASE DE DATOS EN LA NUBE
+        if (user && votosCollection) {
+            try {
+                await addDoc(votosCollection, nuevoVoto);
+                document.getElementById('success-modal').classList.remove('hidden');
+            } catch(e) {
+                alert("Error al enviar a la nube: " + e.message);
+            }
+        } else {
+            // Respaldo de seguridad si se cae el internet
+            window.baseDeDatosNube.push(nuevoVoto);
+            document.getElementById('success-modal').classList.remove('hidden');
+        }
+    };
 
-        // Mostrar éxito
-        document.getElementById('success-modal').classList.remove('hidden');
-    }
-
-    function cerrarModalExito() {
+    window.cerrarModalExito = function() {
         document.getElementById('success-modal').classList.add('hidden');
-        // Limpiar selección de equipo y rúbrica para el siguiente
         document.getElementById('equipo-select').value = "";
         const radios = document.querySelectorAll('.score-radio');
         radios.forEach(r => r.checked = false);
         document.getElementById('observaciones').value = "";
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.actualizarEquiposDisponibles();
+    };
 
-        // Bloquear el equipo que acabamos de calificar
-        actualizarEquiposDisponibles();
-    }
+    window.mostrarResultados = function() {
+        if (!window.sesionActual) return;
+        const misionId = window.sesionActual.mision;
 
-    // --- FUNCIONES: CERRAR SESIÓN Y AGRADECIMIENTO ---
-    function confirmarSalida() {
-        document.getElementById('confirm-exit-modal').classList.remove('hidden');
-    }
-
-    function cerrarConfirmarSalida() {
-        document.getElementById('confirm-exit-modal').classList.add('hidden');
-    }
-
-    function ejecutarSalida() {
-        // Ocultar modal de confirmación y panel principal
-        document.getElementById('confirm-exit-modal').classList.add('hidden');
-        document.getElementById('main-app').classList.add('hidden');
+        document.getElementById('titulo-resultados').innerText = `Resultados en Vivo: ${configuracionMisiones[misionId].titulo}`;
         
-        // Limpiar la sesión actual (los votos ya están seguros en localStorage)
-        sesionActual = null;
-        document.getElementById('codigo-juez').value = ""; 
-        
-        // Mostrar pantalla de agradecimiento
-        document.getElementById('thank-you-screen').classList.remove('hidden');
-        
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // --- MOSTRAR RESULTADOS INSTANTÁNEOS ---
-    function mostrarResultados() {
-        if (!sesionActual) return;
-        const misionId = sesionActual.mision;
-
-        document.getElementById('titulo-resultados').innerText = `Resultados: ${configuracionMisiones[misionId].titulo}`;
-        
-        // Sumar los puntos de todos los jueces por equipo
+        // SUMATORIA GLOBAL DE TODOS LOS JUECES EN LA NUBE
         const sumaPorEquipo = {};
+        let totalJuecesHanVotado = 0;
         
-        baseDeDatosLocal.forEach(registro => {
+        window.baseDeDatosNube.forEach(registro => {
             if(registro.mision === misionId) {
                 if(!sumaPorEquipo[registro.equipo]) {
                     sumaPorEquipo[registro.equipo] = 0;
                 }
                 sumaPorEquipo[registro.equipo] += registro.total;
+                totalJuecesHanVotado++;
             }
         });
 
-        // Ordenar de mayor a menor
         const ordenados = Object.keys(sumaPorEquipo).map(eq => ({
             nombre: eq,
             puntos: sumaPorEquipo[eq]
         })).sort((a, b) => b.puntos - a.puntos);
 
-        // Dibujar la tabla
         const tabla = document.getElementById('tabla-resultados');
         tabla.innerHTML = '';
 
         if(ordenados.length === 0) {
-            tabla.innerHTML = '<p class="text-center text-gray-500 text-sm italic">Aún no hay calificaciones registradas para esta misión.</p>';
+            tabla.innerHTML = '<p class="text-center text-gray-500 text-sm italic">Aún no hay calificaciones registradas por ningún juez.</p>';
         } else {
             ordenados.forEach((equipo, index) => {
                 let medalla = '';
@@ -645,13 +626,30 @@
 
         document.getElementById('resultados-modal').classList.remove('hidden');
         lucide.createIcons();
-    }
+    };
 
-    function cerrarResultados() {
+    window.cerrarResultados = function() {
         document.getElementById('resultados-modal').classList.add('hidden');
-    }
+    };
 
-    // Inicializar iconos
+    window.confirmarSalida = function() {
+        document.getElementById('confirm-exit-modal').classList.remove('hidden');
+    };
+
+    window.cerrarConfirmarSalida = function() {
+        document.getElementById('confirm-exit-modal').classList.add('hidden');
+    };
+
+    window.ejecutarSalida = function() {
+        document.getElementById('confirm-exit-modal').classList.add('hidden');
+        document.getElementById('main-app').classList.add('hidden');
+        window.sesionActual = null;
+        document.getElementById('codigo-juez').value = ""; 
+        document.getElementById('thank-you-screen').classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // Inicializar iconos en la carga
     lucide.createIcons();
 </script>
 </body>
