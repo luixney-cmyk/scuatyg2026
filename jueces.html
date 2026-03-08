@@ -112,33 +112,27 @@
     </div>
 
     <!-- Pantalla de Login de Jueces -->
-    <!-- Se eliminó el overflow-hidden de este contenedor para que el letrero superior no se corte -->
     <div id="login-screen" class="nes-container w-full max-w-md p-6 md:p-8 relative bg-yellow-400 mt-10 border-4 border-black text-center rounded-lg">
         
-        <!-- Header retro (ahora se verá completo) -->
         <div class="absolute -top-5 left-1/2 transform -translate-x-1/2 bg-red-600 text-white font-pixel px-4 py-2 border-4 border-black text-xs md:text-sm shadow-[4px_4px_0_0_rgba(0,0,0,1)] whitespace-nowrap z-20">
             PANEL DE JUECES
         </div>
 
-        <!-- Contenedor interno para que los iconos decorativos no se salgan de las esquinas redondeadas -->
         <div class="absolute inset-0 overflow-hidden rounded-lg pointer-events-none z-0">
             <div class="absolute -top-2 -right-4 text-yellow-600 opacity-20"><i data-lucide="gamepad-2" class="w-32 h-32"></i></div>
             <div class="absolute -bottom-2 -left-4 text-yellow-600 opacity-20"><i data-lucide="trophy" class="w-32 h-32"></i></div>
         </div>
 
-        <!-- Título Principal -->
         <h1 class="font-pixel text-blue-700 text-sm md:text-base mt-6 mb-5 leading-relaxed uppercase relative z-10">
             Súper Semana Cultural<br>UATyG 2026
         </h1>
 
-        <!-- Logos Oficiales (Sin animación de brinco) -->
         <div class="flex justify-center items-center gap-4 mb-6 relative z-10">
             <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/logo%20uan%20azul%20transparente%20unidad.png" alt="Logo UAN" class="h-12 md:h-14 object-contain drop-shadow-md">
             <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/mario2.png" alt="Mario" class="h-20 md:h-24 object-contain drop-shadow-xl z-10">
             <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/logo%20cetyg%20azul%20transparente.png" alt="Logo CETyG" class="h-12 md:h-14 object-contain drop-shadow-md">
         </div>
 
-        <!-- Mensaje de bienvenida -->
         <div class="bg-white border-4 border-gray-800 p-3 mb-6 relative z-10 rounded">
             <i data-lucide="star" class="w-5 h-5 absolute -top-3 -left-3 text-yellow-500 fill-yellow-400 bg-white rounded-full"></i>
             <i data-lucide="star" class="w-5 h-5 absolute -top-3 -right-3 text-yellow-500 fill-yellow-400 bg-white rounded-full"></i>
@@ -159,7 +153,6 @@
 
     <!-- Contenedor Principal (App de Jueces) -->
     <div id="main-app" class="nes-container w-full max-w-md p-6 relative hidden bg-white border-4 border-black rounded-lg mt-10">
-        <!-- Header retro -->
         <div class="absolute -top-5 left-1/2 transform -translate-x-1/2 bg-red-600 text-white font-pixel px-4 py-2 border-4 border-black text-xs md:text-sm shadow-[4px_4px_0_0_rgba(0,0,0,1)] whitespace-nowrap z-10">
             JUDGE PANEL
         </div>
@@ -172,16 +165,13 @@
 
         <form id="evaluacion-form" class="space-y-6">
 
-            <!-- Selector de Etapa (Fase) -->
             <div id="contenedor-etapa" class="bg-purple-50 p-4 border-4 border-purple-400 rounded relative hidden mb-6">
                 <i class="w-5 h-5 absolute top-3 right-3 text-purple-300" data-lucide="layers"></i>
                 <label class="block font-pixel text-purple-800 text-[9px] md:text-[10px] mb-2 drop-shadow-sm">FASE A EVALUAR:</label>
                 <select id="etapa-select" onchange="cambiarEtapa()" class="w-full border-2 border-black p-2 font-bold text-gray-800 outline-none focus:border-purple-500 bg-white text-sm md:text-base cursor-pointer shadow-inner">
-                    <!-- Llenado con JS -->
                 </select>
             </div>
 
-            <!-- Selector de Equipo -->
             <div class="bg-yellow-50 p-4 border-4 border-yellow-400 rounded relative shadow-sm mb-6">
                 <label class="block font-pixel text-yellow-800 text-[9px] md:text-[10px] mb-2 drop-shadow-sm">EQUIPO A EVALUAR:</label>
                 <select id="equipo-select" onchange="actualizarEquiposDisponibles()" class="w-full border-2 border-black p-2 font-bold text-gray-800 outline-none focus:border-yellow-500 bg-white text-sm md:text-base cursor-pointer shadow-inner">
@@ -196,35 +186,28 @@
                 </select>
             </div>
 
-            <!-- Rúbrica de Calificación -->
             <div id="rubrica-container" class="space-y-6 border-t-4 border-dashed border-gray-300 pt-6">
                 <h3 class="font-pixel text-xs text-center text-gray-800 bg-gray-100 py-2 border-2 border-gray-300 rounded shadow-sm">RÚBRICA DE EVALUACIÓN</h3>
                 <p class="text-center text-xs text-gray-500 font-bold mb-4 uppercase">Califica del 1 al 10 tocando el número</p>
 
                 <div id="criterios-dinamicos" class="space-y-4">
-                    <!-- Los criterios se insertan aquí mediante JavaScript -->
                 </div>
 
-                <!-- Comentarios del Juez -->
                 <div class="bg-gray-50 p-3 border-2 border-gray-200 rounded-lg shadow-sm">
                     <label class="block font-bold text-sm text-gray-700 mb-2"><i data-lucide="message-square" class="w-4 h-4 inline mr-1 text-blue-500"></i> Observaciones (Opcional):</label>
                     <textarea id="observaciones" class="w-full border-2 border-gray-300 bg-white text-gray-800 rounded p-2 text-sm outline-none focus:border-blue-500 font-medium placeholder-gray-400" rows="2" placeholder="Notas sobre el desempeño..."></textarea>
                 </div>
 
-                <!-- Botón de Envío -->
                 <button type="button" onclick="enviarCalificacion()" class="btn-pixel w-full bg-green-500 hover:bg-green-600 text-white font-pixel py-4 px-4 text-xs md:text-sm flex justify-center items-center gap-2 mt-6">
                     <i data-lucide="send" class="w-5 h-5"></i> ENVIAR SCORE
                 </button>
             </div>
 
-            <!-- Panel de Administración Rápida -->
             <div class="mt-8 pt-4 border-t-2 border-gray-200">
-                <!-- Botón Ver Resultados en Vivo -->
                 <button type="button" onclick="mostrarResultados()" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-800 font-bold py-3 px-4 border-2 border-blue-400 border-dashed rounded-lg flex justify-center items-center gap-2 transition-colors mb-4 shadow-sm">
                     <i data-lucide="bar-chart-2" class="w-5 h-5"></i> Ver Resultados en Vivo
                 </button>
 
-                <!-- Botón de Salir / Cerrar Sesión -->
                 <button type="button" onclick="confirmarSalida()" class="btn-pixel w-full bg-red-500 hover:bg-red-600 text-white font-pixel py-3 px-4 text-xs flex justify-center items-center gap-2">
                     <i data-lucide="log-out" class="w-5 h-5"></i> CERRAR SESIÓN
                 </button>
@@ -234,37 +217,58 @@
     </div>
 
 <script type="module">
-    // --- IMPORTACIÓN DEL MOTOR DE BASE DE DATOS EN LA NUBE ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, onSnapshot, getDocs, deleteDoc, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    let db, auth, user, appId, votosCollection, sesionesCollection;
-    window.baseDeDatosNube = []; // Aquí se guardarán los datos compartidos de todos
+    let db = null, auth = null, user = null, votosCollection = null, sesionesCollection = null;
+    window.baseDeDatosNube = JSON.parse(localStorage.getItem('uatyg_votos')) || []; 
     window.sesionActual = null; 
 
-    // --- NUEVO: ID ÚNICO DEL DISPOSITIVO ---
-    // Esto asegura que si el juez entra, su dispositivo quede registrado como el dueño de la sesión.
+    const isCanvasEnv = typeof __firebase_config !== 'undefined';
+    const currentAppId = typeof __app_id !== 'undefined' ? __app_id : 'scuatyg2026-app';
+
+    // ID ÚNICO DEL DISPOSITIVO
     let localDeviceId = localStorage.getItem('uatyg_device_id');
     if (!localDeviceId) {
         localDeviceId = 'dev_' + Math.random().toString(36).substr(2, 9);
         localStorage.setItem('uatyg_device_id', localDeviceId);
     }
 
-    // --- 1. INICIALIZAR LA NUBE EN TIEMPO REAL ---
-    async function initCloud() {
+    // --- 1. INICIALIZAR LA NUBE ---
+    const initCloud = async () => {
+        let firebaseConfig;
+
+        if (isCanvasEnv) {
+            // Entorno de prueba (Canvas)
+            firebaseConfig = JSON.parse(__firebase_config);
+        } else {
+            // =====================================================================
+            // 🔴 PASO IMPORTANTE: REEMPLAZA ESTO CON LOS DATOS DE TU FIREBASE 🔴
+            // =====================================================================
+            firebaseConfig = {
+               apiKey: "AIzaSyAWvlKYMuFlxL88OrSOzGPzXk0w_HUTGQ8",
+              authDomain: "scuatyg2026.firebaseapp.com",
+              projectId: "scuatyg2026",
+              storageBucket: "scuatyg2026.firebasestorage.app",
+              messagingSenderId: "321639282182",
+              appId: "1:321639282182:web:6803746ad3ff4c8e8e3587",
+              measurementId: "G-YQ5KBWYEQY"
+            };
+        }
+
+        // PREVENCIÓN DE ERROR DE API KEY (Asegurarnos de que el usuario haya puesto la suya)
+        if (!firebaseConfig || !firebaseConfig.apiKey || firebaseConfig.apiKey.includes("TU_API_KEY")) {
+            console.warn("⚠️ MODO LOCAL ACTIVADO: No se ha configurado una API Key válida de Firebase. Los puntajes se guardarán solo en este dispositivo.");
+            return; // Abortamos la conexión a Firebase para evitar el crash
+        }
+
         try {
-            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-            if (!firebaseConfig) {
-                console.warn("Ejecutando en modo local (sin conexión a la nube).");
-                return;
-            }
-            appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
             const app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
 
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            if (isCanvasEnv && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                 await signInWithCustomToken(auth, __initial_auth_token);
             } else {
                 await signInAnonymously(auth);
@@ -273,22 +277,28 @@
             onAuthStateChanged(auth, (currentUser) => {
                 if (currentUser) {
                     user = currentUser;
-                    // Conectamos a la carpeta pública de votos donde todos los jueces guardarán
-                    votosCollection = collection(db, 'artifacts', appId, 'public', 'data', 'votos_jueces');
-                    sesionesCollection = collection(db, 'artifacts', appId, 'public', 'data', 'sesiones_jueces');
                     
-                    // ESCUCHADOR EN VIVO: Si alguien en otro celular vota, esto se actualiza solo
+                    // Asignar colecciones dinámicamente según el entorno
+                    if (isCanvasEnv) {
+                        votosCollection = collection(db, 'artifacts', currentAppId, 'public', 'data', 'votos_jueces');
+                        sesionesCollection = collection(db, 'artifacts', currentAppId, 'public', 'data', 'sesiones_jueces');
+                    } else {
+                        votosCollection = collection(db, 'votos_jueces');
+                        sesionesCollection = collection(db, 'sesiones_jueces');
+                    }
+                    
+                    // ESCUCHADOR EN VIVO
                     onSnapshot(votosCollection, (snapshot) => {
                         window.baseDeDatosNube = [];
                         snapshot.forEach((doc) => {
                             window.baseDeDatosNube.push({ id: doc.id, ...doc.data() });
                         });
                         
-                        // Si el juez está logueado, actualizamos sus listas
+                        // Guardamos un respaldo local de los datos de la nube
+                        localStorage.setItem('uatyg_votos', JSON.stringify(window.baseDeDatosNube));
+                        
                         if (window.sesionActual) {
                             window.actualizarEquiposDisponibles();
-                            
-                            // Si tiene la ventana de resultados abierta, ¡la actualizamos en vivo!
                             if (!document.getElementById('resultados-modal').classList.contains('hidden')) {
                                 window.mostrarResultados();
                             }
@@ -299,9 +309,9 @@
                 }
             });
         } catch (e) {
-            console.error("Error inicializando la nube:", e);
+            console.error("Error inicializando la nube de Firebase:", e);
         }
-    }
+    };
     initCloud();
 
     // --- 2. CONFIGURACIÓN DEL EVENTO Y RÚBRICAS ---
@@ -387,83 +397,82 @@
         }
     };
 
-    // --- 3. FUNCIONES GLOBALES (Expuestas para los botones HTML) ---
+    // --- 3. FUNCIONES GLOBALES ---
 
-    // Revisar si ya hay una sesión activa al cargar la página
     window.onload = function() {
         const sesionGuardada = localStorage.getItem('uatyg_juez_sesion');
         if (sesionGuardada) {
             window.sesionActual = JSON.parse(sesionGuardada);
-            
-            // Ocultar login y mostrar panel
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
-
             document.getElementById('display-nombre-juez').innerText = window.sesionActual.nombre;
             document.getElementById('display-mision-juez').innerText = configuracionMisiones[window.sesionActual.mision].titulo;
-
             window.cargarEtapas();
         }
     };
     
+    // Función de ayuda para obtener la ruta correcta del documento
+    const getSesionDocRef = (codigo) => {
+        return isCanvasEnv 
+            ? doc(db, 'artifacts', currentAppId, 'public', 'data', 'sesiones_jueces', codigo) 
+            : doc(db, 'sesiones_jueces', codigo);
+    };
+
     window.iniciarSesionJuez = async function() {
         const codigoInput = document.getElementById('codigo-juez');
         const codigo = codigoInput.value.trim().toUpperCase();
         const errorMsg = document.getElementById('error-login');
 
-        // BOTÓN DE PÁNICO: RESETEAR LA BASE DE DATOS DE LA NUBE Y LOCAL
+        // BOTÓN DE PÁNICO
         if (codigo === "RESET2026") {
             if(confirm("⚠️ ADVERTENCIA MÁXIMA: ¿Estás seguro de borrar TODAS las calificaciones de la base de datos global y cerrar las sesiones?")) {
-                if (votosCollection) {
+                if (db && votosCollection) {
                     const snapshot = await getDocs(votosCollection);
-                    snapshot.forEach(d => deleteDoc(d.ref)); // Borra todos los documentos de votos
+                    snapshot.forEach(d => deleteDoc(d.ref)); 
                 }
-                if (sesionesCollection) {
+                if (db && sesionesCollection) {
                     const snapSesiones = await getDocs(sesionesCollection);
-                    snapSesiones.forEach(d => deleteDoc(d.ref)); // Libera todas las sesiones activas
+                    snapSesiones.forEach(d => deleteDoc(d.ref)); 
                 }
-                localStorage.removeItem('uatyg_votos'); // Limpia respaldo local
-                localStorage.removeItem('uatyg_juez_sesion'); // Cierra la sesión activa
-                alert("✅ Nube reiniciada con éxito. Todos los jueces inician de 0 y los dispositivos bloqueados fueron liberados.");
+                localStorage.removeItem('uatyg_votos'); 
+                window.baseDeDatosNube = [];
+                localStorage.removeItem('uatyg_juez_sesion'); 
+                alert("✅ Sistema reiniciado con éxito. Todos los jueces inician de 0 y los dispositivos bloqueados fueron liberados.");
                 codigoInput.value = "";
-                location.reload(); // Recarga la página
+                location.reload(); 
             }
             return; 
         }
 
         if (accesosJueces[codigo]) {
             if (!db) {
-                alert("⏳ Conectando al servidor, por favor intenta de nuevo en un segundo...");
-                return;
-            }
-
-            // --- NUEVA VALIDACIÓN: BLOQUEO DE DOBLE SESIÓN ---
-            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'sesiones_jueces', codigo);
-            try {
-                const docSnap = await getDoc(docRef);
-                // Verificamos si alguien más (otro Device ID) ya está usando este código
-                if (docSnap.exists() && docSnap.data().activa === true && docSnap.data().deviceId !== localDeviceId) {
-                    alert("🚨 ACCESO DENEGADO: Este juez ya se encuentra activo calificando desde otro dispositivo. Por seguridad, no puedes ingresar a la misma cuenta simultáneamente.");
-                    codigoInput.value = "";
+                // FALLBACK OFFLINE / SIN CONFIGURAR
+                alert("⚠️ Aviso: No estás conectado a la nube (Falta configurar Firebase). El sistema funcionará en modo local y no se sincronizará con otros jueces.");
+            } else {
+                // VALIDACIÓN EN LA NUBE (Solo si db está conectado)
+                const docRef = getSesionDocRef(codigo);
+                try {
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists() && docSnap.data().activa === true && docSnap.data().deviceId !== localDeviceId) {
+                        alert("🚨 ACCESO DENEGADO: Este juez ya se encuentra activo calificando desde otro dispositivo. Por seguridad, no puedes ingresar a la misma cuenta simultáneamente.");
+                        codigoInput.value = "";
+                        return;
+                    }
+                    
+                    await setDoc(docRef, { activa: true, deviceId: localDeviceId, timestamp: new Date().toISOString() });
+                } catch (error) {
+                    console.error("Error al validar sesión en la nube:", error);
+                    alert("Hubo un problema verificando tu sesión o no tienes permisos de lectura.");
                     return;
                 }
-                
-                // Si el código está libre (o es el mismo dispositivo de antes), registramos la entrada
-                await setDoc(docRef, { activa: true, deviceId: localDeviceId, timestamp: new Date().toISOString() });
-            } catch (error) {
-                console.error("Error al validar sesión en la nube:", error);
-                alert("Hubo un problema verificando tu sesión. Intenta de nuevo.");
-                return;
             }
 
-            window.sesionActual = { ...accesosJueces[codigo], codigoAcceso: codigo }; // Guardamos también el código usado
-            
-            // Guardar la sesión en la memoria del navegador
+            // Iniciar sesión visualmente
+            window.sesionActual = { ...accesosJueces[codigo], codigoAcceso: codigo };
             localStorage.setItem('uatyg_juez_sesion', JSON.stringify(window.sesionActual));
             
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
-
             document.getElementById('display-nombre-juez').innerText = window.sesionActual.nombre;
             document.getElementById('display-mision-juez').innerText = configuracionMisiones[window.sesionActual.mision].titulo;
 
@@ -546,7 +555,6 @@
                 opt.disabled = false;
                 opt.text = opt.text.replace(" (✓ Ya calificado)", "");
                 
-                // VALIDACIÓN CONTRA LA BASE DE DATOS EN LA NUBE
                 const yaCalificado = window.baseDeDatosNube.some(r => r.mision === misionId && r.etapa === etapaId && r.equipo === opt.value && r.juez === juez);
                 
                 if (yaCalificado) {
@@ -605,8 +613,7 @@
             timestamp: new Date().toISOString()
         };
 
-        // ENVIAR A LA BASE DE DATOS EN LA NUBE
-        if (user && votosCollection) {
+        if (db && user && votosCollection) {
             try {
                 await addDoc(votosCollection, nuevoVoto);
                 document.getElementById('success-modal').classList.remove('hidden');
@@ -614,8 +621,9 @@
                 alert("Error al enviar a la nube: " + e.message);
             }
         } else {
-            // Respaldo de seguridad si se cae el internet
+            // MODO OFFLINE: Guardado manual en localStorage
             window.baseDeDatosNube.push(nuevoVoto);
+            localStorage.setItem('uatyg_votos', JSON.stringify(window.baseDeDatosNube));
             document.getElementById('success-modal').classList.remove('hidden');
         }
     };
@@ -636,9 +644,7 @@
 
         document.getElementById('titulo-resultados').innerText = `Resultados en Vivo: ${configuracionMisiones[misionId].titulo}`;
         
-        // SUMATORIA GLOBAL DE TODOS LOS JUECES EN LA NUBE
         const sumaPorEquipo = {};
-        let totalJuecesHanVotado = 0;
         
         window.baseDeDatosNube.forEach(registro => {
             if(registro.mision === misionId) {
@@ -646,7 +652,6 @@
                     sumaPorEquipo[registro.equipo] = 0;
                 }
                 sumaPorEquipo[registro.equipo] += registro.total;
-                totalJuecesHanVotado++;
             }
         });
 
@@ -702,10 +707,9 @@
         document.getElementById('confirm-exit-modal').classList.add('hidden');
         document.getElementById('main-app').classList.add('hidden');
         
-        // --- NUEVO: LIBERAR LA SESIÓN EN LA NUBE PARA QUE OTRO DISPOSITIVO PUEDA ENTRAR ---
-        if (window.sesionActual && db && appId) {
+        if (window.sesionActual && db) {
             try {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'sesiones_jueces', window.sesionActual.codigoAcceso);
+                const docRef = getSesionDocRef(window.sesionActual.codigoAcceso);
                 await setDoc(docRef, { activa: false, deviceId: null });
             } catch (e) {
                 console.error("Error liberando la sesión:", e);
@@ -713,16 +717,16 @@
         }
 
         window.sesionActual = null;
-        localStorage.removeItem('uatyg_juez_sesion'); // Borramos la sesión al salir manualmente
+        localStorage.removeItem('uatyg_juez_sesion'); 
         
         document.getElementById('codigo-juez').value = ""; 
         document.getElementById('thank-you-screen').classList.remove('hidden');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // Inicializar iconos en la carga
     lucide.createIcons();
 </script>
 </body>
 </html>
+
 
