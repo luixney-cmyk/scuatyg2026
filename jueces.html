@@ -237,11 +237,19 @@
     // --- IMPORTACIÓN DEL MOTOR DE BASE DE DATOS EN LA NUBE ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, onSnapshot, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, getDocs, deleteDoc, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    let db, auth, user, appId, votosCollection;
+    let db, auth, user, appId, votosCollection, sesionesCollection;
     window.baseDeDatosNube = []; // Aquí se guardarán los datos compartidos de todos
     window.sesionActual = null; 
+
+    // --- NUEVO: ID ÚNICO DEL DISPOSITIVO ---
+    // Esto asegura que si el juez entra, su dispositivo quede registrado como el dueño de la sesión.
+    let localDeviceId = localStorage.getItem('uatyg_device_id');
+    if (!localDeviceId) {
+        localDeviceId = 'dev_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('uatyg_device_id', localDeviceId);
+    }
 
     // --- 1. INICIALIZAR LA NUBE EN TIEMPO REAL ---
     async function initCloud() {
@@ -267,6 +275,7 @@
                     user = currentUser;
                     // Conectamos a la carpeta pública de votos donde todos los jueces guardarán
                     votosCollection = collection(db, 'artifacts', appId, 'public', 'data', 'votos_jueces');
+                    sesionesCollection = collection(db, 'artifacts', appId, 'public', 'data', 'sesiones_jueces');
                     
                     // ESCUCHADOR EN VIVO: Si alguien en otro celular vota, esto se actualiza solo
                     onSnapshot(votosCollection, (snapshot) => {
@@ -379,29 +388,78 @@
     };
 
     // --- 3. FUNCIONES GLOBALES (Expuestas para los botones HTML) ---
+
+    // Revisar si ya hay una sesión activa al cargar la página
+    window.onload = function() {
+        const sesionGuardada = localStorage.getItem('uatyg_juez_sesion');
+        if (sesionGuardada) {
+            window.sesionActual = JSON.parse(sesionGuardada);
+            
+            // Ocultar login y mostrar panel
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+
+            document.getElementById('display-nombre-juez').innerText = window.sesionActual.nombre;
+            document.getElementById('display-mision-juez').innerText = configuracionMisiones[window.sesionActual.mision].titulo;
+
+            window.cargarEtapas();
+        }
+    };
     
     window.iniciarSesionJuez = async function() {
         const codigoInput = document.getElementById('codigo-juez');
         const codigo = codigoInput.value.trim().toUpperCase();
         const errorMsg = document.getElementById('error-login');
 
-        // BOTÓN DE PÁNICO: RESETEAR LA BASE DE DATOS DE LA NUBE
+        // BOTÓN DE PÁNICO: RESETEAR LA BASE DE DATOS DE LA NUBE Y LOCAL
         if (codigo === "RESET2026") {
-            if(confirm("⚠️ ADVERTENCIA MÁXIMA: ¿Estás seguro de borrar TODAS las calificaciones de la base de datos global?")) {
+            if(confirm("⚠️ ADVERTENCIA MÁXIMA: ¿Estás seguro de borrar TODAS las calificaciones de la base de datos global y cerrar las sesiones?")) {
                 if (votosCollection) {
                     const snapshot = await getDocs(votosCollection);
-                    snapshot.forEach(doc => deleteDoc(doc.ref)); // Borra todos los documentos
-                    alert("✅ Nube reiniciada con éxito. Todos los jueces inician de 0.");
-                } else {
-                    alert("No estás conectado a la nube en este momento.");
+                    snapshot.forEach(d => deleteDoc(d.ref)); // Borra todos los documentos de votos
                 }
+                if (sesionesCollection) {
+                    const snapSesiones = await getDocs(sesionesCollection);
+                    snapSesiones.forEach(d => deleteDoc(d.ref)); // Libera todas las sesiones activas
+                }
+                localStorage.removeItem('uatyg_votos'); // Limpia respaldo local
+                localStorage.removeItem('uatyg_juez_sesion'); // Cierra la sesión activa
+                alert("✅ Nube reiniciada con éxito. Todos los jueces inician de 0 y los dispositivos bloqueados fueron liberados.");
                 codigoInput.value = "";
+                location.reload(); // Recarga la página
             }
             return; 
         }
 
         if (accesosJueces[codigo]) {
-            window.sesionActual = accesosJueces[codigo];
+            if (!db) {
+                alert("⏳ Conectando al servidor, por favor intenta de nuevo en un segundo...");
+                return;
+            }
+
+            // --- NUEVA VALIDACIÓN: BLOQUEO DE DOBLE SESIÓN ---
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'sesiones_jueces', codigo);
+            try {
+                const docSnap = await getDoc(docRef);
+                // Verificamos si alguien más (otro Device ID) ya está usando este código
+                if (docSnap.exists() && docSnap.data().activa === true && docSnap.data().deviceId !== localDeviceId) {
+                    alert("🚨 ACCESO DENEGADO: Este juez ya se encuentra activo calificando desde otro dispositivo. Por seguridad, no puedes ingresar a la misma cuenta simultáneamente.");
+                    codigoInput.value = "";
+                    return;
+                }
+                
+                // Si el código está libre (o es el mismo dispositivo de antes), registramos la entrada
+                await setDoc(docRef, { activa: true, deviceId: localDeviceId, timestamp: new Date().toISOString() });
+            } catch (error) {
+                console.error("Error al validar sesión en la nube:", error);
+                alert("Hubo un problema verificando tu sesión. Intenta de nuevo.");
+                return;
+            }
+
+            window.sesionActual = { ...accesosJueces[codigo], codigoAcceso: codigo }; // Guardamos también el código usado
+            
+            // Guardar la sesión en la memoria del navegador
+            localStorage.setItem('uatyg_juez_sesion', JSON.stringify(window.sesionActual));
             
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
@@ -640,10 +698,23 @@
         document.getElementById('confirm-exit-modal').classList.add('hidden');
     };
 
-    window.ejecutarSalida = function() {
+    window.ejecutarSalida = async function() {
         document.getElementById('confirm-exit-modal').classList.add('hidden');
         document.getElementById('main-app').classList.add('hidden');
+        
+        // --- NUEVO: LIBERAR LA SESIÓN EN LA NUBE PARA QUE OTRO DISPOSITIVO PUEDA ENTRAR ---
+        if (window.sesionActual && db && appId) {
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'sesiones_jueces', window.sesionActual.codigoAcceso);
+                await setDoc(docRef, { activa: false, deviceId: null });
+            } catch (e) {
+                console.error("Error liberando la sesión:", e);
+            }
+        }
+
         window.sesionActual = null;
+        localStorage.removeItem('uatyg_juez_sesion'); // Borramos la sesión al salir manualmente
+        
         document.getElementById('codigo-juez').value = ""; 
         document.getElementById('thank-you-screen').classList.remove('hidden');
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -654,3 +725,4 @@
 </script>
 </body>
 </html>
+
