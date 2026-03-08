@@ -63,15 +63,6 @@
             100% { transform: translateY(0px); }
         }
 
-        .blink {
-            animation: blinker 1.5s ease-in-out infinite;
-        }
-
-        @keyframes blinker {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; } 
-        }
-
         /* Modal Detalles de Equipo */
         .modal-zoom {
             animation: zoomIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
@@ -80,6 +71,15 @@
         @keyframes zoomIn {
             from { transform: scale(0.8); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
+        }
+        
+        /* Animación de carga */
+        .loading-pulse {
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
         }
     </style>
 </head>
@@ -105,6 +105,16 @@
         <h2 class="text-red-600 font-pixel text-lg md:text-2xl mb-2 floating drop-shadow-[2px_2px_0_rgba(255,255,255,1)]">RACE RESULTS</h2>
         <h1 class="text-4xl md:text-6xl font-black mb-4 uppercase tracking-tighter drop-shadow-md">TABLA DE POSICIONES</h1>
         <p class="text-lg md:text-xl font-bold mb-6">¡Descubre qué equipo domina el Reino Champiñón!</p>
+        
+        <!-- Indicador de estado en vivo -->
+        <div id="live-indicator" class="hidden mb-6 flex justify-center items-center gap-2 text-xs font-bold text-green-800 bg-green-200 border border-green-400 py-1 px-3 rounded-full w-max mx-auto shadow-sm">
+            <span class="w-2 h-2 bg-green-500 rounded-full animate-ping"></span>
+            ACTUALIZACIÓN EN VIVO
+        </div>
+        <div id="offline-indicator" class="hidden mb-6 flex justify-center items-center gap-2 text-xs font-bold text-yellow-800 bg-yellow-200 border border-yellow-400 py-1 px-3 rounded-full w-max mx-auto shadow-sm">
+            <i data-lucide="wifi-off" class="w-3 h-3"></i>
+            MODO OFFLINE (Esperando conexión...)
+        </div>
     </header>
 
     <!-- Leaderboard Container -->
@@ -118,8 +128,14 @@
                 <div class="w-20 md:w-32 text-right">PUNTOS</div>
             </div>
 
+            <!-- Pantalla de carga inicial -->
+            <div id="loading-state" class="text-center py-10 loading-pulse">
+                <i data-lucide="gamepad-2" class="w-12 h-12 text-yellow-400 mx-auto mb-4"></i>
+                <p class="font-pixel text-white text-xs md:text-sm">CARGANDO DATOS DEL SERVIDOR...</p>
+            </div>
+
             <!-- Aquí se inyectan las filas con JavaScript -->
-            <div id="leaderboard-container" class="space-y-3">
+            <div id="leaderboard-container" class="space-y-3 hidden">
                 <!-- El contenido se generará automáticamente -->
             </div>
         </div>
@@ -142,7 +158,7 @@
             </div>
             <!-- Cuerpo del modal (Misiones) -->
             <div class="p-4 overflow-y-auto bg-gray-50 flex-1 rounded-b-lg">
-                <h4 class="font-pixel text-xs text-blue-600 mb-4 border-b-2 border-blue-200 pb-2">MISIONES GANADAS</h4>
+                <h4 class="font-pixel text-xs text-blue-600 mb-4 border-b-2 border-blue-200 pb-2">MISIONES REGISTRADAS</h4>
                 <ul id="modal-missions-list" class="space-y-3">
                     <!-- Las misiones se inyectan aquí con JavaScript -->
                 </ul>
@@ -150,66 +166,137 @@
         </div>
     </div>
 
-    <script>
-        lucide.createIcons();
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- SISTEMA DE AUDIO (Sonido de Moneda) ---
-        let audioCtx;
-        function playCoinSound() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
+    lucide.createIcons();
 
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            
-            osc.type = 'square'; 
-            
-            osc.frequency.setValueAtTime(987.77, audioCtx.currentTime); // Nota B5
-            osc.frequency.setValueAtTime(1318.51, audioCtx.currentTime + 0.1); // Nota E6
+    // --- SISTEMA DE AUDIO ---
+    let audioCtx;
+    window.playCoinSound = function() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'square'; 
+        osc.frequency.setValueAtTime(987.77, audioCtx.currentTime); 
+        osc.frequency.setValueAtTime(1318.51, audioCtx.currentTime + 0.1); 
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime); 
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3); 
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.4);
+    };
 
-            gain.gain.setValueAtTime(0.05, audioCtx.currentTime); 
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3); 
+    // ==========================================
+    // CONFIGURACIÓN DE FIREBASE (La misma del Comité)
+    // ==========================================
+    const firebaseConfig = {
+        apiKey: "AIzaSyAWvlKYMuFlxL88OrSOzGPzXk0w_HUTGQ8",
+        authDomain: "scuatyg2026.firebaseapp.com",
+        projectId: "scuatyg2026",
+        storageBucket: "scuatyg2026.firebasestorage.app",
+        messagingSenderId: "321639282182",
+        appId: "1:321639282182:web:6803746ad3ff4c8e8e3587",
+        measurementId: "G-YQ5KBWYEQY"
+    };
 
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
+    const isCanvasEnv = typeof __firebase_config !== 'undefined';
+    const currentAppId = typeof __app_id !== 'undefined' ? __app_id : 'scuatyg2026-app';
 
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.4);
-        }
+    // --- BASE DE DATOS DE EQUIPOS (Aspecto visual) ---
+    // Aquí definimos los colores y nombres, pero los puntos y misiones inician vacíos.
+    const baseTeamsInfo = [
+        { name: "Mario", color: "bg-red-600", border: "border-red-800", text: "text-white" },
+        { name: "Luigi", color: "bg-green-600", border: "border-green-800", text: "text-white" },
+        { name: "Peach", color: "bg-pink-400", border: "border-pink-600", text: "text-white" },
+        { name: "Daisy", color: "bg-orange-400", border: "border-orange-600", text: "text-white" },
+        { name: "Yoshi", color: "bg-lime-400", border: "border-lime-600", text: "text-black" },
+        { name: "Toad", color: "bg-gray-100", border: "border-gray-400", text: "text-black" },
+        { name: "Wario", color: "bg-yellow-400", border: "border-yellow-600", text: "text-black" },
+        { name: "Waluigi", color: "bg-purple-600", border: "border-purple-800", text: "text-white" },
+        { name: "Bowser", color: "bg-red-900", border: "border-red-950", text: "text-white" },
+        { name: "DK", color: "bg-amber-800", border: "border-amber-950", text: "text-white" },
+        { name: "Rosalina", color: "bg-teal-300", border: "border-teal-500", text: "text-black" },
+        { name: "Koopa", color: "bg-gray-800", border: "border-black", text: "text-white" },
+        { name: "Birdo", color: "bg-pink-600", border: "border-pink-800", text: "text-white" },
+        { name: "Boo", color: "bg-blue-100", border: "border-blue-300", text: "text-black" },
+        { name: "Shy Guy", color: "bg-blue-900", border: "border-blue-950", text: "text-white" },
+        { name: "Huesitos", color: "bg-gray-500", border: "border-gray-700", text: "text-white" }
+    ];
 
-        // ==========================================
-        // BASE DE DATOS DE EQUIPOS (Edita los puntos y misiones aquí)
-        // ==========================================
-        const teams = [
-            // Dejé a Mario con un par de misiones de ejemplo para que veas cómo se llena.
-            { name: "Mario", points: 0, color: "bg-red-600", border: "border-red-800", text: "text-white", missions: [ { title: "Presentación de Equipos ", place: 1 }, { title: "Grand Prix", place: 2 } ] },
-            { name: "Luigi", points: 0, color: "bg-green-600", border: "border-green-800", text: "text-white", missions: [] },
-            { name: "Peach", points: 0, color: "bg-pink-400", border: "border-pink-600", text: "text-white", missions: [] },
-            { name: "Daisy", points: 0, color: "bg-orange-400", border: "border-orange-600", text: "text-white", missions: [] },
-            { name: "Yoshi", points: 0, color: "bg-lime-400", border: "border-lime-600", text: "text-black", missions: [] },
-            { name: "Toad", points: 0, color: "bg-gray-100", border: "border-gray-400", text: "text-black", missions: [] },
-            { name: "Wario", points: 0, color: "bg-yellow-400", border: "border-yellow-600", text: "text-black", missions: [] },
-            { name: "Waluigi", points: 0, color: "bg-purple-600", border: "border-purple-800", text: "text-white", missions: [] },
-            { name: "Bowser", points: 0, color: "bg-red-900", border: "border-red-950", text: "text-white", missions: [] },
-            { name: "DK", points: 0, color: "bg-amber-800", border: "border-amber-950", text: "text-white", missions: [] },
-            { name: "Rosalina", points: 0, color: "bg-teal-300", border: "border-teal-500", text: "text-black", missions: [] },
-            { name: "Koopa", points: 0, color: "bg-gray-800", border: "border-black", text: "text-white", missions: [] },
-            { name: "Birdo", points: 0, color: "bg-pink-600", border: "border-pink-800", text: "text-white", missions: [] },
-            { name: "Boo", points: 0, color: "bg-blue-100", border: "border-blue-300", text: "text-black", missions: [] },
-            { name: "Shy Guy", points: 0, color: "bg-blue-900", border: "border-blue-950", text: "text-white", missions: [] },
-            { name: "Huesitos", points: 0, color: "bg-gray-500", border: "border-gray-700", text: "text-white", missions: [] }
-        ];
+    let db = null, auth = null;
+    let globalTeamsData = []; // Aquí se guardará la data ya procesada
 
-        // 1. ORDENAR LOS EQUIPOS DE MAYOR A MENOR PUNTAJE
-        teams.sort((a, b) => b.points - a.points);
+    // --- FUNCIÓN PRINCIPAL PARA PROCESAR DATOS ---
+    const procesarDatosDeNube = (registrosNube) => {
+        // 1. Crear copia fresca de la estructura visual base
+        let equiposProcesados = baseTeamsInfo.map(t => ({
+            ...t, 
+            points: 0, 
+            missions: [] 
+        }));
 
+        // 2. Llenar los datos recorriendo lo que mandó el comité
+        registrosNube.forEach(registro => {
+            // Oro
+            if (registro.oro) {
+                let eq = equiposProcesados.find(t => t.name === registro.oro);
+                if (eq) {
+                    eq.points += (registro.ptsOro || 0);
+                    eq.missions.push({ title: registro.titulo, place: 1, pts: registro.ptsOro });
+                }
+            }
+            // Plata
+            if (registro.plata) {
+                let eq = equiposProcesados.find(t => t.name === registro.plata);
+                if (eq) {
+                    eq.points += (registro.ptsPlata || 0);
+                    eq.missions.push({ title: registro.titulo, place: 2, pts: registro.ptsPlata });
+                }
+            }
+            // Bronce
+            if (registro.bronce) {
+                let eq = equiposProcesados.find(t => t.name === registro.bronce);
+                if (eq) {
+                    eq.points += (registro.ptsBronce || 0);
+                    eq.missions.push({ title: registro.titulo, place: 3, pts: registro.ptsBronce });
+                }
+            }
+            // Participaciones
+            if (registro.participantes && Array.isArray(registro.participantes)) {
+                registro.participantes.forEach(participante => {
+                    let eq = equiposProcesados.find(t => t.name === participante);
+                    if (eq && registro.ptsParticipacion > 0) {
+                        eq.points += registro.ptsParticipacion;
+                        eq.missions.push({ title: registro.titulo, place: 4, pts: registro.ptsParticipacion }); // place 4 = participación
+                    }
+                });
+            }
+        });
+
+        // 3. Ordenar de mayor a menor y guardar globalmente
+        equiposProcesados.sort((a, b) => b.points - a.points);
+        globalTeamsData = equiposProcesados;
+        
+        // 4. Dibujar en pantalla
+        renderizarTabla();
+    };
+
+    // --- FUNCIÓN PARA DIBUJAR LA TABLA ---
+    const renderizarTabla = () => {
         const container = document.getElementById('leaderboard-container');
+        document.getElementById('loading-state').classList.add('hidden');
+        container.classList.remove('hidden');
+        container.innerHTML = ''; // Limpiar anterior
 
-        // 2. GENERAR LA TABLA VISUALMENTE
-        teams.forEach((team, index) => {
+        if (globalTeamsData.length === 0) return;
+
+        globalTeamsData.forEach((team, index) => {
             const rank = index + 1;
-            
-            // Asignar colores según la posición
             let rankColor = "text-orange-500"; 
             let suffix = "th";
             
@@ -217,94 +304,168 @@
             else if (rank === 2) { rankColor = "text-gray-300"; suffix = "nd"; }
             else if (rank === 3) { rankColor = "text-amber-600"; suffix = "rd"; }
 
-            // Crear el elemento de la fila
             const row = document.createElement('div');
             row.className = "flex items-center p-2 rounded row-hover border-b border-gray-700/50 cursor-pointer";
-            
             row.innerHTML = `
-                <!-- POSICIÓN -->
                 <div class="w-16 md:w-24 text-center font-pixel text-2xl md:text-4xl ${rankColor} rank-text italic pr-2">
                     ${rank}<span class="text-sm md:text-lg">${suffix}</span>
                 </div>
-
-                <!-- AVATAR Y NOMBRE -->
                 <div class="flex-1 flex items-center gap-3 md:gap-4 pl-2 md:pl-4">
                     <div class="w-12 h-12 md:w-16 md:h-16 ${team.color} ${team.border} border-4 rounded-lg flex items-center justify-center shadow-[4px_4px_0_rgba(0,0,0,1)] transform -rotate-3">
                         <span class="font-pixel text-[8px] md:text-[10px] ${team.text}">${team.name.substring(0,3).toUpperCase()}</span>
                     </div>
                     <span class="font-bold text-white text-lg md:text-2xl uppercase tracking-wider drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">${team.name}</span>
                 </div>
-
-                <!-- PUNTOS -->
                 <div class="w-20 md:w-32 text-right">
                     <span class="font-pixel text-sm md:text-xl text-yellow-300 drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">${team.points}</span>
                     <span class="block text-gray-400 text-[8px] md:text-[10px] uppercase font-bold mt-1">PTS</span>
                 </div>
             `;
 
-            // Reproducir el sonido al darle clic y abrir detalles de misiones
             row.addEventListener('click', () => {
-                playCoinSound();
-                showTeamDetails(team);
+                window.playCoinSound();
+                window.showTeamDetails(team.name); // Pasamos el nombre para buscarlo en la data global
             });
 
             container.appendChild(row);
         });
+    };
 
-        // --- LÓGICA DEL MODAL DE DETALLES DE MISIONES ---
-        function showTeamDetails(team) {
-            const header = document.getElementById('modal-header');
-            const initials = document.getElementById('modal-initials');
-            
-            header.className = `p-4 border-b-4 border-black flex items-center gap-4 relative ${team.color}`;
-            document.getElementById('modal-team-name').innerText = team.name;
-            document.getElementById('modal-team-name').className = `font-bold text-2xl uppercase tracking-wider ${team.text || 'text-white'}`;
-            document.getElementById('modal-team-points').innerText = `${team.points} PTS`;
-            document.getElementById('modal-team-points').className = `font-pixel text-[10px] ${team.text === 'text-black' ? 'text-gray-800' : 'text-gray-200'}`;
-            
-            initials.innerText = team.name.substring(0,3).toUpperCase();
+    // --- MODAL DE DETALLES ---
+    window.showTeamDetails = function(teamName) {
+        // Buscar los datos actualizados del equipo
+        const team = globalTeamsData.find(t => t.name === teamName);
+        if (!team) return;
 
-            const list = document.getElementById('modal-missions-list');
-            list.innerHTML = ''; 
+        const header = document.getElementById('modal-header');
+        const initials = document.getElementById('modal-initials');
+        
+        header.className = `p-4 border-b-4 border-black flex items-center gap-4 relative ${team.color}`;
+        document.getElementById('modal-team-name').innerText = team.name;
+        document.getElementById('modal-team-name').className = `font-bold text-2xl uppercase tracking-wider ${team.text || 'text-white'}`;
+        document.getElementById('modal-team-points').innerText = `${team.points} PTS GLOBALES`;
+        document.getElementById('modal-team-points').className = `font-pixel text-[10px] ${team.text === 'text-black' ? 'text-gray-800' : 'text-gray-200'}`;
+        
+        initials.innerText = team.name.substring(0,3).toUpperCase();
 
-            if (!team.missions || team.missions.length === 0) {
-                list.innerHTML = '<p class="text-sm text-gray-500 text-center py-4 italic">Aún no hay misiones ganadas registradas.</p>';
-            } else {
-                team.missions.forEach(mission => {
-                    let medalIcon = '🏅';
-                    let medalColor = 'bg-gray-200 text-gray-600 border-gray-300';
-                    let placeText = `${mission.place}º Lugar`;
+        const list = document.getElementById('modal-missions-list');
+        list.innerHTML = ''; 
 
-                    if (mission.place === 1) { medalIcon = '🥇'; medalColor = 'bg-yellow-100 text-yellow-700 border-yellow-400'; }
-                    else if (mission.place === 2) { medalIcon = '🥈'; medalColor = 'bg-gray-100 text-gray-600 border-gray-400'; }
-                    else if (mission.place === 3) { medalIcon = '🥉'; medalColor = 'bg-orange-100 text-orange-700 border-orange-400'; placeText = '3er Lugar'; }
-                    else { medalColor = 'bg-blue-50 text-blue-600 border-blue-200'; placeText = 'Participación'; }
+        if (!team.missions || team.missions.length === 0) {
+            list.innerHTML = '<p class="text-sm text-gray-500 text-center py-4 italic font-bold">Aún no tienen puntos registrados. ¡A jugar!</p>';
+        } else {
+            // Mostrar misiones ordenadas por puntos (las más altas primero)
+            team.missions.sort((a,b) => b.pts - a.pts).forEach(mission => {
+                let medalIcon = '🏅';
+                let medalColor = 'bg-gray-200 text-gray-600 border-gray-300';
+                let placeText = `${mission.place}º Lugar`;
 
-                    const li = document.createElement('li');
-                    li.className = `flex items-center justify-between p-3 rounded border-2 ${medalColor} shadow-sm`;
-                    li.innerHTML = `
-                        <span class="font-bold text-sm md:text-base">${mission.title}</span>
-                        <div class="flex items-center gap-2">
-                            <span class="font-pixel text-[8px] uppercase">${placeText}</span>
-                            <span class="text-xl md:text-2xl">${medalIcon}</span>
+                if (mission.place === 1) { medalIcon = '🥇'; medalColor = 'bg-yellow-100 text-yellow-700 border-yellow-400'; }
+                else if (mission.place === 2) { medalIcon = '🥈'; medalColor = 'bg-gray-100 text-gray-600 border-gray-400'; }
+                else if (mission.place === 3) { medalIcon = '🥉'; medalColor = 'bg-orange-100 text-orange-700 border-orange-400'; placeText = '3er Lugar'; }
+                else { medalColor = 'bg-blue-50 text-blue-600 border-blue-200'; placeText = 'Participación'; }
+
+                const li = document.createElement('li');
+                li.className = `flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded border-2 ${medalColor} shadow-sm gap-2`;
+                li.innerHTML = `
+                    <span class="font-bold text-sm md:text-base leading-tight">${mission.title}</span>
+                    <div class="flex items-center justify-between sm:justify-end gap-3">
+                        <div class="text-right">
+                            <span class="font-pixel text-[8px] uppercase block">${placeText}</span>
+                            <span class="font-bold text-xs">+${mission.pts} pts</span>
                         </div>
-                    `;
-                    list.appendChild(li);
-                });
+                        <span class="text-2xl">${medalIcon}</span>
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        document.getElementById('team-modal').classList.remove('hidden');
+    };
+
+    window.closeTeamDetails = function() {
+        document.getElementById('team-modal').classList.add('hidden');
+    };
+
+    document.getElementById('team-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'team-modal') window.closeTeamDetails();
+    });
+
+    // --- CONEXIÓN A LA NUBE (FIREBASE) ---
+    const initLeaderboardCloud = async () => {
+        let finalConfig = isCanvasEnv ? JSON.parse(__firebase_config) : firebaseConfig;
+
+        if (!finalConfig || !finalConfig.apiKey || finalConfig.apiKey.includes("TU_API_KEY")) {
+            console.warn("Firebase no configurado. Mostrando datos estáticos de prueba.");
+            document.getElementById('offline-indicator').classList.remove('hidden');
+            // Cargar datos locales de prueba si no hay nube
+            const localData = JSON.parse(localStorage.getItem('uatyg_comite_votos')) || [];
+            procesarDatosDeNube(localData);
+            return;
+        }
+
+        try {
+            const app = initializeApp(finalConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            // Intentar login anónimo silencioso
+            try {
+                if (isCanvasEnv && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (authError) {
+                console.error("Fallo autenticación, intentando leer datos locales:", authError);
+                document.getElementById('offline-indicator').classList.remove('hidden');
+                const localData = JSON.parse(localStorage.getItem('uatyg_comite_votos')) || [];
+                procesarDatosDeNube(localData);
+                return;
             }
 
-            document.getElementById('team-modal').classList.remove('hidden');
+            onAuthStateChanged(auth, (currentUser) => {
+                if (currentUser) {
+                    const comiteCollectionRef = collection(db, isCanvasEnv ? `artifacts/${currentAppId}/public/data/votos_comite` : 'votos_comite');
+                    
+                    // Escuchar cambios en la base de datos en tiempo real
+                    onSnapshot(comiteCollectionRef, (snapshot) => {
+                        const registrosNube = [];
+                        snapshot.forEach((doc) => {
+                            registrosNube.push({ id: doc.id, ...doc.data() });
+                        });
+                        
+                        document.getElementById('live-indicator').classList.remove('hidden');
+                        document.getElementById('offline-indicator').classList.add('hidden');
+                        
+                        // Guardar un respaldo local por si se va el internet
+                        localStorage.setItem('uatyg_comite_votos_backup', JSON.stringify(registrosNube));
+                        
+                        // Enviar a la fábrica de tablas
+                        procesarDatosDeNube(registrosNube);
+                        
+                    }, (error) => {
+                        console.error("Error leyendo Firebase en vivo:", error);
+                        document.getElementById('offline-indicator').classList.remove('hidden');
+                        // Usar el respaldo si la nube falla
+                        const backup = JSON.parse(localStorage.getItem('uatyg_comite_votos_backup')) || [];
+                        procesarDatosDeNube(backup);
+                    });
+                }
+            });
+        } catch (e) {
+            console.error("Error crítico iniciando Firebase Leaderboard:", e);
+            document.getElementById('offline-indicator').classList.remove('hidden');
+            const backup = JSON.parse(localStorage.getItem('uatyg_comite_votos_backup')) || [];
+            procesarDatosDeNube(backup);
         }
+    };
 
-        function closeTeamDetails() {
-            document.getElementById('team-modal').classList.add('hidden');
-        }
+    // Arrancar la magia
+    initLeaderboardCloud();
 
-        document.getElementById('team-modal').addEventListener('click', (e) => {
-            if (e.target.id === 'team-modal') closeTeamDetails();
-        });
-
-    </script>
+</script>
 </body>
-
 </html>
+
