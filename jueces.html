@@ -75,9 +75,15 @@
     <div id="resultados-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md overflow-y-auto">
         <div class="nes-container bg-white border-4 border-black p-6 w-full max-w-md my-auto rounded-lg shadow-[8px_8px_0_0_rgba(0,0,0,1)]">
             <div class="flex justify-between items-center mb-4 border-b-4 border-gray-200 pb-2">
-                <h3 class="font-pixel text-blue-600 text-sm">TABLA DE POSICIONES</h3>
+                <h3 class="font-pixel text-blue-600 text-sm">TABLA EN VIVO</h3>
                 <button type="button" onclick="cerrarResultados()" class="text-red-500 hover:text-red-700"><i data-lucide="x-circle" class="w-6 h-6"></i></button>
             </div>
+            
+            <!-- Aviso de modo offline -->
+            <div id="aviso-offline" class="hidden bg-yellow-100 border border-yellow-400 text-yellow-800 text-[10px] p-2 rounded mb-4 text-center font-bold">
+                ⚠️ MODO OFFLINE: Mostrando solo los puntos de tu dispositivo. Revisa tu conexión a Firebase para ver los de todos.
+            </div>
+
             <p id="titulo-resultados" class="font-bold text-gray-700 mb-4 text-sm text-center">Resultados de la Misión</p>
             
             <div id="tabla-resultados" class="space-y-2 mb-6">
@@ -146,7 +152,7 @@
         <input type="text" id="codigo-juez" class="w-full border-4 border-black bg-white p-3 mb-2 font-pixel text-center uppercase focus:outline-none focus:border-blue-600 transition-colors shadow-inner relative z-10" placeholder="CÓDIGO AQUÍ" autocomplete="off" onkeypress="if(event.key === 'Enter') iniciarSesionJuez()">
         <p id="error-login" class="text-red-600 font-bold text-xs mb-4 h-4 hidden animate-pulse relative z-10">¡CÓDIGO INCORRECTO!</p>
         
-        <button type="button" onclick="iniciarSesionJuez()" class="btn-pixel w-full bg-blue-600 hover:bg-blue-700 text-white font-pixel py-4 px-4 text-xs mt-2 flex items-center justify-center gap-2 relative z-10">
+        <button id="btn-login" type="button" onclick="iniciarSesionJuez()" class="btn-pixel w-full bg-blue-600 hover:bg-blue-700 text-white font-pixel py-4 px-4 text-xs mt-2 flex items-center justify-center gap-2 relative z-10">
             <i data-lucide="key" class="w-5 h-5"></i> ENTRAR
         </button>
     </div>
@@ -165,42 +171,54 @@
 
         <form id="evaluacion-form" class="space-y-6">
 
-            <div id="contenedor-etapa" class="bg-purple-50 p-4 border-4 border-purple-400 rounded relative hidden mb-6">
-                <i class="w-5 h-5 absolute top-3 right-3 text-purple-300" data-lucide="layers"></i>
-                <label class="block font-pixel text-purple-800 text-[9px] md:text-[10px] mb-2 drop-shadow-sm">FASE A EVALUAR:</label>
-                <select id="etapa-select" onchange="cambiarEtapa()" class="w-full border-2 border-black p-2 font-bold text-gray-800 outline-none focus:border-purple-500 bg-white text-sm md:text-base cursor-pointer shadow-inner">
+            <!-- NUEVO: Selector de Misión para Observador (Oculto por defecto) -->
+            <div id="contenedor-mision-obs" class="bg-blue-50 p-4 border-4 border-blue-400 rounded relative hidden mb-6">
+                <i class="w-5 h-5 absolute top-3 right-3 text-blue-300" data-lucide="eye"></i>
+                <label class="block font-pixel text-blue-800 text-[9px] md:text-[10px] mb-2 drop-shadow-sm">MISIÓN A OBSERVAR:</label>
+                <select id="mision-obs-select" class="w-full border-2 border-black p-2 font-bold text-gray-800 outline-none focus:border-blue-500 bg-white text-sm md:text-base cursor-pointer shadow-inner">
+                    <!-- Se llena con JS -->
                 </select>
             </div>
 
-            <div class="bg-yellow-50 p-4 border-4 border-yellow-400 rounded relative shadow-sm mb-6">
-                <label class="block font-pixel text-yellow-800 text-[9px] md:text-[10px] mb-2 drop-shadow-sm">EQUIPO A EVALUAR:</label>
-                <select id="equipo-select" onchange="actualizarEquiposDisponibles()" class="w-full border-2 border-black p-2 font-bold text-gray-800 outline-none focus:border-yellow-500 bg-white text-sm md:text-base cursor-pointer shadow-inner">
-                    <option value="">-- Selecciona un Equipo --</option>
-                    <option value="Mario (Rojo)">Equipo Mario (Rojo)</option>
-                    <option value="Luigi (Verde)">Equipo Luigi (Verde)</option>
-                    <option value="Peach (Rosa)">Equipo Peach (Rosa)</option>
-                    <option value="Daisy (Naranja)">Equipo Daisy (Naranja)</option>
-                    <option value="Yoshi (Verde Claro)">Equipo Yoshi (Verde Claro)</option>
-                    <option value="Toad (Azul)">Equipo Toad (Azul)</option>
-                    <option value="Bowser (Amarillo)">Equipo Bowser (Amarillo)</option>
-                </select>
-            </div>
-
-            <div id="rubrica-container" class="space-y-6 border-t-4 border-dashed border-gray-300 pt-6">
-                <h3 class="font-pixel text-xs text-center text-gray-800 bg-gray-100 py-2 border-2 border-gray-300 rounded shadow-sm">RÚBRICA DE EVALUACIÓN</h3>
-                <p class="text-center text-xs text-gray-500 font-bold mb-4 uppercase">Califica del 1 al 10 tocando el número</p>
-
-                <div id="criterios-dinamicos" class="space-y-4">
+            <!-- Contenedor general de calificación (Se oculta al ser observador) -->
+            <div id="area-calificacion" class="space-y-6">
+                <div id="contenedor-etapa" class="bg-purple-50 p-4 border-4 border-purple-400 rounded relative hidden mb-6">
+                    <i class="w-5 h-5 absolute top-3 right-3 text-purple-300" data-lucide="layers"></i>
+                    <label class="block font-pixel text-purple-800 text-[9px] md:text-[10px] mb-2 drop-shadow-sm">FASE A EVALUAR:</label>
+                    <select id="etapa-select" onchange="cambiarEtapa()" class="w-full border-2 border-black p-2 font-bold text-gray-800 outline-none focus:border-purple-500 bg-white text-sm md:text-base cursor-pointer shadow-inner">
+                    </select>
                 </div>
 
-                <div class="bg-gray-50 p-3 border-2 border-gray-200 rounded-lg shadow-sm">
-                    <label class="block font-bold text-sm text-gray-700 mb-2"><i data-lucide="message-square" class="w-4 h-4 inline mr-1 text-blue-500"></i> Observaciones (Opcional):</label>
-                    <textarea id="observaciones" class="w-full border-2 border-gray-300 bg-white text-gray-800 rounded p-2 text-sm outline-none focus:border-blue-500 font-medium placeholder-gray-400" rows="2" placeholder="Notas sobre el desempeño..."></textarea>
+                <div class="bg-yellow-50 p-4 border-4 border-yellow-400 rounded relative shadow-sm mb-6">
+                    <label class="block font-pixel text-yellow-800 text-[9px] md:text-[10px] mb-2 drop-shadow-sm">EQUIPO A EVALUAR:</label>
+                    <select id="equipo-select" onchange="actualizarEquiposDisponibles()" class="w-full border-2 border-black p-2 font-bold text-gray-800 outline-none focus:border-yellow-500 bg-white text-sm md:text-base cursor-pointer shadow-inner">
+                        <option value="">-- Selecciona un Equipo --</option>
+                        <option value="Mario (Rojo)">Equipo Mario (Rojo)</option>
+                        <option value="Luigi (Verde)">Equipo Luigi (Verde)</option>
+                        <option value="Peach (Rosa)">Equipo Peach (Rosa)</option>
+                        <option value="Daisy (Naranja)">Equipo Daisy (Naranja)</option>
+                        <option value="Yoshi (Verde Claro)">Equipo Yoshi (Verde Claro)</option>
+                        <option value="Toad (Azul)">Equipo Toad (Azul)</option>
+                        <option value="Bowser (Amarillo)">Equipo Bowser (Amarillo)</option>
+                    </select>
                 </div>
 
-                <button type="button" onclick="enviarCalificacion()" class="btn-pixel w-full bg-green-500 hover:bg-green-600 text-white font-pixel py-4 px-4 text-xs md:text-sm flex justify-center items-center gap-2 mt-6">
-                    <i data-lucide="send" class="w-5 h-5"></i> ENVIAR SCORE
-                </button>
+                <div id="rubrica-container" class="space-y-6 border-t-4 border-dashed border-gray-300 pt-6">
+                    <h3 class="font-pixel text-xs text-center text-gray-800 bg-gray-100 py-2 border-2 border-gray-300 rounded shadow-sm">RÚBRICA DE EVALUACIÓN</h3>
+                    <p class="text-center text-xs text-gray-500 font-bold mb-4 uppercase">Califica del 1 al 10 tocando el número</p>
+
+                    <div id="criterios-dinamicos" class="space-y-4">
+                    </div>
+
+                    <div class="bg-gray-50 p-3 border-2 border-gray-200 rounded-lg shadow-sm">
+                        <label class="block font-bold text-sm text-gray-700 mb-2"><i data-lucide="message-square" class="w-4 h-4 inline mr-1 text-blue-500"></i> Observaciones (Opcional):</label>
+                        <textarea id="observaciones" class="w-full border-2 border-gray-300 bg-white text-gray-800 rounded p-2 text-sm outline-none focus:border-blue-500 font-medium placeholder-gray-400" rows="2" placeholder="Notas sobre el desempeño..."></textarea>
+                    </div>
+
+                    <button type="button" onclick="enviarCalificacion()" class="btn-pixel w-full bg-green-500 hover:bg-green-600 text-white font-pixel py-4 px-4 text-xs md:text-sm flex justify-center items-center gap-2 mt-6">
+                        <i data-lucide="send" class="w-5 h-5"></i> ENVIAR SCORE
+                    </button>
+                </div>
             </div>
 
             <div class="mt-8 pt-4 border-t-2 border-gray-200">
@@ -224,6 +242,7 @@
     let db = null, auth = null, user = null, votosCollection = null, sesionesCollection = null;
     window.baseDeDatosNube = JSON.parse(localStorage.getItem('uatyg_votos')) || []; 
     window.sesionActual = null; 
+    let modoOffline = false; // Variable para saber si falló el internet o la llave
 
     const isCanvasEnv = typeof __firebase_config !== 'undefined';
     const currentAppId = typeof __app_id !== 'undefined' ? __app_id : 'scuatyg2026-app';
@@ -235,7 +254,7 @@
         localStorage.setItem('uatyg_device_id', localDeviceId);
     }
 
-    // --- 1. INICIALIZAR LA NUBE ---
+    // --- 1. INICIALIZAR LA NUBE CON PROTECCIÓN ANTI-FALLOS ---
     const initCloud = async () => {
         let firebaseConfig;
 
@@ -244,23 +263,24 @@
             firebaseConfig = JSON.parse(__firebase_config);
         } else {
             // =====================================================================
-            // 🔴 PASO IMPORTANTE: REEMPLAZA ESTO CON LOS DATOS DE TU FIREBASE 🔴
+            // TUS DATOS DE FIREBASE
             // =====================================================================
             firebaseConfig = {
                apiKey: "AIzaSyAWvlKYMuFlxL88OrSOzGPzXk0w_HUTGQ8",
-              authDomain: "scuatyg2026.firebaseapp.com",
-              projectId: "scuatyg2026",
-              storageBucket: "scuatyg2026.firebasestorage.app",
-              messagingSenderId: "321639282182",
-              appId: "1:321639282182:web:6803746ad3ff4c8e8e3587",
-              measurementId: "G-YQ5KBWYEQY"
+               authDomain: "scuatyg2026.firebaseapp.com",
+               projectId: "scuatyg2026",
+               storageBucket: "scuatyg2026.firebasestorage.app",
+               messagingSenderId: "321639282182",
+               appId: "1:321639282182:web:6803746ad3ff4c8e8e3587",
+               measurementId: "G-YQ5KBWYEQY"
             };
         }
 
         // PREVENCIÓN DE ERROR DE API KEY (Asegurarnos de que el usuario haya puesto la suya)
         if (!firebaseConfig || !firebaseConfig.apiKey || firebaseConfig.apiKey.includes("TU_API_KEY")) {
             console.warn("⚠️ MODO LOCAL ACTIVADO: No se ha configurado una API Key válida de Firebase. Los puntajes se guardarán solo en este dispositivo.");
-            return; // Abortamos la conexión a Firebase para evitar el crash
+            modoOffline = true;
+            return;
         }
 
         try {
@@ -268,10 +288,24 @@
             auth = getAuth(app);
             db = getFirestore(app);
 
-            if (isCanvasEnv && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
+            // Intentamos iniciar sesión anónima de forma segura
+            try {
+                if (isCanvasEnv && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (authError) {
+                console.error("❌ Error de Autenticación en Firebase:", authError.message);
+                console.warn("⚠️ La conexión a la nube ha fallado. Revisa los dominios autorizados en Firebase Authentication.");
+                modoOffline = true; // Si la llave está mal o el dominio no está autorizado, nos vamos a modo offline
+                
+                // Mostrar alerta en pantalla solo si no estamos en el entorno de desarrollo
+                if (!isCanvasEnv) {
+                    document.getElementById('aviso-offline').classList.remove('hidden');
+                    document.getElementById('aviso-offline').innerHTML = `⚠️ ERROR DE CONEXIÓN: Verifica los dominios autorizados en Firebase. Entrando en Modo Local.`;
+                }
+                return; // Detenemos la ejecución de Firebase aquí
             }
 
             onAuthStateChanged(auth, (currentUser) => {
@@ -287,32 +321,40 @@
                         sesionesCollection = collection(db, 'sesiones_jueces');
                     }
                     
-                    // ESCUCHADOR EN VIVO
-                    onSnapshot(votosCollection, (snapshot) => {
-                        window.baseDeDatosNube = [];
-                        snapshot.forEach((doc) => {
-                            window.baseDeDatosNube.push({ id: doc.id, ...doc.data() });
-                        });
-                        
-                        // Guardamos un respaldo local de los datos de la nube
-                        localStorage.setItem('uatyg_votos', JSON.stringify(window.baseDeDatosNube));
-                        
-                        if (window.sesionActual) {
-                            window.actualizarEquiposDisponibles();
-                            if (!document.getElementById('resultados-modal').classList.contains('hidden')) {
-                                window.mostrarResultados();
+                    // Escuchamos la base de datos en vivo
+                    try {
+                        onSnapshot(votosCollection, (snapshot) => {
+                            window.baseDeDatosNube = [];
+                            snapshot.forEach((doc) => {
+                                window.baseDeDatosNube.push({ id: doc.id, ...doc.data() });
+                            });
+                            
+                            localStorage.setItem('uatyg_votos', JSON.stringify(window.baseDeDatosNube));
+                            
+                            if (window.sesionActual) {
+                                window.actualizarEquiposDisponibles();
+                                if (!document.getElementById('resultados-modal').classList.contains('hidden')) {
+                                    window.mostrarResultados();
+                                }
                             }
-                        }
-                    }, (error) => {
-                        console.error("Error al escuchar la nube:", error);
-                    });
+                        }, (error) => {
+                            console.error("❌ Error al escuchar la base de datos (Firestore):", error.message);
+                            console.warn("⚠️ Es posible que necesites habilitar Firestore y establecer reglas en modo de prueba.");
+                            modoOffline = true;
+                        });
+                    } catch (dbError) {
+                         console.error("Error al conectar con Firestore:", dbError);
+                         modoOffline = true;
+                    }
                 }
             });
         } catch (e) {
-            console.error("Error inicializando la nube de Firebase:", e);
+            console.error("❌ Error grave inicializando Firebase:", e);
+            modoOffline = true;
         }
     };
-    initCloud();
+    
+    initCloud(); // Ejecutamos la conexión al iniciar
 
     // --- 2. CONFIGURACIÓN DEL EVENTO Y RÚBRICAS ---
     const accesosJueces = {
@@ -339,7 +381,10 @@
 
         "KART7743":   { nombre: "Juez Diseño Taller (Profe Ing.)", mision: "m19", juezId: "Juez 1" },
         "PARADE2289": { nombre: "Juez Animación (Mtra. Turismo)", mision: "m19", juezId: "Juez 2" },
-        "DRIFT9910":  { nombre: "Juez Resistencia (Profe Deportes)", mision: "m19", juezId: "Juez 3" }
+        "DRIFT9910":  { nombre: "Juez Resistencia (Profe Deportes)", mision: "m19", juezId: "Juez 3" },
+
+        // --- NUEVO: ACCESO TESTIGO/OBSERVADOR (COMITÉ) ---
+        "TESTIGO26":  { nombre: "Comité (Observador)", mision: "todas", juezId: "OBSERVADOR" }
     };
 
     const configuracionMisiones = {
@@ -406,8 +451,26 @@
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
             document.getElementById('display-nombre-juez').innerText = window.sesionActual.nombre;
-            document.getElementById('display-mision-juez').innerText = configuracionMisiones[window.sesionActual.mision].titulo;
-            window.cargarEtapas();
+            
+            // Validar si es observador
+            if (window.sesionActual.juezId === "OBSERVADOR") {
+                document.getElementById('display-mision-juez').innerText = "Modo Observador Activo";
+                document.getElementById('area-calificacion').classList.add('hidden');
+                document.getElementById('contenedor-mision-obs').classList.remove('hidden');
+                
+                // Llenar selector de misiones
+                const selectMisionObs = document.getElementById('mision-obs-select');
+                selectMisionObs.innerHTML = '<option value="">-- Elige una Misión --</option>';
+                for (const [key, value] of Object.entries(configuracionMisiones)) {
+                    selectMisionObs.innerHTML += `<option value="${key}">${value.titulo}</option>`;
+                }
+            } else {
+                // Juez regular
+                document.getElementById('display-mision-juez').innerText = configuracionMisiones[window.sesionActual.mision].titulo;
+                document.getElementById('area-calificacion').classList.remove('hidden');
+                document.getElementById('contenedor-mision-obs').classList.add('hidden');
+                window.cargarEtapas();
+            }
         }
     };
     
@@ -422,22 +485,23 @@
         const codigoInput = document.getElementById('codigo-juez');
         const codigo = codigoInput.value.trim().toUpperCase();
         const errorMsg = document.getElementById('error-login');
+        const btnLogin = document.getElementById('btn-login');
 
         // BOTÓN DE PÁNICO
         if (codigo === "RESET2026") {
-            if(confirm("⚠️ ADVERTENCIA MÁXIMA: ¿Estás seguro de borrar TODAS las calificaciones de la base de datos global y cerrar las sesiones?")) {
-                if (db && votosCollection) {
-                    const snapshot = await getDocs(votosCollection);
-                    snapshot.forEach(d => deleteDoc(d.ref)); 
-                }
-                if (db && sesionesCollection) {
-                    const snapSesiones = await getDocs(sesionesCollection);
-                    snapSesiones.forEach(d => deleteDoc(d.ref)); 
+            if(confirm("⚠️ ADVERTENCIA MÁXIMA: ¿Estás seguro de borrar TODAS las calificaciones locales y de la nube?")) {
+                if (db && votosCollection && !modoOffline) {
+                    try {
+                        const snapshot = await getDocs(votosCollection);
+                        snapshot.forEach(d => deleteDoc(d.ref)); 
+                        const snapSesiones = await getDocs(sesionesCollection);
+                        snapSesiones.forEach(d => deleteDoc(d.ref)); 
+                    } catch(e) {}
                 }
                 localStorage.removeItem('uatyg_votos'); 
                 window.baseDeDatosNube = [];
                 localStorage.removeItem('uatyg_juez_sesion'); 
-                alert("✅ Sistema reiniciado con éxito. Todos los jueces inician de 0 y los dispositivos bloqueados fueron liberados.");
+                alert("✅ Sistema reiniciado con éxito.");
                 codigoInput.value = "";
                 location.reload(); 
             }
@@ -445,26 +509,36 @@
         }
 
         if (accesosJueces[codigo]) {
-            if (!db) {
-                // FALLBACK OFFLINE / SIN CONFIGURAR
-                alert("⚠️ Aviso: No estás conectado a la nube (Falta configurar Firebase). El sistema funcionará en modo local y no se sincronizará con otros jueces.");
-            } else {
-                // VALIDACIÓN EN LA NUBE (Solo si db está conectado)
+            
+            // Deshabilitar botón para evitar doble clic
+            btnLogin.disabled = true;
+            btnLogin.innerHTML = "Verificando...";
+
+            // Validación en la Nube (Solo si la base de datos conectó bien)
+            if (!modoOffline && db) {
                 const docRef = getSesionDocRef(codigo);
                 try {
                     const docSnap = await getDoc(docRef);
-                    if (docSnap.exists() && docSnap.data().activa === true && docSnap.data().deviceId !== localDeviceId) {
-                        alert("🚨 ACCESO DENEGADO: Este juez ya se encuentra activo calificando desde otro dispositivo. Por seguridad, no puedes ingresar a la misma cuenta simultáneamente.");
-                        codigoInput.value = "";
-                        return;
+                    // OMITIMOS EL BLOQUEO SI ES OBSERVADOR (para permitir múltiples comités simultáneos)
+                    if (accesosJueces[codigo].juezId !== "OBSERVADOR") {
+                        if (docSnap.exists() && docSnap.data().activa === true && docSnap.data().deviceId !== localDeviceId) {
+                            alert("🚨 ACCESO DENEGADO: Este juez ya está calificando desde otro celular. Si eres tú, cierra sesión en tu otro dispositivo primero.");
+                            codigoInput.value = "";
+                            btnLogin.disabled = false;
+                            btnLogin.innerHTML = `<i data-lucide="key" class="w-5 h-5"></i> ENTRAR`;
+                            lucide.createIcons();
+                            return;
+                        }
+                        // Registrar el dispositivo
+                        await setDoc(docRef, { activa: true, deviceId: localDeviceId, timestamp: new Date().toISOString() });
                     }
-                    
-                    await setDoc(docRef, { activa: true, deviceId: localDeviceId, timestamp: new Date().toISOString() });
                 } catch (error) {
-                    console.error("Error al validar sesión en la nube:", error);
-                    alert("Hubo un problema verificando tu sesión o no tienes permisos de lectura.");
-                    return;
+                    console.warn("No se pudo verificar el bloqueo de sesión en la nube, iniciando en modo local.");
+                    modoOffline = true;
                 }
+            } else {
+                alert("⚠️ Estás operando en MODO OFFLINE (Sin internet o sin Firebase). Los puntajes solo se guardarán en este celular.");
+                document.getElementById('aviso-offline').classList.remove('hidden');
             }
 
             // Iniciar sesión visualmente
@@ -474,9 +548,32 @@
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
             document.getElementById('display-nombre-juez').innerText = window.sesionActual.nombre;
-            document.getElementById('display-mision-juez').innerText = configuracionMisiones[window.sesionActual.mision].titulo;
 
-            window.cargarEtapas();
+            // Validar si es observador
+            if (window.sesionActual.juezId === "OBSERVADOR") {
+                document.getElementById('display-mision-juez').innerText = "Modo Observador Activo";
+                document.getElementById('area-calificacion').classList.add('hidden');
+                document.getElementById('contenedor-mision-obs').classList.remove('hidden');
+                
+                // Llenar selector de misiones
+                const selectMisionObs = document.getElementById('mision-obs-select');
+                selectMisionObs.innerHTML = '<option value="">-- Elige una Misión --</option>';
+                for (const [key, value] of Object.entries(configuracionMisiones)) {
+                    selectMisionObs.innerHTML += `<option value="${key}">${value.titulo}</option>`;
+                }
+            } else {
+                // Juez regular
+                document.getElementById('display-mision-juez').innerText = configuracionMisiones[window.sesionActual.mision].titulo;
+                document.getElementById('area-calificacion').classList.remove('hidden');
+                document.getElementById('contenedor-mision-obs').classList.add('hidden');
+                window.cargarEtapas();
+            }
+            
+            // Restaurar botón
+            btnLogin.disabled = false;
+            btnLogin.innerHTML = `<i data-lucide="key" class="w-5 h-5"></i> ENTRAR`;
+            lucide.createIcons();
+
         } else {
             errorMsg.classList.remove('hidden');
             codigoInput.classList.add('border-red-600');
@@ -488,7 +585,7 @@
     };
 
     window.cargarEtapas = function() {
-        if (!window.sesionActual) return;
+        if (!window.sesionActual || window.sesionActual.juezId === "OBSERVADOR") return;
         const misionConfig = configuracionMisiones[window.sesionActual.mision];
         const selectEtapa = document.getElementById('etapa-select');
         const contenedorEtapa = document.getElementById('contenedor-etapa');
@@ -507,7 +604,7 @@
     };
 
     window.cambiarEtapa = function() {
-        if (!window.sesionActual) return;
+        if (!window.sesionActual || window.sesionActual.juezId === "OBSERVADOR") return;
         const misionConfig = configuracionMisiones[window.sesionActual.mision];
         const etapaId = document.getElementById('etapa-select').value;
         const etapaConfig = misionConfig.etapas.find(e => e.id === etapaId);
@@ -544,7 +641,7 @@
     };
 
     window.actualizarEquiposDisponibles = function() {
-        if (!window.sesionActual) return;
+        if (!window.sesionActual || window.sesionActual.juezId === "OBSERVADOR") return;
         const misionId = window.sesionActual.mision;
         const juez = window.sesionActual.juezId;
         const etapaId = document.getElementById('etapa-select').value;
@@ -566,7 +663,7 @@
     };
 
     window.enviarCalificacion = async function() {
-        if (!window.sesionActual) return;
+        if (!window.sesionActual || window.sesionActual.juezId === "OBSERVADOR") return;
         const misionId = window.sesionActual.mision;
         const juez = window.sesionActual.juezId;
         const etapaId = document.getElementById('etapa-select').value;
@@ -613,15 +710,19 @@
             timestamp: new Date().toISOString()
         };
 
-        if (db && user && votosCollection) {
+        if (!modoOffline && db && user && votosCollection) {
             try {
                 await addDoc(votosCollection, nuevoVoto);
                 document.getElementById('success-modal').classList.remove('hidden');
             } catch(e) {
-                alert("Error al enviar a la nube: " + e.message);
+                console.error("Error guardando en la nube:", e);
+                // Si falla Firebase por alguna razón, guardamos en local para no perder el voto
+                window.baseDeDatosNube.push(nuevoVoto);
+                localStorage.setItem('uatyg_votos', JSON.stringify(window.baseDeDatosNube));
+                document.getElementById('success-modal').classList.remove('hidden');
             }
         } else {
-            // MODO OFFLINE: Guardado manual en localStorage
+            // MODO OFFLINE: Guardado manual
             window.baseDeDatosNube.push(nuevoVoto);
             localStorage.setItem('uatyg_votos', JSON.stringify(window.baseDeDatosNube));
             document.getElementById('success-modal').classList.remove('hidden');
@@ -640,7 +741,17 @@
 
     window.mostrarResultados = function() {
         if (!window.sesionActual) return;
-        const misionId = window.sesionActual.mision;
+        
+        let misionId = window.sesionActual.mision;
+        
+        // Si es observador, tomamos la misión que seleccionó en el dropdown
+        if (window.sesionActual.juezId === "OBSERVADOR") {
+            misionId = document.getElementById('mision-obs-select').value;
+            if (!misionId) {
+                alert("Por favor, selecciona primero una misión de la lista para ver sus resultados.");
+                return;
+            }
+        }
 
         document.getElementById('titulo-resultados').innerText = `Resultados en Vivo: ${configuracionMisiones[misionId].titulo}`;
         
@@ -664,7 +775,7 @@
         tabla.innerHTML = '';
 
         if(ordenados.length === 0) {
-            tabla.innerHTML = '<p class="text-center text-gray-500 text-sm italic">Aún no hay calificaciones registradas por ningún juez.</p>';
+            tabla.innerHTML = '<p class="text-center text-gray-500 text-sm italic">Aún no hay calificaciones registradas en esta misión.</p>';
         } else {
             ordenados.forEach((equipo, index) => {
                 let medalla = '';
@@ -707,10 +818,13 @@
         document.getElementById('confirm-exit-modal').classList.add('hidden');
         document.getElementById('main-app').classList.add('hidden');
         
-        if (window.sesionActual && db) {
+        if (!modoOffline && window.sesionActual && db) {
             try {
-                const docRef = getSesionDocRef(window.sesionActual.codigoAcceso);
-                await setDoc(docRef, { activa: false, deviceId: null });
+                // Liberar la sesión en BD solo si NO es el observador
+                if (window.sesionActual.juezId !== "OBSERVADOR") {
+                    const docRef = getSesionDocRef(window.sesionActual.codigoAcceso);
+                    await setDoc(docRef, { activa: false, deviceId: null });
+                }
             } catch (e) {
                 console.error("Error liberando la sesión:", e);
             }
@@ -728,5 +842,4 @@
 </script>
 </body>
 </html>
-
 
