@@ -766,18 +766,30 @@
             }
         });
 
+        // Ordenamos los equipos de mayor a menor puntuación
         const ranking = Object.keys(puntajesGlobales).map(equipo => {
             return { nombre: equipo, puntos: puntajesGlobales[equipo] };
         }).sort((a, b) => b.puntos - a.puntos);
 
+        // Variables para controlar empates
+        let rankActual = 1;
+        let puntosAnteriores = -1;
+
         ranking.forEach((equipo, index) => {
+            // LÓGICA DE EMPATE: Si el equipo actual tiene puntos distintos al anterior, actualizamos su rango a la posición real del array
+            // Si tiene los mismos puntos, conservará el valor de "rankActual" del equipo anterior, generando un empate visual.
+            if (equipo.puntos !== puntosAnteriores) {
+                rankActual = index + 1;
+            }
+            puntosAnteriores = equipo.puntos;
+
             let medalla = '';
             let color = 'bg-gray-50 border-gray-300 text-gray-700';
             
-            if(index === 0) { medalla = '👑'; color = 'bg-yellow-200 border-yellow-500 text-yellow-900 border-4 shadow-md transform scale-105 my-3'; }
-            else if(index === 1) { medalla = '🥈'; color = 'bg-gray-200 border-gray-400 text-gray-800 border-2 font-bold'; }
-            else if(index === 2) { medalla = '🥉'; color = 'bg-orange-100 border-orange-400 text-orange-900 border-2 font-bold'; }
-            else { medalla = `${index + 1}.`; }
+            if(rankActual === 1) { medalla = '👑'; color = 'bg-yellow-200 border-yellow-500 text-yellow-900 border-4 shadow-md transform scale-105 my-3'; }
+            else if(rankActual === 2) { medalla = '🥈'; color = 'bg-gray-200 border-gray-400 text-gray-800 border-2 font-bold'; }
+            else if(rankActual === 3) { medalla = '🥉'; color = 'bg-orange-100 border-orange-400 text-orange-900 border-2 font-bold'; }
+            else { medalla = `${rankActual}.`; }
 
             tabla.innerHTML += `
                 <div class="flex justify-between items-center p-3 rounded-lg ${color} shadow-sm mb-2">
@@ -785,7 +797,7 @@
                         <span class="text-xl w-6 text-center">${medalla}</span>
                         ${equipo.nombre}
                     </div>
-                    <div class="font-pixel text-[10px] ${index === 0 ? 'text-yellow-800' : 'text-blue-700'}">
+                    <div class="font-pixel text-[10px] ${rankActual === 1 ? 'text-yellow-800' : 'text-blue-700'}">
                         ${equipo.puntos} pts
                     </div>
                 </div>
