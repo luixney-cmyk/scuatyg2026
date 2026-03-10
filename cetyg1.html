@@ -247,6 +247,26 @@
     let db = null, auth = null;
     let globalTeamsData = []; 
 
+    // Función auxiliar para dibujar los avatares apilados si hay empates
+    function getAvatarsHTML(teamsArr, sizeClass) {
+        if(!teamsArr || teamsArr.length === 0) return '';
+        
+        let avatarClass = teamsArr.length > 1 ? 'w-8 h-8 md:w-10 md:h-10 text-[8px] md:text-[10px]' : 'w-10 h-10 md:w-14 md:h-14 text-xs md:text-sm';
+        if(sizeClass === 'large') {
+             avatarClass = teamsArr.length > 1 ? 'w-10 h-10 md:w-12 md:h-12 text-[10px] md:text-[11px]' : 'w-14 h-14 md:w-16 md:h-16 text-sm md:text-base';
+        }
+        
+        let html = '<div class="flex flex-wrap justify-center gap-1 z-10 mb-1">';
+        teamsArr.forEach(t => {
+            html += `
+            <div class="${t.color} ${t.border} border-[3px] rounded-full ${avatarClass} flex items-center justify-center shadow-[0_0_10px_rgba(255,255,255,0.3)]" title="${t.name}">
+                <span class="font-bold ${t.text}">${t.name.substring(0,3).toUpperCase()}</span>
+            </div>`;
+        });
+        html += '</div>';
+        return html;
+    }
+
     // --- FUNCIÓN PARA PROCESAR DATOS Y DIBUJAR ---
     const renderizarPodioIndex = (registrosNube) => {
         let equiposProcesados = baseTeamsInfo.map(t => ({ ...t, points: 0 }));
@@ -264,8 +284,18 @@
             }
         });
 
-        // Ordenar
+        // Ordenar de mayor a menor
         equiposProcesados.sort((a, b) => b.points - a.points);
+        
+        // Asignar Ranking Real Matemático (Criterio Olímpico)
+        let rankActual = 1;
+        let puntosAnteriores = -1;
+        equiposProcesados.forEach((equipo, index) => {
+            if (equipo.points !== puntosAnteriores) { rankActual = index + 1; }
+            equipo.rank = rankActual;
+            puntosAnteriores = equipo.points;
+        });
+
         globalTeamsData = equiposProcesados;
 
         // Ocultar Carga
@@ -287,75 +317,74 @@
             return;
         }
 
-        // --- DIBUJAR PODIO (Top 3) ---
-        const t1 = globalTeamsData[0];
-        const t2 = globalTeamsData.length > 1 ? globalTeamsData[1] : null;
-        const t3 = globalTeamsData.length > 2 ? globalTeamsData[2] : null;
+        // Extraer los 3 mejores GRUPOS DE PUNTOS (para rellenar los 3 pilares)
+        const distinctScores = [...new Set(globalTeamsData.map(t => t.points).filter(p => p > 0))].sort((a, b) => b - a);
+        
+        const group1 = distinctScores.length > 0 ? globalTeamsData.filter(t => t.points === distinctScores[0]) : [];
+        const group2 = distinctScores.length > 1 ? globalTeamsData.filter(t => t.points === distinctScores[1]) : [];
+        const group3 = distinctScores.length > 2 ? globalTeamsData.filter(t => t.points === distinctScores[2]) : [];
 
         let podioHTML = '';
 
-        // 2DO LUGAR
-        if (t2 && t2.points > 0) {
+        // --- 2DO PILAR (Plata) ---
+        if (group2.length > 0) {
+            const visual = getAvatarsHTML(group2, 'normal');
             podioHTML += `
             <div class="w-1/3 flex flex-col items-center">
-                <div class="${t2.color} ${t2.border} border-4 rounded-full w-10 h-10 md:w-14 md:h-14 flex items-center justify-center mb-2 shadow-[0_0_10px_rgba(255,255,255,0.3)] z-10">
-                    <span class="font-bold ${t2.text} text-xs md:text-sm">${t2.name.substring(0,3).toUpperCase()}</span>
-                </div>
-                <div class="font-bold text-[10px] md:text-xs mb-2 text-gray-300 uppercase text-center h-8">${t2.name}</div>
+                ${visual}
+                <div class="font-bold text-[9px] md:text-[10px] mb-2 text-gray-300 uppercase text-center min-h-[2rem] leading-tight">${group2.map(t=>t.name).join('<br>')}</div>
                 <div class="podium-2 w-full h-28 md:h-32 border-4 border-b-0 border-black flex flex-col justify-start items-center pt-2 md:pt-4 shadow-[inset_-4px_0_0_rgba(0,0,0,0.3)] relative">
-                    <span class="font-pixel text-xl md:text-2xl text-gray-800">2</span>
-                    <span class="text-[9px] md:text-xs font-bold mt-2 text-gray-800 bg-gray-100 px-2 rounded-full border border-gray-400">${t2.points} pts</span>
+                    <span class="font-pixel text-xl md:text-2xl text-gray-800">${group2[0].rank}</span>
+                    <span class="text-[9px] md:text-xs font-bold mt-2 text-gray-800 bg-gray-100 px-2 rounded-full border border-gray-400">${group2[0].points} pts</span>
                 </div>
             </div>`;
-        } else { podioHTML += `<div class="w-1/3 h-28"></div>`; } // Espaciador
+        } else { podioHTML += `<div class="w-1/3 h-28"></div>`; } // Espaciador si no hay nadie
 
-        // 1ER LUGAR
-        if (t1 && t1.points > 0) {
+        // --- 1ER PILAR (Oro) ---
+        if (group1.length > 0) {
+            const visual = getAvatarsHTML(group1, 'large');
             podioHTML += `
             <div class="w-1/3 flex flex-col items-center z-20">
                 <i data-lucide="crown" class="w-8 h-8 md:w-10 md:h-10 text-yellow-400 fill-yellow-400 mb-1 drop-shadow-[0_0_10px_rgba(250,204,21,0.8)] animate-bounce"></i>
-                <div class="${t1.color} ${t1.border} border-4 rounded-full w-14 h-14 md:w-16 md:h-16 flex items-center justify-center mb-2 shadow-[0_0_15px_rgba(255,255,255,0.4)]">
-                    <span class="font-bold ${t1.text} text-sm md:text-base">${t1.name.substring(0,3).toUpperCase()}</span>
-                </div>
-                <div class="font-bold text-[10px] md:text-xs mb-2 text-yellow-400 uppercase text-center h-8 drop-shadow-md">${t1.name}</div>
+                ${visual}
+                <div class="font-bold text-[9px] md:text-[11px] mb-2 text-yellow-400 uppercase text-center min-h-[2rem] leading-tight drop-shadow-md">${group1.map(t=>t.name).join('<br>')}</div>
                 <div class="podium-1 w-full h-40 md:h-44 border-4 border-b-0 border-black flex flex-col justify-start items-center pt-2 md:pt-4 shadow-[inset_-4px_0_0_rgba(0,0,0,0.2)] relative">
-                    <span class="font-pixel text-2xl md:text-3xl text-yellow-900 drop-shadow-sm">1</span>
-                    <span class="text-[10px] md:text-xs font-bold mt-2 text-yellow-900 bg-yellow-100 px-2 rounded-full border border-yellow-600 shadow-sm">${t1.points} pts</span>
+                    <span class="font-pixel text-2xl md:text-3xl text-yellow-900 drop-shadow-sm">${group1[0].rank}</span>
+                    <span class="text-[10px] md:text-xs font-bold mt-2 text-yellow-900 bg-yellow-100 px-2 rounded-full border border-yellow-600 shadow-sm">${group1[0].points} pts</span>
                 </div>
             </div>`;
         }
 
-        // 3ER LUGAR
-        if (t3 && t3.points > 0) {
+        // --- 3ER PILAR (Bronce) ---
+        if (group3.length > 0) {
+            const visual = getAvatarsHTML(group3, 'normal');
             podioHTML += `
             <div class="w-1/3 flex flex-col items-center">
-                <div class="${t3.color} ${t3.border} border-4 rounded-full w-10 h-10 md:w-14 md:h-14 flex items-center justify-center mb-2 shadow-[0_0_10px_rgba(255,255,255,0.2)] z-10">
-                    <span class="font-bold ${t3.text} text-xs md:text-sm">${t3.name.substring(0,3).toUpperCase()}</span>
-                </div>
-                <div class="font-bold text-[10px] md:text-xs mb-2 text-orange-300 uppercase text-center h-8">${t3.name}</div>
+                ${visual}
+                <div class="font-bold text-[9px] md:text-[10px] mb-2 text-orange-300 uppercase text-center min-h-[2rem] leading-tight">${group3.map(t=>t.name).join('<br>')}</div>
                 <div class="podium-3 w-full h-20 md:h-24 border-4 border-b-0 border-black flex flex-col justify-start items-center pt-2 md:pt-4 shadow-[inset_-4px_0_0_rgba(0,0,0,0.3)] relative">
-                    <span class="font-pixel text-lg md:text-xl text-orange-950">3</span>
-                    <span class="text-[8px] md:text-[10px] font-bold mt-2 text-orange-950 bg-orange-100 px-2 rounded-full border border-orange-700">${t3.points} pts</span>
+                    <span class="font-pixel text-lg md:text-xl text-orange-950">${group3[0].rank}</span>
+                    <span class="text-[8px] md:text-[10px] font-bold mt-2 text-orange-950 bg-orange-100 px-2 rounded-full border border-orange-700">${group3[0].points} pts</span>
                 </div>
             </div>`;
         } else { podioHTML += `<div class="w-1/3 h-20"></div>`; }
 
         podioContainer.innerHTML = podioHTML;
 
-        // --- DIBUJAR LISTA HORIZONTAL (Del 4to en adelante) ---
+        // --- DIBUJAR LISTA HORIZONTAL (Los que no están en el podio) ---
         const horizList = document.getElementById('horizontal-list');
         horizList.innerHTML = '';
         
-        const restoEquipos = globalTeamsData.slice(3).filter(t => t.points > 0); // Solo los que tengan puntos
+        const equiposEnPodio = [...group1, ...group2, ...group3].map(t => t.name);
+        const restoEquipos = globalTeamsData.filter(t => !equiposEnPodio.includes(t.name) && t.points > 0);
 
         if (restoEquipos.length === 0) {
             horizList.innerHTML = '<p class="text-xs text-gray-500 italic p-2">Los demás equipos aún no suman puntos.</p>';
         } else {
-            restoEquipos.forEach((team, index) => {
-                const realRank = index + 4;
+            restoEquipos.forEach((team) => {
                 horizList.innerHTML += `
                     <div class="flex-shrink-0 flex items-center bg-gray-900 border-2 border-gray-600 p-2 rounded snap-start min-w-[140px] shadow-sm">
-                        <div class="font-pixel text-gray-400 text-xs mr-3">#${realRank}</div>
+                        <div class="font-pixel text-gray-400 text-xs mr-3">#${team.rank}</div>
                         <div>
                             <div class="font-bold text-xs text-gray-200 uppercase">${team.name}</div>
                             <div class="text-[10px] text-gray-400 font-pixel mt-1">${team.points} pts</div>
