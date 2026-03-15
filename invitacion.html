@@ -53,7 +53,7 @@
             100% { transform: translateY(0px); }
         }
 
-        /* EFECTOS DEL BOTÓN PRESS START (Reemplaza el blink anterior) */
+        /* EFECTOS DEL BOTÓN PRESS START */
         .blink-text { animation: blink-text 1s step-start infinite; }
         @keyframes blink-text { 50% { color: transparent; } }
 
@@ -62,6 +62,25 @@
             0% { box-shadow: 0 0 0 0px rgba(220, 38, 38, 0.8); }
             70% { box-shadow: 0 0 0 15px rgba(220, 38, 38, 0); }
             100% { box-shadow: 0 0 0 0px rgba(220, 38, 38, 0); }
+        }
+
+        /* EFECTOS PARA EL MODAL DE ACEPTACIÓN */
+        .mission-accepted-text {
+            animation: colorChange 0.5s infinite alternate;
+        }
+        @keyframes colorChange {
+            0% { color: #16a34a; text-shadow: 2px 2px 0px #000; } /* green-600 */
+            100% { color: #facc15; text-shadow: 2px 2px 0px #000; } /* yellow-400 */
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            opacity: 0;
+            z-index: 100;
+            pointer-events: none;
         }
 
         /* CIELO RETRO ANIMADO PARA LA PANTALLA DE INICIO */
@@ -84,7 +103,10 @@
         }
     </style>
 </head>
-<body class="min-h-screen text-gray-800 flex flex-col items-center py-8 px-4">
+<body class="min-h-screen text-gray-800 flex flex-col items-center py-8 px-4 relative">
+
+    <!-- CONTENEDOR DE CONFETTI -->
+    <div id="confetti-container" class="fixed inset-0 pointer-events-none z-[100] overflow-hidden hidden"></div>
 
     <!-- ==========================================
          PANTALLA 0: BIENVENIDA (ARCADE RETRO)
@@ -112,7 +134,7 @@
                 <p class="text-yellow-300 font-bold text-xs uppercase tracking-widest">Por favor, presione Start para descubrir su misión especial.</p>
             </div>
             
-            <!-- Botón de Continuar (Modificado para ser fijo con pulso) -->
+            <!-- Botón de Continuar -->
             <button onclick="iniciarSeleccion()" class="nes-btn w-full bg-red-600 hover:bg-red-700 text-white font-pixel py-5 px-4 text-sm md:text-base relative z-10 mx-auto max-w-sm glow-pulse">
                 <span class="blink-text">PRESS START</span>
             </button>
@@ -124,7 +146,7 @@
          ========================================== -->
     <div id="pantalla-seleccion" class="hidden w-full max-w-4xl flex-col gap-6">
         
-        <!-- FRASE DE RETO EN LUGAR DE CONTADOR -->
+        <!-- FRASE DE RETO -->
         <div class="nes-container bg-black text-white p-4 text-center border-4 border-yellow-400 rounded-lg shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
             <h3 class="font-pixel text-yellow-400 text-[10px] md:text-xs flex items-center justify-center gap-2 leading-relaxed">
                 <i data-lucide="gamepad-2" class="w-5 h-5 hidden md:block text-red-500"></i> 
@@ -169,7 +191,6 @@
         </div>
 
         <div class="relative inline-block mb-8">
-            <!-- AVATAR DEL JUEZ AQUÍ -->
             <div id="avatar-juez-display" class="absolute -top-8 -left-8 text-4xl md:text-5xl drop-shadow-[2px_2px_0_rgba(0,0,0,1)] floating">👨‍🏫</div>
             <h2 id="titulo-juez" class="text-2xl md:text-3xl font-black text-blue-800 uppercase border-b-4 border-blue-600 inline-block pb-2 px-8 transition-colors">
                 [NOMBRE]
@@ -182,7 +203,6 @@
             </div>
             
             <div class="relative z-10">
-                <!-- MENSAJE ESPECIAL OCULTO POR DEFECTO -->
                 <p id="texto-especial" class="hidden text-lg md:text-xl font-bold text-red-600 mb-4 text-center italic border-b-2 border-red-200 pb-2 drop-shadow-sm"></p>
 
                 <p class="text-base md:text-lg font-medium text-gray-800 leading-relaxed text-justify">
@@ -212,10 +232,10 @@
             
         </div>
 
-        <div id="area-botones" class="mb-4">
+        <div id="area-botones" class="mb-4 relative z-10">
             <p class="font-pixel text-xs text-gray-500 mb-4 uppercase">¿Aceptas la invitación?</p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <button onclick="enviarRespuesta('aceptado')" class="nes-btn bg-green-500 hover:bg-green-600 text-white font-pixel py-4 px-4 text-[10px] md:text-xs">
+                <button onclick="enviarRespuesta('aceptado')" class="nes-btn bg-green-500 hover:bg-green-600 text-white font-pixel py-4 px-4 text-[10px] md:text-xs transition-transform hover:scale-105 active:scale-95">
                     <i data-lucide="check-circle" class="w-5 h-5 mr-2"></i> SÍ, ACEPTO
                 </button>
                 <button onclick="enviarRespuesta('rechazado')" class="nes-btn bg-gray-400 hover:bg-gray-500 text-white font-pixel py-4 px-4 text-[10px] md:text-xs">
@@ -234,11 +254,15 @@
          MODALES DE SISTEMA Y COMITÉ
          ========================================== -->
 
-    <!-- Modal: ACEPTAR -->
+    <!-- Modal: ACEPTAR (CON ANIMACIÓN MISSION ACCEPTED) -->
     <div id="modal-aceptar" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
         <div class="nes-container bg-white p-6 md:p-10 text-center max-w-lg w-full rounded-lg animate-[bounce_0.5s_ease-out]">
-            <i data-lucide="party-popper" class="w-16 h-16 mx-auto text-yellow-400 mb-4 animate-pulse"></i>
-            <h3 class="font-pixel text-green-600 text-base md:text-xl mb-4 leading-relaxed tracking-wide">🎉 MISIÓN ACEPTADA</h3>
+            <i data-lucide="party-popper" class="w-16 h-16 mx-auto text-yellow-400 mb-4 floating"></i>
+            
+            <h3 class="font-pixel text-base md:text-xl mb-4 leading-relaxed tracking-wide mission-accepted-text">
+                <i data-lucide="gamepad-2" class="inline-block w-6 h-6 mr-2 mb-1"></i>
+                MISSION ACCEPTED
+            </h3>
             
             <div class="bg-green-50 border-2 border-green-200 p-4 rounded text-gray-800 font-medium text-sm md:text-base mb-6 leading-relaxed">
                 Gracias por formar parte del panel de jueces.
@@ -357,12 +381,16 @@
             osc.start(); osc.stop(audioCtx.currentTime + 0.4);
         };
 
-        // Sonido Nivel Desbloqueado
-        window.playUnlockSound = function() {
+        // Sonido Nivel Completado (Mission Accepted)
+        window.playSuccessSound = function() {
             initAudio();
             const notes = [
-                { f: 523.25, d: 0.1 }, { f: 659.25, d: 0.1 }, 
-                { f: 783.99, d: 0.1 }, { f: 1046.50, d: 0.3 } 
+                { f: 523.25, d: 0.1 }, // C5
+                { f: 659.25, d: 0.1 }, // E5
+                { f: 783.99, d: 0.1 }, // G5
+                { f: 1046.50, d: 0.1 },// C6
+                { f: 783.99, d: 0.1 }, // G5
+                { f: 1046.50, d: 0.4 } // C6 (long)
             ];
             let startTime = audioCtx.currentTime;
             notes.forEach(note => {
@@ -370,7 +398,7 @@
                 const gain = audioCtx.createGain();
                 osc.type = 'square';
                 osc.frequency.value = note.f;
-                gain.gain.setValueAtTime(0.05, startTime);
+                gain.gain.setValueAtTime(0.1, startTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, startTime + note.d - 0.02);
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
@@ -380,9 +408,49 @@
             });
         };
 
-        // 1. BASE DE DATOS LOCAL (HORARIOS DE PRESENTACIÓN A LAS 9:00 AM Y MENSAJE CELINA)
+        // LÓGICA DE CONFETTI
+        window.lanzarConfetti = function() {
+            const container = document.getElementById('confetti-container');
+            container.classList.remove('hidden');
+            container.innerHTML = '';
+            const colors = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff', '#ffa500'];
+            
+            for (let i = 0; i < 100; i++) {
+                const conf = document.createElement('div');
+                conf.classList.add('confetti');
+                conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                conf.style.left = Math.random() * 100 + 'vw';
+                conf.style.top = -10 + 'px';
+                
+                // Random properties for physics
+                const tx = (Math.random() - 0.5) * 500 + 'px';
+                const ty = Math.random() * 100 + 50 + 'vh';
+                const rot = Math.random() * 720 + 'deg';
+                const duration = Math.random() * 2 + 1.5;
+                const delay = Math.random() * 0.5;
+
+                conf.animate([
+                    { transform: 'translate3d(0,0,0) rotate(0deg)', opacity: 1 },
+                    { transform: `translate3d(${tx}, ${ty}, 0) rotate(${rot})`, opacity: 0 }
+                ], {
+                    duration: duration * 1000,
+                    delay: delay * 1000,
+                    easing: 'cubic-bezier(.37,0,.63,1)',
+                    fill: 'forwards'
+                });
+
+                container.appendChild(conf);
+            }
+            
+            // Ocultar contenedor después de la animación
+            setTimeout(() => {
+                container.classList.add('hidden');
+            }, 4000);
+        };
+
+        // 1. BASE DE DATOS LOCAL
         const listaJueces = [
-            // PRESENTACIÓN (Ahora a las 9:00 AM)
+            // PRESENTACIÓN 
             { id: "j1", avatar: "👟", nombre: "Brayan Alexis Rodríguez Sánchez", cargo: "Juez Honorario", mision: "Presentación de Equipos", descripcion: "evaluar la coreografía, sincronización y presentación inicial de los equipos en la explanada", fecha: "22 de Abril", hora: "9:00 AM", lugar: "Explanada UATyG", color: "bg-green-500", border: "border-green-700", text: "text-white" },
             { id: "j2", avatar: "💃", nombre: "Alejandra Alvarado", cargo: "Juez Honorario", mision: "Presentación de Equipos", descripcion: "evaluar la coreografía, sincronización y presentación inicial de los equipos en la explanada", fecha: "22 de Abril", hora: "9:00 AM", lugar: "Explanada UATyG", color: "bg-green-500", border: "border-green-700", text: "text-white" },
             { id: "j3", avatar: "🕺", nombre: "Alonso de Jesús Ortega Castro", cargo: "Juez Honorario", mision: "Presentación de Equipos", descripcion: "evaluar la coreografía, sincronización y presentación inicial de los equipos en la explanada", fecha: "22 de Abril", hora: "9:00 AM", lugar: "Explanada UATyG", color: "bg-green-500", border: "border-green-700", text: "text-white" },
@@ -429,28 +497,24 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
-        // ENLACES PERSONALIZADOS POR URL (?juez=j1)
+        // ENLACES PERSONALIZADOS POR URL
         window.revisarURLParams = function() {
             const urlParams = new URLSearchParams(window.location.search);
             const juezParam = urlParams.get('juez');
             if (juezParam) {
                 const juezElegido = listaJueces.find(j => j.id === juezParam);
                 if (juezElegido) {
-                    // Esperar un momento y simular el flujo
                     setTimeout(() => {
                         const miRespuestaLocal = localStorage.getItem('uatyg_juez_respondido');
                         const estado = window.estadosJuecesGlobal[juezElegido.id];
                         
                         if (estado) {
-                            // Ya contestó
                             const msg = estado.respuesta === 'aceptado' ? "¡Misión aceptada! Este jugador ya ha confirmado su participación." : "Este jugador ha declinado la invitación en esta ocasión.";
                             window.mostrarMensaje("INFORMACIÓN", msg, "text-blue-600");
                         } else if (miRespuestaLocal && miRespuestaLocal !== juezElegido.id) {
-                            // Contestó por otro en este teléfono
                             window.mostrarMensaje("BLOQUEADO", "Por seguridad, solo puedes registrar una respuesta por dispositivo.", "text-red-600");
                         } else {
-                            // Todo libre, abrir carta
-                            abrirInvitacion(juezElegido, true); // True para saltar el sonido y transición larga inicial
+                            abrirInvitacion(juezElegido); 
                         }
                     }, 800);
                 }
@@ -509,7 +573,7 @@
         renderizarJueces({});
 
         // 3. FUNCIONES DE LA INTERFAZ USUARIO
-        window.abrirInvitacion = function(juez, skipTransition = false) {
+        window.abrirInvitacion = function(juez) {
             juezActual = juez;
             
             document.getElementById('pantalla-bienvenida').classList.add('hidden');
@@ -557,7 +621,6 @@
                 textoCargo.className = "text-red-600 uppercase";
             }
             
-            // Mostrar la invitación de forma directa
             pantallaInv.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
@@ -660,7 +723,6 @@
                             renderizarJueces(window.estadosJuecesGlobal);
                             if (!document.getElementById('modal-comite-panel').classList.contains('hidden')) renderizarListaAdmin();
                             
-                            // Revisar param de URL una vez que cargaron los datos
                             if(!window.urlRevisada) {
                                 window.revisarURLParams();
                                 window.urlRevisada = true;
@@ -697,7 +759,11 @@
                 localStorage.setItem('uatyg_juez_respondido', juezActual.id);
 
                 document.getElementById('indicador-guardando').classList.add('hidden');
+                
+                // LOGICA DE ACEPTACIÓN
                 if (estado === 'aceptado') {
+                    playSuccessSound(); // Trigger Audio de Éxito
+                    lanzarConfetti(); // Lanzar confeti visual
                     document.getElementById('modal-aceptar').classList.remove('hidden');
                 } else {
                     document.getElementById('modal-rechazar').classList.remove('hidden');
