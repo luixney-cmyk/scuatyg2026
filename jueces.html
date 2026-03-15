@@ -3,25 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Jueces - UATyG</title>
+    <title>Panel de Jueces - UATyG 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         body {
             font-family: 'Fredoka', sans-serif;
-            background-color: #5c94fc; /* Mario Sky Blue */
+            background-color: #5c94fc; 
             background-image: 
                 linear-gradient(transparent 95%, rgba(255, 255, 255, 0.2) 95%),
                 linear-gradient(90deg, transparent 95%, rgba(255, 255, 255, 0.2) 95%);
             background-size: 20px 20px;
+            overflow-x: hidden;
         }
         .font-pixel { font-family: 'Press Start 2P', cursive; }
         
         .nes-container {
             border: 4px solid black;
             background: white;
-            box-shadow: 4px 4px 0px rgba(0,0,0,1);
+            box-shadow: 6px 6px 0px rgba(0,0,0,1);
         }
 
         .btn-pixel {
@@ -34,812 +35,554 @@
             box-shadow: none;
         }
 
-        /* Estilo para los selectores de calificación */
+        .text-glow {
+            text-shadow: 0 0 10px rgba(255,255,255,0.8);
+            animation: pulse-glow 2s infinite;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
         .score-radio:checked + label {
-            background-color: #facc15; /* Yellow 400 */
+            background-color: #facc15; 
             border-color: black;
             color: black;
-            transform: scale(1.05);
-            box-shadow: 2px 2px 0px rgba(0,0,0,1);
+            transform: scale(1.1);
+            box-shadow: 0px 4px 0px rgba(0,0,0,1);
+        }
+
+        .score-radio-zero:checked + label {
+            background-color: #ef4444 !important;
+            color: white !important;
+        }
+
+        .pixel-sky {
+            background-color: #000022;
+            background-image:
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 4px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 3px);
+            background-size: 550px 550px, 350px 350px;
+            animation: star-scroll 60s linear infinite;
+        }
+        @keyframes star-scroll {
+            0% { background-position: 0 0; }
+            100% { background-position: 550px 550px; }
+        }
+
+        .final-ranking-item {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
+        }
+
+        .floating { animation: float 3s ease-in-out infinite; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
         }
     </style>
 </head>
-<body class="p-4 flex flex-col items-center min-h-screen mt-4 pb-12">
+<body class="p-4 flex flex-col items-center min-h-screen pb-12">
 
-    <!-- Modal de Éxito -->
-    <div id="success-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+    <!-- AUDIO SYSTEM -->
+    <script>
+        let audioCtx;
+        function playSound(type) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            if (type === 'coin') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(987.77, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(1318.51, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+            } else if (type === 'powerup') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.5);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'victory') {
+                [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+                    const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+                    o.type = 'square'; o.frequency.value = f;
+                    g.gain.setValueAtTime(0.1, audioCtx.currentTime + (i * 0.1));
+                    g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + (i * 0.1) + 0.2);
+                    o.connect(g); g.connect(audioCtx.destination);
+                    o.start(audioCtx.currentTime + (i * 0.1)); o.stop(audioCtx.currentTime + (i * 0.1) + 0.2);
+                });
+            }
+        }
+    </script>
+
+    <!-- MODALES DE SISTEMA -->
+    
+    <!-- Modal: Confirmar Salida -->
+    <div id="modal-confirm-exit" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
         <div class="nes-container bg-white p-6 text-center max-w-sm w-full rounded-lg">
-            <i data-lucide="star" class="w-12 h-12 mx-auto text-yellow-400 fill-yellow-400 mb-4"></i>
-            <h3 class="font-pixel text-green-600 text-sm md:text-base mb-4 leading-relaxed">¡PUNTAJE ENVIADO!</h3>
-            <p class="font-bold text-gray-700 mb-6 text-sm">El sistema ha sumado los puntos de este juez.</p>
-            <button type="button" onclick="cerrarModalExito()" class="btn-pixel bg-blue-600 hover:bg-blue-700 text-white font-pixel py-3 px-4 w-full text-xs border-2 border-black">
-                CALIFICAR OTRO
-            </button>
+            <i data-lucide="log-out" class="w-12 h-12 mx-auto text-red-600 mb-4"></i>
+            <h3 class="font-pixel text-red-600 text-sm mb-4 uppercase">¿QUIERES SALIR?</h3>
+            <p class="text-xs font-bold mb-6 text-gray-700 uppercase leading-tight text-center">Tu progreso se guarda automáticamente.</p>
+            <div class="flex gap-2">
+                <button onclick="document.getElementById('modal-confirm-exit').classList.add('hidden')" class="btn-pixel w-1/2 bg-gray-200 py-3 text-[10px] font-pixel">NO</button>
+                <button onclick="window.ejecutarCerrarSesion()" class="btn-pixel w-1/2 bg-red-600 text-white py-3 text-[10px] font-pixel">SÍ, SALIR</button>
+            </div>
         </div>
     </div>
 
-    <!-- Modal de Confirmación de Salida -->
-    <div id="confirm-exit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md">
+    <!-- Modal: Master Reset Confirm -->
+    <div id="modal-master-reset" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-red-900/90 p-4 backdrop-blur-md text-center">
+        <div class="nes-container bg-white p-6 md:p-8 text-center max-w-sm w-full rounded-lg border-red-600 border-8">
+            <i data-lucide="bomb" class="w-16 h-16 mx-auto text-red-600 mb-4 animate-bounce"></i>
+            <h3 class="font-pixel text-red-600 text-sm mb-4 uppercase text-center">¡BORRADO TOTAL!</h3>
+            <p class="text-xs font-bold mb-6 text-gray-800 uppercase leading-tight text-center">
+                Estás a punto de borrar TODOS los votos y sesiones de la nube.<br><br>
+                <span class="text-red-700">ESTA ACCIÓN NO SE PUEDE DESHACER.</span>
+            </p>
+            <div class="flex flex-col gap-2">
+                <button onclick="window.ejecutarResetTotal()" class="btn-pixel w-full bg-red-600 text-white py-4 text-xs font-pixel uppercase text-center">SÍ, BORRAR TODO</button>
+                <button onclick="document.getElementById('modal-master-reset').classList.add('hidden')" class="btn-pixel w-full bg-gray-200 py-3 text-[10px] font-pixel uppercase text-center">CANCELAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Éxito Calificación -->
+    <div id="success-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm text-center">
         <div class="nes-container bg-white p-6 text-center max-w-sm w-full rounded-lg">
-            <i data-lucide="alert-triangle" class="w-12 h-12 mx-auto text-red-500 mb-4"></i>
-            <h3 class="font-pixel text-red-600 text-sm md:text-base mb-4 leading-relaxed">¿ESTÁS SEGURO?</h3>
-            <p class="font-bold text-gray-700 mb-6 text-sm">Si sales de la sesión, tus votos quedarán guardados y no podrás modificarlos después.</p>
-            <div class="flex gap-4">
-                <button type="button" onclick="cerrarConfirmarSalida()" class="btn-pixel w-1/2 bg-gray-400 hover:bg-gray-500 text-white font-pixel py-3 px-2 text-[10px] md:text-xs">CANCELAR</button>
-                <button type="button" onclick="ejecutarSalida()" class="btn-pixel w-1/2 bg-red-600 hover:bg-red-700 text-white font-pixel py-3 px-2 text-[10px] md:text-xs">SÍ, SALIR</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de Resultados en Vivo -->
-    <div id="resultados-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md overflow-y-auto">
-        <div class="nes-container bg-white border-4 border-black p-6 w-full max-w-md my-auto rounded-lg shadow-[8px_8px_0_0_rgba(0,0,0,1)]">
-            <div class="flex justify-between items-center mb-4 border-b-4 border-gray-200 pb-2">
-                <h3 class="font-pixel text-blue-600 text-sm">TABLA EN VIVO</h3>
-                <button type="button" onclick="cerrarResultados()" class="text-red-500 hover:text-red-700"><i data-lucide="x-circle" class="w-6 h-6"></i></button>
-            </div>
-            
-            <!-- Aviso de modo offline -->
-            <div id="aviso-offline" class="hidden bg-yellow-100 border border-yellow-400 text-yellow-800 text-[10px] p-2 rounded mb-4 text-center font-bold">
-                ⚠️ MODO OFFLINE: Mostrando solo los puntos de tu dispositivo. Revisa tu conexión a Firebase para ver los de todos.
-            </div>
-
-            <p id="titulo-resultados" class="font-bold text-gray-700 mb-4 text-sm text-center">Resultados de la Misión</p>
-            
-            <div id="tabla-resultados" class="space-y-2 mb-6">
-                <!-- Los resultados se insertarán aquí por JavaScript -->
-            </div>
-
-            <button type="button" onclick="cerrarResultados()" class="btn-pixel bg-gray-200 hover:bg-gray-300 text-black font-pixel py-3 px-4 w-full text-xs border-2 border-black">
-                CERRAR
+            <i data-lucide="trophy" class="w-16 h-16 mx-auto text-yellow-400 mb-4 floating text-center"></i>
+            <h3 class="font-pixel text-green-600 text-sm mb-4 uppercase text-center">¡Puntaje Guardado!</h3>
+            <button type="button" onclick="window.cerrarModalExito()" class="btn-pixel bg-blue-600 text-white font-pixel py-3 px-4 w-full text-[10px] text-center">
+                SIGUIENTE EQUIPO
             </button>
         </div>
     </div>
 
-    <!-- Pantalla de Agradecimiento Final -->
-    <div id="thank-you-screen" class="hidden nes-container w-full max-w-md p-6 relative mt-10 text-center bg-white border-4 border-yellow-400 rounded-lg">
-        <div class="relative z-10">
-            <h2 class="font-pixel text-blue-600 text-sm md:text-base mb-6 leading-relaxed">¡MISIÓN CUMPLIDA!</h2>
-            <p class="font-bold text-gray-800 mb-8 text-sm md:text-base leading-relaxed uppercase">
-                EL COMITÉ ESTUDIANTIL DE TURISMO Y GASTRONOMÍA AGRADECE TU PARTICIPACIÓN EN NUESTRA SÚPER SEMANA CULTURAL UATyG
-            </p>
-            
-            <!-- Logos Oficiales -->
-            <div class="flex justify-center items-center gap-4 mb-8">
-                <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/logo%20uan%20azul%20transparente%20unidad.png" alt="Logo UAN" class="h-16 md:h-20 object-contain drop-shadow-md">
-                <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/mario2.png" alt="Mario" class="h-24 md:h-28 object-contain drop-shadow-xl z-10 hover:scale-110 transition-transform">
-                <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/logo%20cetyg%20azul%20transparente.png" alt="Logo CETyG" class="h-16 md:h-20 object-contain drop-shadow-md">
+    <!-- PANTALLA: LOGIN -->
+    <div id="login-screen" class="nes-container w-full max-w-md p-6 relative pixel-sky mt-10 text-center rounded-lg">
+        <div class="absolute -top-5 left-1/2 transform -translate-x-1/2 bg-red-600 text-white font-pixel px-4 py-2 border-4 border-black text-[10px] z-20 uppercase tracking-tighter">JUEZ LOGIN</div>
+        <h1 class="font-pixel text-yellow-400 text-xs md:text-sm mt-6 mb-8 uppercase leading-loose text-center">Súper Semana Cultural<br><span class="text-white">UATyG 2026</span></h1>
+        <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/mario2.png" alt="Mario" class="h-24 mx-auto mb-6 floating">
+        <p class="font-pixel text-[10px] text-yellow-400 mb-4 uppercase text-center">Ingresa tu código único de juez</p>
+        <input type="text" id="codigo-juez" class="w-full border-4 border-black bg-white p-4 mb-2 font-pixel text-center uppercase focus:outline-none focus:border-yellow-500" placeholder="CÓDIGO">
+        <p id="error-login" class="text-red-500 font-bold text-[10px] mb-4 hidden font-pixel uppercase text-center">Código no válido</p>
+        <button type="button" onclick="window.iniciarSesionJuez()" class="btn-pixel w-full bg-green-500 text-white font-pixel py-4 px-4 text-xs mt-4 uppercase text-center tracking-widest">Start Mission</button>
+    </div>
+
+    <!-- PANTALLA: PANEL PRINCIPAL -->
+    <div id="main-app" class="nes-container w-full max-w-md p-6 relative hidden bg-white mt-10 text-center">
+        
+        <div id="barra-progreso-cont" class="absolute -top-10 left-0 w-full px-4">
+            <div class="bg-black border-2 border-white h-6 rounded-full overflow-hidden flex items-center px-1 relative">
+                <div id="progress-bar" class="bg-green-500 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                <span id="progress-text" class="absolute inset-0 flex items-center justify-center font-pixel text-[8px] text-white uppercase">Progress: 0/0</span>
             </div>
-            
-            <button type="button" onclick="location.reload()" class="btn-pixel bg-green-500 hover:bg-green-600 text-white font-pixel py-3 px-4 w-full text-xs border-2 border-black">
-                VOLVER AL INICIO
-            </button>
-        </div>
-    </div>
-
-    <!-- Pantalla de Login de Jueces -->
-    <div id="login-screen" class="nes-container w-full max-w-md p-6 md:p-8 relative bg-yellow-400 mt-10 border-4 border-black text-center rounded-lg">
-        
-        <div class="absolute -top-5 left-1/2 transform -translate-x-1/2 bg-red-600 text-white font-pixel px-4 py-2 border-4 border-black text-xs md:text-sm shadow-[4px_4px_0_0_rgba(0,0,0,1)] whitespace-nowrap z-20">
-            PANEL DE JUECES
         </div>
 
-        <div class="absolute inset-0 overflow-hidden rounded-lg pointer-events-none z-0">
-            <div class="absolute -top-2 -right-4 text-yellow-600 opacity-20"><i data-lucide="gamepad-2" class="w-32 h-32"></i></div>
-            <div class="absolute -bottom-2 -left-4 text-yellow-600 opacity-20"><i data-lucide="trophy" class="w-32 h-32"></i></div>
+        <div class="flex justify-between items-start border-b-4 border-gray-200 pb-4 mb-6 mt-4">
+            <div class="text-left">
+                <span id="display-avatar-juez" class="text-3xl block">👨‍🏫</span>
+                <h2 id="display-nombre-juez" class="font-bold text-gray-800 text-[10px] md:text-xs uppercase leading-tight mt-1 text-center">Nombre</h2>
+            </div>
+            <div class="text-right">
+                <p id="display-mision-juez" class="text-[8px] text-blue-800 font-bold bg-blue-100 border-2 border-blue-300 px-2 py-1 rounded uppercase">Misión</p>
+            </div>
         </div>
 
-        <h1 class="font-pixel text-blue-700 text-sm md:text-base mt-6 mb-5 leading-relaxed uppercase relative z-10">
-            Súper Semana Cultural<br>UATyG 2026
-        </h1>
-
-        <div class="flex justify-center items-center gap-4 mb-6 relative z-10">
-            <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/logo%20uan%20azul%20transparente%20unidad.png" alt="Logo UAN" class="h-12 md:h-14 object-contain drop-shadow-md">
-            <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/mario2.png" alt="Mario" class="h-20 md:h-24 object-contain drop-shadow-xl z-10">
-            <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/logo%20cetyg%20azul%20transparente.png" alt="Logo CETyG" class="h-12 md:h-14 object-contain drop-shadow-md">
+        <!-- VISTA ESPECIAL: TESTIGO -->
+        <div id="vista-testigo" class="hidden space-y-6 py-6 text-center">
+            <div class="bg-blue-50 border-4 border-blue-200 p-6 rounded-lg mb-4 text-center">
+                <i data-lucide="eye" class="w-12 h-12 mx-auto text-blue-600 mb-4 animate-pulse"></i>
+                <h3 class="font-pixel text-blue-800 text-xs mb-2 text-center">MODO OBSERVADOR</h3>
+                <p class="text-xs text-gray-600 font-bold uppercase leading-tight text-center">Supervisión de resultados en vivo.</p>
+            </div>
+            <button type="button" onclick="window.mostrarResultados()" class="btn-pixel w-full bg-yellow-400 font-pixel py-5 text-xs uppercase text-center">VER TABLA DE POSICIONES</button>
         </div>
 
-        <div class="bg-white border-4 border-gray-800 p-3 mb-6 relative z-10 rounded">
-            <i data-lucide="star" class="w-5 h-5 absolute -top-3 -left-3 text-yellow-500 fill-yellow-400 bg-white rounded-full"></i>
-            <i data-lucide="star" class="w-5 h-5 absolute -top-3 -right-3 text-yellow-500 fill-yellow-400 bg-white rounded-full"></i>
-            <p class="font-bold text-gray-800 text-xs md:text-sm uppercase leading-relaxed">
-                ¡Gracias por ser nuestro juez en esta semana cultural!
-            </p>
-        </div>
-        
-        <h2 class="font-bold text-gray-800 text-xs mb-2 relative z-10">Ingresa tu código de acceso:</h2>
-        
-        <input type="text" id="codigo-juez" class="w-full border-4 border-black bg-white p-3 mb-2 font-pixel text-center uppercase focus:outline-none focus:border-blue-600 transition-colors shadow-inner relative z-10" placeholder="CÓDIGO AQUÍ" autocomplete="off" onkeypress="if(event.key === 'Enter') iniciarSesionJuez()">
-        <p id="error-login" class="text-red-600 font-bold text-xs mb-4 h-4 hidden animate-pulse relative z-10">¡CÓDIGO INCORRECTO!</p>
-        
-        <button id="btn-login" type="button" onclick="iniciarSesionJuez()" class="btn-pixel w-full bg-blue-600 hover:bg-blue-700 text-white font-pixel py-4 px-4 text-xs mt-2 flex items-center justify-center gap-2 relative z-10">
-            <i data-lucide="key" class="w-5 h-5"></i> ENTRAR
-        </button>
-    </div>
-
-    <!-- Contenedor Principal (App de Jueces) -->
-    <div id="main-app" class="nes-container w-full max-w-md p-6 relative hidden bg-white border-4 border-black rounded-lg mt-10">
-        <div class="absolute -top-5 left-1/2 transform -translate-x-1/2 bg-red-600 text-white font-pixel px-4 py-2 border-4 border-black text-xs md:text-sm shadow-[4px_4px_0_0_rgba(0,0,0,1)] whitespace-nowrap z-10">
-            JUDGE PANEL
-        </div>
-
-        <div class="text-center mt-6 mb-6 text-gray-800 border-b-4 border-gray-200 pb-4">
-            <i data-lucide="clipboard-signature" class="w-10 h-10 mx-auto text-blue-600 mb-2"></i>
-            <h2 id="display-nombre-juez" class="font-bold text-gray-800 text-lg uppercase tracking-wide">Cargando...</h2>
-            <p id="display-mision-juez" class="text-xs text-blue-800 font-bold mt-2 bg-blue-100 border border-blue-300 inline-block px-3 py-1 rounded-full shadow-sm">Misión: Cargando...</p>
-        </div>
-
-        <form id="evaluacion-form" class="space-y-6">
-
-            <!-- NUEVO: Selector de Misión para Observador (Oculto por defecto) -->
-            <div id="contenedor-mision-obs" class="bg-blue-50 p-4 border-4 border-blue-400 rounded relative hidden mb-6">
-                <i class="w-5 h-5 absolute top-3 right-3 text-blue-300" data-lucide="eye"></i>
-                <label class="block font-pixel text-blue-800 text-[9px] md:text-[10px] mb-2 drop-shadow-sm">MISIÓN A OBSERVAR:</label>
-                <select id="mision-obs-select" class="w-full border-2 border-black p-2 font-bold text-gray-800 outline-none focus:border-blue-500 bg-white text-sm md:text-base cursor-pointer shadow-inner">
-                    <!-- Se llena con JS -->
+        <!-- FORMULARIO: CALIFICACIÓN -->
+        <form id="evaluacion-form" class="space-y-6 text-center">
+            <div id="contenedor-fase-drag" class="hidden bg-pink-50 p-4 border-4 border-pink-400 rounded relative shadow-sm text-center">
+                <label class="block font-pixel text-pink-800 text-[8px] mb-2 uppercase text-center">Fase:</label>
+                <select id="categoria-select" onchange="window.cambiarFaseDrag()" class="w-full border-2 border-black p-2 font-bold text-gray-800 text-sm bg-white text-center">
+                    <option value="pasarela">1. Pasarela</option>
+                    <option value="show">2. Show / Performance</option>
+                    <option value="lipsync">3. Lipsync General</option>
+                    <option value="lipsync_final">4. Gran Final Top 3</option>
                 </select>
             </div>
 
-            <!-- Contenedor general de calificación (Se oculta al ser observador) -->
-            <div id="area-calificacion" class="space-y-6">
-                <div id="contenedor-etapa" class="bg-purple-50 p-4 border-4 border-purple-400 rounded relative hidden mb-6">
-                    <i class="w-5 h-5 absolute top-3 right-3 text-purple-300" data-lucide="layers"></i>
-                    <label class="block font-pixel text-purple-800 text-[9px] md:text-[10px] mb-2 drop-shadow-sm">FASE A EVALUAR:</label>
-                    <select id="etapa-select" onchange="cambiarEtapa()" class="w-full border-2 border-black p-2 font-bold text-gray-800 outline-none focus:border-purple-500 bg-white text-sm md:text-base cursor-pointer shadow-inner">
-                    </select>
-                </div>
-
-                <div class="bg-yellow-50 p-4 border-4 border-yellow-400 rounded relative shadow-sm mb-6">
-                    <label class="block font-pixel text-yellow-800 text-[9px] md:text-[10px] mb-2 drop-shadow-sm">EQUIPO A EVALUAR:</label>
-                    <select id="equipo-select" onchange="actualizarEquiposDisponibles()" class="w-full border-2 border-black p-2 font-bold text-gray-800 outline-none focus:border-yellow-500 bg-white text-sm md:text-base cursor-pointer shadow-inner">
-                        <option value="">-- Selecciona un Equipo --</option>
-                        <option value="Mario (Rojo)">Equipo Mario (Rojo)</option>
-                        <option value="Luigi (Verde)">Equipo Luigi (Verde)</option>
-                        <option value="Peach (Rosa)">Equipo Peach (Rosa)</option>
-                        <option value="Daisy (Naranja)">Equipo Daisy (Naranja)</option>
-                        <option value="Yoshi (Verde Claro)">Equipo Yoshi (Verde Claro)</option>
-                        <option value="Toad (Azul)">Equipo Toad (Azul)</option>
-                        <option value="Bowser (Amarillo)">Equipo Bowser (Amarillo)</option>
-                    </select>
-                </div>
-
-                <div id="rubrica-container" class="space-y-6 border-t-4 border-dashed border-gray-300 pt-6">
-                    <h3 class="font-pixel text-xs text-center text-gray-800 bg-gray-100 py-2 border-2 border-gray-300 rounded shadow-sm">RÚBRICA DE EVALUACIÓN</h3>
-                    <p class="text-center text-xs text-gray-500 font-bold mb-4 uppercase">Califica del 1 al 10 tocando el número</p>
-
-                    <div id="criterios-dinamicos" class="space-y-4">
-                    </div>
-
-                    <div class="bg-gray-50 p-3 border-2 border-gray-200 rounded-lg shadow-sm">
-                        <label class="block font-bold text-sm text-gray-700 mb-2"><i data-lucide="message-square" class="w-4 h-4 inline mr-1 text-blue-500"></i> Observaciones (Opcional):</label>
-                        <textarea id="observaciones" class="w-full border-2 border-gray-300 bg-white text-gray-800 rounded p-2 text-sm outline-none focus:border-blue-500 font-medium placeholder-gray-400" rows="2" placeholder="Notas sobre el desempeño..."></textarea>
-                    </div>
-
-                    <button type="button" onclick="enviarCalificacion()" class="btn-pixel w-full bg-green-500 hover:bg-green-600 text-white font-pixel py-4 px-4 text-xs md:text-sm flex justify-center items-center gap-2 mt-6">
-                        <i data-lucide="send" class="w-5 h-5"></i> ENVIAR SCORE
-                    </button>
-                </div>
+            <div class="bg-yellow-50 p-4 border-4 border-yellow-400 rounded relative text-center">
+                <label class="block font-pixel text-yellow-800 text-[8px] mb-2 uppercase text-center">Select Character:</label>
+                <select id="equipo-select" onchange="window.actualizarEquiposDisponibles()" class="w-full border-2 border-black p-2 font-bold text-gray-800 text-sm bg-white text-center">
+                    <option value="">-- Selecciona --</option>
+                    <option value="Mario (Rojo)">Mario (Rojo)</option>
+                    <option value="Luigi (Verde)">Luigi (Verde)</option>
+                    <option value="Peach (Rosa)">Peach (Rosa)</option>
+                    <option value="Daisy (Naranja)">Daisy (Naranja)</option>
+                    <option value="Yoshi (Verde Claro)">Yoshi (Verde Claro)</option>
+                    <option value="Toad (Azul)">Toad (Azul)</option>
+                    <option value="Bowser (Amarillo)">Bowser (Amarillo)</option>
+                </select>
+                <p id="aviso-lipsync" class="hidden text-[8px] font-bold text-red-600 mt-2 uppercase text-center">* Solo las 3 mejores reinas</p>
             </div>
 
-            <div class="mt-8 pt-4 border-t-2 border-gray-200">
-                <button type="button" onclick="mostrarResultados()" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-800 font-bold py-3 px-4 border-2 border-blue-400 border-dashed rounded-lg flex justify-center items-center gap-2 transition-colors mb-4 shadow-sm">
-                    <i data-lucide="bar-chart-2" class="w-5 h-5"></i> Ver Resultados en Vivo
-                </button>
-
-                <button type="button" onclick="confirmarSalida()" class="btn-pixel w-full bg-red-500 hover:bg-red-600 text-white font-pixel py-3 px-4 text-xs flex justify-center items-center gap-2">
-                    <i data-lucide="log-out" class="w-5 h-5"></i> CERRAR SESIÓN
-                </button>
+            <div id="rubrica-container" class="space-y-4 pt-4 border-t-4 border-dashed border-gray-200 text-center">
+                <div id="criterios-dinamicos" class="space-y-4 text-center"></div>
+                <div class="bg-gray-50 p-3 border-2 border-gray-200 rounded-lg text-center">
+                    <label class="block font-bold text-[10px] text-gray-700 mb-2 uppercase text-center">Observaciones:</label>
+                    <textarea id="observaciones" class="w-full border-2 border-gray-300 rounded p-2 text-xs outline-none focus:border-blue-500 font-medium text-center" rows="2" placeholder="Notas..."></textarea>
+                </div>
+                <button type="button" onclick="window.enviarCalificacion()" class="btn-pixel w-full bg-green-500 text-white font-pixel py-4 text-xs uppercase text-center tracking-widest">CALIFICAR EQUIPO</button>
             </div>
 
+            <div class="flex flex-col gap-2 pt-4 border-t-2 border-gray-100 text-center">
+                <button type="button" onclick="window.mostrarResultados()" class="w-full bg-blue-50 text-blue-800 font-bold py-3 border-2 border-blue-400 border-dashed rounded text-xs uppercase text-center">Ver Tabla</button>
+            </div>
         </form>
+
+        <div class="text-center pt-4">
+            <button type="button" onclick="window.abrirModalSalir()" class="text-red-500 font-bold text-[10px] uppercase hover:underline text-center">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <!-- PANTALLA: AGRADECIMIENTO FINAL -->
+    <div id="thank-you-screen" class="hidden nes-container w-full max-w-lg p-8 relative mt-10 text-center bg-gradient-to-b from-blue-700 to-blue-900 border-4 border-white rounded-xl shadow-2xl text-center">
+        <div class="text-white relative z-10 text-center">
+            <div class="bg-yellow-400 w-20 h-20 rounded-full mx-auto mb-6 border-4 border-black flex items-center justify-center shadow-lg animate-bounce">
+                <i data-lucide="crown" class="w-10 h-10 text-white fill-white"></i>
+            </div>
+            <h2 class="font-pixel text-yellow-300 text-2xl mb-4 text-glow text-center uppercase leading-tight">ENORME GRACIAS</h2>
+            <p class="font-pixel text-[10px] mb-8 text-blue-100 uppercase tracking-widest text-center">Fuiste nuestro mejor jugador</p>
+            <div class="mb-8 text-center">
+                <h4 class="font-pixel text-[9px] text-yellow-400 mb-4 uppercase text-center tracking-tighter">Ranking Final Misión:</h4>
+                <div id="ranking-final-container" class="space-y-2 text-left"></div>
+            </div>
+            <div class="bg-white/10 p-4 border-2 border-white/20 rounded-lg mb-8 text-center">
+                <p class="font-bold text-xs uppercase leading-relaxed text-center">El CETyG agradece profundamente tu apoyo.</p>
+            </div>
+            <button onclick="window.ejecutarCerrarSesion()" class="btn-pixel bg-red-600 text-white font-pixel text-[10px] py-3 w-full uppercase text-center">VOLVER AL INICIO</button>
+        </div>
+    </div>
+
+    <!-- MODAL: RESULTADOS -->
+    <div id="resultados-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md overflow-y-auto text-center">
+        <div class="nes-container bg-white border-4 border-black p-6 w-full max-w-md my-auto rounded-lg shadow-2xl text-center">
+            <div class="flex justify-between items-center mb-4 border-b-4 border-gray-200 pb-2 text-center">
+                <h3 class="font-pixel text-blue-600 text-[10px] uppercase text-center">Live Scores</h3>
+                <button type="button" onclick="window.cerrarResultados()" class="text-red-500 hover:text-red-700 transition-colors"><i data-lucide="x-circle"></i></button>
+            </div>
+            <div id="selector-ranking-mision" class="mb-4 hidden text-center">
+                <label class="block text-[8px] font-bold text-gray-500 mb-1 uppercase text-center">Filtrar por concurso:</label>
+                <select id="filtro-mision-ranking" onchange="window.mostrarResultados()" class="w-full border-2 border-black p-2 text-xs font-bold rounded bg-yellow-50 outline-none text-center"></select>
+            </div>
+            <div id="tabla-resultados" class="space-y-2 mb-6"></div>
+            <button type="button" onclick="window.cerrarResultados()" class="btn-pixel bg-gray-200 py-3 w-full font-pixel text-[10px] border-2 border-black uppercase text-center">Cerrar</button>
+        </div>
     </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, onSnapshot, getDocs, deleteDoc, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, onSnapshot, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    let db = null, auth = null, user = null, votosCollection = null, sesionesCollection = null;
-    window.baseDeDatosNube = JSON.parse(localStorage.getItem('uatyg_votos')) || []; 
-    window.sesionActual = null; 
-    let modoOffline = false; // Variable para saber si falló el internet o la llave
-
+    // --- CONFIGURACIÓN ---
     const isCanvasEnv = typeof __firebase_config !== 'undefined';
     const currentAppId = typeof __app_id !== 'undefined' ? __app_id : 'scuatyg2026-app';
-
-    // ID ÚNICO DEL DISPOSITIVO
-    let localDeviceId = localStorage.getItem('uatyg_device_id');
-    if (!localDeviceId) {
-        localDeviceId = 'dev_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('uatyg_device_id', localDeviceId);
-    }
-
-    // --- 1. INICIALIZAR LA NUBE CON PROTECCIÓN ANTI-FALLOS ---
-    const initCloud = async () => {
-        let firebaseConfig;
-
-        if (isCanvasEnv) {
-            // Entorno de prueba (Canvas)
-            firebaseConfig = JSON.parse(__firebase_config);
-        } else {
-            // =====================================================================
-            // TUS DATOS DE FIREBASE
-            // =====================================================================
-            firebaseConfig = {
-               apiKey: "AIzaSyAWvlKYMuFlxL88OrSOzGPzXk0w_HUTGQ8",
-               authDomain: "scuatyg2026.firebaseapp.com",
-               projectId: "scuatyg2026",
-               storageBucket: "scuatyg2026.firebasestorage.app",
-               messagingSenderId: "321639282182",
-               appId: "1:321639282182:web:6803746ad3ff4c8e8e3587",
-               measurementId: "G-YQ5KBWYEQY"
-            };
-        }
-
-        // PREVENCIÓN DE ERROR DE API KEY (Asegurarnos de que el usuario haya puesto la suya)
-        if (!firebaseConfig || !firebaseConfig.apiKey || firebaseConfig.apiKey.includes("TU_API_KEY")) {
-            console.warn("⚠️ MODO LOCAL ACTIVADO: No se ha configurado una API Key válida de Firebase. Los puntajes se guardarán solo en este dispositivo.");
-            modoOffline = true;
-            return;
-        }
-
-        try {
-            const app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-
-            // Intentamos iniciar sesión anónima de forma segura
-            try {
-                if (isCanvasEnv && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (authError) {
-                console.error("❌ Error de Autenticación en Firebase:", authError.message);
-                console.warn("⚠️ La conexión a la nube ha fallado. Revisa los dominios autorizados en Firebase Authentication.");
-                modoOffline = true; // Si la llave está mal o el dominio no está autorizado, nos vamos a modo offline
-                
-                // Mostrar alerta en pantalla solo si no estamos en el entorno de desarrollo
-                if (!isCanvasEnv) {
-                    document.getElementById('aviso-offline').classList.remove('hidden');
-                    document.getElementById('aviso-offline').innerHTML = `⚠️ ERROR DE CONEXIÓN: Verifica los dominios autorizados en Firebase. Entrando en Modo Local.`;
-                }
-                return; // Detenemos la ejecución de Firebase aquí
-            }
-
-            onAuthStateChanged(auth, (currentUser) => {
-                if (currentUser) {
-                    user = currentUser;
-                    
-                    // Asignar colecciones dinámicamente según el entorno
-                    if (isCanvasEnv) {
-                        votosCollection = collection(db, 'artifacts', currentAppId, 'public', 'data', 'votos_jueces');
-                        sesionesCollection = collection(db, 'artifacts', currentAppId, 'public', 'data', 'sesiones_jueces');
-                    } else {
-                        votosCollection = collection(db, 'votos_jueces');
-                        sesionesCollection = collection(db, 'sesiones_jueces');
-                    }
-                    
-                    // Escuchamos la base de datos en vivo
-                    try {
-                        onSnapshot(votosCollection, (snapshot) => {
-                            window.baseDeDatosNube = [];
-                            snapshot.forEach((doc) => {
-                                window.baseDeDatosNube.push({ id: doc.id, ...doc.data() });
-                            });
-                            
-                            localStorage.setItem('uatyg_votos', JSON.stringify(window.baseDeDatosNube));
-                            
-                            if (window.sesionActual) {
-                                window.actualizarEquiposDisponibles();
-                                if (!document.getElementById('resultados-modal').classList.contains('hidden')) {
-                                    window.mostrarResultados();
-                                }
-                            }
-                        }, (error) => {
-                            console.error("❌ Error al escuchar la base de datos (Firestore):", error.message);
-                            console.warn("⚠️ Es posible que necesites habilitar Firestore y establecer reglas en modo de prueba.");
-                            modoOffline = true;
-                        });
-                    } catch (dbError) {
-                         console.error("Error al conectar con Firestore:", dbError);
-                         modoOffline = true;
-                    }
-                }
-            });
-        } catch (e) {
-            console.error("❌ Error grave inicializando Firebase:", e);
-            modoOffline = true;
-        }
+    const firebaseConfig = isCanvasEnv ? JSON.parse(__firebase_config) : { 
+        apiKey: "AIzaSyAWvlKYMuFlxL88OrSOzGPzXk0w_HUTGQ8", projectId: "scuatyg2026", storageBucket: "scuatyg2026.firebasestorage.app", appId: "1:321639282182:web:6803746ad3ff4c8e8e3587" 
     };
-    
-    initCloud(); // Ejecutamos la conexión al iniciar
 
-    // --- 2. CONFIGURACIÓN DEL EVENTO Y RÚBRICAS ---
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const coleccionVotos = isCanvasEnv ? collection(db, 'artifacts', currentAppId, 'public', 'data', 'votos_jueces') : collection(db, 'votos_jueces');
+    const coleccionSesiones = isCanvasEnv ? collection(db, 'artifacts', currentAppId, 'public', 'data', 'sesiones_jueces') : collection(db, 'sesiones_jueces');
+    const localDeviceId = localStorage.getItem('uatyg_device_id') || ('dev_' + Math.random().toString(36).substr(2, 9));
+    localStorage.setItem('uatyg_device_id', localDeviceId);
+
     const accesosJueces = {
-        "COREO8821": { nombre: "Juez Baile (Profe Alex)", mision: "m1", juezId: "Juez 1" },
-        "RITMO5590": { nombre: "Juez Ritmo (Mtra. Silvia)", mision: "m1", juezId: "Juez 2" },
-        "SWAG3347":  { nombre: "Juez Expresión (Invitado A)", mision: "m1", juezId: "Juez 3" },
-        "DANCE1102": { nombre: "Juez Vestuario (Mtra. Carmen)", mision: "m1", juezId: "Juez 4" },
-        "STEP9945":  { nombre: "Juez Escénico (Profe Luis)", mision: "m1", juezId: "Juez 5" },
-
-        "TALENT4410": { nombre: "Juez Estrella (Mtra. Diana)", mision: "m5", juezId: "Juez 1" },
-        "SHOW7732":   { nombre: "Juez Showman (Profe Carlos)", mision: "m5", juezId: "Juez 2" },
-        "SKILL2298":  { nombre: "Juez de Técnica (Invitado B)", mision: "m5", juezId: "Juez 3" },
-
-        "VALENTIN26": { nombre: "Mr. Valentin (Juez VIP)", mision: "m6", juezId: "Juez 1" },
-        "QUEEN6651":  { nombre: "Reina Madre (Mtra. Rosa)", mision: "m6", juezId: "Juez 2" },
-        "FIERCE9934": { nombre: "Juez Actitud (Profe Hugo)", mision: "m6", juezId: "Juez 3" },
-        "GLAM1178":   { nombre: "Juez Glamour (Invitada C)", mision: "m6", juezId: "Juez 4" },
-        "LIPSYNC442": { nombre: "Juez Lipsync (Mtra. Elena)", mision: "m6", juezId: "Juez 5" },
-        "FASHION889": { nombre: "Juez Pasarela (Profe Omar)", mision: "m6", juezId: "Juez 6" },
-
-        "CHEFGORDON": { nombre: "Chef Gordon (Mtro. Gastronomía)", mision: "m14", juezId: "Juez 1" },
-        "SABOR3367":  { nombre: "Chef Degustador (Invitado Chef)", mision: "m14", juezId: "Juez 2" },
-        "PLATING551": { nombre: "Chef Estética (Mtra. Cocina)", mision: "m14", juezId: "Juez 3" },
-
-        "KART7743":   { nombre: "Juez Diseño Taller (Profe Ing.)", mision: "m19", juezId: "Juez 1" },
-        "PARADE2289": { nombre: "Juez Animación (Mtra. Turismo)", mision: "m19", juezId: "Juez 2" },
-        "DRIFT9910":  { nombre: "Juez Resistencia (Profe Deportes)", mision: "m19", juezId: "Juez 3" },
-
-        // --- NUEVO: ACCESO TESTIGO/OBSERVADOR (COMITÉ) ---
-        "TESTIGO26":  { nombre: "Comité (Observador)", mision: "todas", juezId: "OBSERVADOR" }
+        "ALEX90": { nombre: "Brayan Alexis", avatar: "👟", mision: "m1", juezId: "J1" },
+        "ALE90": { nombre: "Alejandra Alvarado", avatar: "💃", mision: "m1", juezId: "J2" },
+        "ALONSO90": { nombre: "Alonso Castro", avatar: "🕺", mision: "m1", juezId: "J3" },
+        "MERE90": { nombre: "Meredith Rubio", avatar: "🎶", mision: "m1", juezId: "J4" },
+        "CELINA90": { nombre: "Mtra Celina Agraz", avatar: "🎵", mision: "m1", juezId: "J5" },
+        "KORVIN16": { nombre: "Korvin Cobarrubias", avatar: "🎤", mision: "m5", juezId: "J1" },
+        "CUETO16": { nombre: "Ricardo Cueto", avatar: "🎭", mision: "m5", juezId: "J2" },
+        "YURI16": { nombre: "Mtra Yuri Berumen", avatar: "⭐", mision: "m5", juezId: "J3" },
+        "MARTHA12": { nombre: "Chef Martha Acero", avatar: "👨‍🍳", mision: "m14", juezId: "J1" },
+        "LAMAS12": { nombre: "Chef Jesus G Lamas", avatar: "🍳", mision: "m14", juezId: "J2" },
+        "RAMOS12": { nombre: "Dr Jeraar Atahualpa Ramos", avatar: "🍕", mision: "m14", juezId: "J3" },
+        "MARIO18": { nombre: "Mtro Mario Jauregui", avatar: "🚗", mision: "m19", juezId: "J1" },
+        "DALIA18": { nombre: "Mtra Dalia Alcaraz", avatar: "🏎️", mision: "m19", juezId: "J2" },
+        "ANTONIO18": { nombre: "Mtro Antonio Cabello Sandoval", avatar: "🏁", mision: "m19", juezId: "J3" },
+        "SISSY20": { nombre: "Sissy Hera", avatar: "👑", mision: "m6", juezId: "J1" },
+        "ATHENA20": { nombre: "Athena Steele", avatar: "💅", mision: "m6", juezId: "J2" },
+        "ROSA20": { nombre: "Rosa Perré", avatar: "✨", mision: "m6", juezId: "J3" },
+        "TESTIGO26": { nombre: "Comité (Observador)", avatar: "🕶️", mision: "todas", juezId: "OBS" }
     };
 
     const configuracionMisiones = {
-        "m1": {
-            titulo: "Presentación de Equipos",
-            jueces: 5,
-            etapas: [{ id: "e1", nombre: "Evaluación General", criterios: [
-                { id: "c1", nombre: "Coordinación y sincronización", icono: "users" },
-                { id: "c2", nombre: "Creatividad y originalidad", icono: "lightbulb" },
-                { id: "c3", nombre: "Expresión corporal y escénica", icono: "activity" },
-                { id: "c4", nombre: "Vestuario y presentación", icono: "shirt" },
-                { id: "c5", nombre: "Uso del espacio escénico", icono: "move" }
-            ]}]
-        },
-        "m5": {
-            titulo: "Super Star Talent",
-            jueces: 3,
-            etapas: [{ id: "e1", nombre: "Evaluación General", criterios: [
-                { id: "c1", nombre: "Talento (Creatividad y ejecución)", icono: "star" },
-                { id: "c2", nombre: "Baile (Ritmo y adaptación)", icono: "music" },
-                { id: "c3", nombre: "Presencia (Cosplay/Uniforme)", icono: "shirt" }
-            ]}]
-        },
-        "m6": {
-            titulo: "Gala Real (Diva Drag)",
-            jueces: 6,
-            etapas: [
-                { id: "e1", nombre: "Fase 1: La Pasarela", criterios: [ { id: "c1", nombre: "Pasarela (Look y respuesta)", icono: "mic" } ] },
-                { id: "e2", nombre: "Fase 2: Show Libre", criterios: [ { id: "c2", nombre: "Show Libre (Performance)", icono: "sparkles" } ] },
-                { id: "e3", nombre: "Fase 3: Lipsync Battle", criterios: [ { id: "c3", nombre: "Lipsync Battle", icono: "flame" } ] }
-            ]
-        },
-        "m14": {
-            titulo: "Chef Toad's Kitchen",
-            jueces: 3,
-            etapas: [{ id: "e1", nombre: "Evaluación General", criterios: [
-                { id: "c1", nombre: "Sabor y Textura", icono: "utensils" },
-                { id: "c2", nombre: "Creatividad y Concepto", icono: "lightbulb" },
-                { id: "c3", nombre: "Presentación y Emplatado", icono: "eye" }
-            ]}]
-        },
-        "m19": {
-            titulo: "Gran Premio Final (Caravana)",
-            jueces: 3,
-            etapas: [
-                { id: "e1", nombre: "Fase 1: Taller (Diseño)", criterios: [
-                    { id: "c1", nombre: "Diseño y Fidelidad", icono: "palette" },
-                    { id: "c2", nombre: "Técnica, Luces y Sonido", icono: "wrench" }
-                ]},
-                { id: "e2", nombre: "Fase 2: Desfile", criterios: [
-                    { id: "c3", nombre: "Resistencia (Desfile)", icono: "shield-check" },
-                    { id: "c4", nombre: "Ambiente, Energía y Cosplay", icono: "flame" }
-                ]}
-            ]
-        }
+        "m1": { titulo: "Presentación", criterios: [
+            {id:"c1", nombre:"Coordinación y Sincronización", icono:"users"},
+            {id:"c2", nombre:"Creatividad y Originalidad", icono:"lightbulb"},
+            {id:"c3", nombre:"Expresión Corporal y Escénica", icono:"user"},
+            {id:"c4", nombre:"Vestuario y Presentación", icono:"shirt"},
+            {id:"c5", nombre:"Cosplay", icono:"palette"}
+        ]},
+        "m5": { titulo: "Star Talent", criterios: [{id:"c1",nombre:"Talento",icono:"star"},{id:"c2",nombre:"Presencia",icono:"shirt"}] },
+        "m14": { titulo: "Chef Toad", criterios: [
+            {id:"c1",nombre:"Sabor y Textura",icono:"utensils"},{id:"c2",nombre:"Creatividad",icono:"lightbulb"},{id:"c3",nombre:"Presentación",icono:"eye"},
+            {id:"c4",nombre:"Bebida (Maridaje)",icono:"glass-water",customRange:[0,1,2,3,4,5],labels:{0:"N/P"}}
+        ]},
+        "m19": { titulo: "Gran Caravana", criterios: [
+            {id:"c1", nombre:"Diseño", icono:"pen-tool"},{id:"c2", nombre:"Creatividad", icono:"sparkles"},
+            {id:"c3", nombre:"Composición", icono:"palette", desc: "Luces, Sonidos y Visuales"},
+            {id:"c4", nombre:"¿Integró Cosplay?", icono:"person-standing", customRange: [0, 5], labels: {0: "NO", 5: "SÍ"}}
+        ]},
+        "m6": { titulo: "Gala Drag", fases: {
+            "pasarela": [{id:"c1",nombre:"Vestuario",icono:"shirt"},{id:"c2",nombre:"Pasarela",icono:"zap"}],
+            "show": [{id:"c3",nombre:"Performance",icono:"sparkles"},{id:"c4",nombre:"Creatividad",icono:"palette"}],
+            "lipsync": [{id:"c5",nombre:"LipSync",icono:"mic"},{id:"c6",nombre:"Energía",icono:"volume-2"}],
+            "lipsync_final": [{id:"c7",nombre:"Duelo Final",icono:"flame"},{id:"c8",nombre:"Impacto",icono:"crown"}]
+        }}
     };
 
-    // --- 3. FUNCIONES GLOBALES ---
+    // --- LÓGICA DE FIREBASE Y RESET ---
 
-    window.onload = function() {
-        const sesionGuardada = localStorage.getItem('uatyg_juez_sesion');
-        if (sesionGuardada) {
-            window.sesionActual = JSON.parse(sesionGuardada);
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
-            document.getElementById('display-nombre-juez').innerText = window.sesionActual.nombre;
-            
-            // Validar si es observador
-            if (window.sesionActual.juezId === "OBSERVADOR") {
-                document.getElementById('display-mision-juez').innerText = "Modo Observador Activo";
-                document.getElementById('area-calificacion').classList.add('hidden');
-                document.getElementById('contenedor-mision-obs').classList.remove('hidden');
-                
-                // Llenar selector de misiones
-                const selectMisionObs = document.getElementById('mision-obs-select');
-                selectMisionObs.innerHTML = '<option value="">-- Elige una Misión --</option>';
-                for (const [key, value] of Object.entries(configuracionMisiones)) {
-                    selectMisionObs.innerHTML += `<option value="${key}">${value.titulo}</option>`;
-                }
-            } else {
-                // Juez regular
-                document.getElementById('display-mision-juez').innerText = configuracionMisiones[window.sesionActual.mision].titulo;
-                document.getElementById('area-calificacion').classList.remove('hidden');
-                document.getElementById('contenedor-mision-obs').classList.add('hidden');
-                window.cargarEtapas();
+    async function initFirebase() {
+        if (isCanvasEnv && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
+        else await signInAnonymously(auth);
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                onSnapshot(coleccionVotos, (snapshot) => {
+                    window.baseDeDatosVotos = [];
+                    snapshot.forEach(doc => window.baseDeDatosVotos.push({ id: doc.id, ...doc.data() }));
+                    if (window.sesionActual) {
+                        window.actualizarProgreso(); window.actualizarEquiposDisponibles();
+                        if (!document.getElementById('resultados-modal').classList.contains('hidden')) window.mostrarResultados();
+                        if (window.sesionActual.mision !== "todas" && window.validarMisionCompletada()) window.mostrarAgradecimientoFinal();
+                    }
+                });
             }
-        }
+        });
+    }
+
+    // --- FUNCIONES ASOCIADAS A WINDOW ---
+
+    window.ejecutarResetTotal = async function() {
+        document.getElementById('modal-master-reset').classList.add('hidden');
+        try {
+            const snapVotos = await getDocs(coleccionVotos);
+            for (const d of snapVotos.docs) { await deleteDoc(d.ref); }
+            const snapSesiones = await getDocs(coleccionSesiones);
+            for (const d of snapSesiones.docs) { await deleteDoc(d.ref); }
+            localStorage.removeItem('uatyg_juez_sesion');
+            localStorage.removeItem('uatyg_device_id');
+            alert("✅ SISTEMA REINICIADO CON ÉXITO.");
+            location.reload();
+        } catch (e) { alert("Error en el reinicio."); }
     };
-    
-    // Función de ayuda para obtener la ruta correcta del documento
-    const getSesionDocRef = (codigo) => {
-        return isCanvasEnv 
-            ? doc(db, 'artifacts', currentAppId, 'public', 'data', 'sesiones_jueces', codigo) 
-            : doc(db, 'sesiones_jueces', codigo);
+
+    window.obtenerTotalEquiposMenu = function() {
+        return Array.from(document.getElementById('equipo-select').options).filter(opt => opt.value !== "").length;
+    };
+
+    window.validarMisionCompletada = function() {
+        if (!window.sesionActual || window.sesionActual.mision === "todas") return false;
+        const misVotos = window.baseDeDatosVotos.filter(v => v.mision === window.sesionActual.mision && v.juez === window.sesionActual.juezId);
+        if (window.sesionActual.mision === "m6") return misVotos.length >= 24;
+        const equiposCalificados = [...new Set(misVotos.map(v => v.equipo))];
+        return equiposCalificados.length >= window.obtenerTotalEquiposMenu();
+    };
+
+    window.mostrarAgradecimientoFinal = function() {
+        const container = document.getElementById('ranking-final-container');
+        if(!container) return;
+        const mId = window.sesionActual.mision;
+        const totalPorEquipo = {};
+        window.baseDeDatosVotos.filter(v => v.mision === mId).forEach(v => {
+            totalPorEquipo[v.equipo] = (totalPorEquipo[v.equipo] || 0) + v.puntos;
+        });
+        const ranking = Object.keys(totalPorEquipo).map(eq => ({ n: eq, p: totalPorEquipo[eq] })).sort((a,b) => b.p - a.p);
+        container.innerHTML = '';
+        ranking.forEach((eq, i) => {
+            const med = i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : '•'));
+            container.innerHTML += `<div class="final-ranking-item flex justify-between items-center p-3 rounded-lg mb-1 text-white uppercase font-bold text-[10px]"><span>${med} ${eq.n}</span><span class="font-pixel text-yellow-300 text-[8px]">${eq.p} PTS</span></div>`;
+        });
+        document.getElementById('main-app').classList.add('hidden');
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('thank-you-screen').classList.remove('hidden');
+        if(!window.victoryPlayed) { playSound('victory'); window.victoryPlayed = true; }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     window.iniciarSesionJuez = async function() {
-        const codigoInput = document.getElementById('codigo-juez');
-        const codigo = codigoInput.value.trim().toUpperCase();
-        const errorMsg = document.getElementById('error-login');
-        const btnLogin = document.getElementById('btn-login');
-
-        // BOTÓN DE PÁNICO
-        if (codigo === "RESET2026") {
-            if(confirm("⚠️ ADVERTENCIA MÁXIMA: ¿Estás seguro de borrar TODAS las calificaciones locales y de la nube?")) {
-                if (db && votosCollection && !modoOffline) {
-                    try {
-                        const snapshot = await getDocs(votosCollection);
-                        snapshot.forEach(d => deleteDoc(d.ref)); 
-                        const snapSesiones = await getDocs(sesionesCollection);
-                        snapSesiones.forEach(d => deleteDoc(d.ref)); 
-                    } catch(e) {}
-                }
-                localStorage.removeItem('uatyg_votos'); 
-                window.baseDeDatosNube = [];
-                localStorage.removeItem('uatyg_juez_sesion'); 
-                alert("✅ Sistema reiniciado con éxito.");
-                codigoInput.value = "";
-                location.reload(); 
-            }
-            return; 
-        }
-
-        if (accesosJueces[codigo]) {
-            
-            // Deshabilitar botón para evitar doble clic
-            btnLogin.disabled = true;
-            btnLogin.innerHTML = "Verificando...";
-
-            // Validación en la Nube (Solo si la base de datos conectó bien)
-            if (!modoOffline && db) {
-                const docRef = getSesionDocRef(codigo);
-                try {
-                    const docSnap = await getDoc(docRef);
-                    // OMITIMOS EL BLOQUEO SI ES OBSERVADOR (para permitir múltiples comités simultáneos)
-                    if (accesosJueces[codigo].juezId !== "OBSERVADOR") {
-                        if (docSnap.exists() && docSnap.data().activa === true && docSnap.data().deviceId !== localDeviceId) {
-                            alert("🚨 ACCESO DENEGADO: Este juez ya está calificando desde otro celular. Si eres tú, cierra sesión en tu otro dispositivo primero.");
-                            codigoInput.value = "";
-                            btnLogin.disabled = false;
-                            btnLogin.innerHTML = `<i data-lucide="key" class="w-5 h-5"></i> ENTRAR`;
-                            lucide.createIcons();
-                            return;
-                        }
-                        // Registrar el dispositivo
-                        await setDoc(docRef, { activa: true, deviceId: localDeviceId, timestamp: new Date().toISOString() });
-                    }
-                } catch (error) {
-                    console.warn("No se pudo verificar el bloqueo de sesión en la nube, iniciando en modo local.");
-                    modoOffline = true;
-                }
-            } else {
-                alert("⚠️ Estás operando en MODO OFFLINE (Sin internet o sin Firebase). Los puntajes solo se guardarán en este celular.");
-                document.getElementById('aviso-offline').classList.remove('hidden');
-            }
-
-            // Iniciar sesión visualmente
-            window.sesionActual = { ...accesosJueces[codigo], codigoAcceso: codigo };
+        const code = document.getElementById('codigo-juez').value.toUpperCase();
+        if (code === "RESET2026") { document.getElementById('modal-master-reset').classList.remove('hidden'); return; }
+        if (accesosJueces[code]) {
+            const docRef = isCanvasEnv ? doc(db, 'artifacts', currentAppId, 'public', 'data', 'sesiones_jueces', code) : doc(db, 'sesiones_jueces', code);
+            const snap = await getDoc(docRef);
+            if (snap.exists() && snap.data().activa && snap.data().deviceId !== localDeviceId && code !== "TESTIGO26") { alert("🚨 Código en uso."); return; }
+            await setDoc(docRef, { activa: true, deviceId: localDeviceId });
+            window.sesionActual = { ...accesosJueces[code], code: code };
             localStorage.setItem('uatyg_juez_sesion', JSON.stringify(window.sesionActual));
-            
+            if (window.sesionActual.mision !== "todas" && window.validarMisionCompletada()) { window.mostrarAgradecimientoFinal(); return; }
+            playSound('powerup');
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
             document.getElementById('display-nombre-juez').innerText = window.sesionActual.nombre;
-
-            // Validar si es observador
-            if (window.sesionActual.juezId === "OBSERVADOR") {
-                document.getElementById('display-mision-juez').innerText = "Modo Observador Activo";
-                document.getElementById('area-calificacion').classList.add('hidden');
-                document.getElementById('contenedor-mision-obs').classList.remove('hidden');
-                
-                // Llenar selector de misiones
-                const selectMisionObs = document.getElementById('mision-obs-select');
-                selectMisionObs.innerHTML = '<option value="">-- Elige una Misión --</option>';
-                for (const [key, value] of Object.entries(configuracionMisiones)) {
-                    selectMisionObs.innerHTML += `<option value="${key}">${value.titulo}</option>`;
-                }
+            document.getElementById('display-avatar-juez').innerText = window.sesionActual.avatar;
+            const mData = configuracionMisiones[window.sesionActual.mision] || {titulo:"Admin"};
+            document.getElementById('display-mision-juez').innerText = mData.titulo;
+            if (window.sesionActual.mision === "todas") {
+                document.getElementById('vista-testigo').classList.remove('hidden');
+                document.getElementById('evaluacion-form').classList.add('hidden');
+                document.getElementById('barra-progreso-cont').classList.add('hidden');
+                const s = document.getElementById('filtro-mision-ranking');
+                document.getElementById('selector-ranking-mision').classList.remove('hidden');
+                s.innerHTML = ''; Object.entries(configuracionMisiones).forEach(([k,v]) => s.innerHTML += `<option value="${k}">${v.titulo}</option>`);
             } else {
-                // Juez regular
-                document.getElementById('display-mision-juez').innerText = configuracionMisiones[window.sesionActual.mision].titulo;
-                document.getElementById('area-calificacion').classList.remove('hidden');
-                document.getElementById('contenedor-mision-obs').classList.add('hidden');
-                window.cargarEtapas();
+                document.getElementById('vista-testigo').classList.add('hidden');
+                document.getElementById('evaluacion-form').classList.remove('hidden');
+                document.getElementById('barra-progreso-cont').classList.remove('hidden');
+                if(window.sesionActual.mision === "m6") document.getElementById('contenedor-fase-drag').classList.remove('hidden');
+                window.cargarCriterios(); window.actualizarProgreso(); window.actualizarEquiposDisponibles();
             }
-            
-            // Restaurar botón
-            btnLogin.disabled = false;
-            btnLogin.innerHTML = `<i data-lucide="key" class="w-5 h-5"></i> ENTRAR`;
-            lucide.createIcons();
-
-        } else {
-            errorMsg.classList.remove('hidden');
-            codigoInput.classList.add('border-red-600');
-            setTimeout(() => {
-                errorMsg.classList.add('hidden');
-                codigoInput.classList.remove('border-red-600');
-            }, 2000);
-        }
+        } else { document.getElementById('error-login').classList.remove('hidden'); }
     };
 
-    window.cargarEtapas = function() {
-        if (!window.sesionActual || window.sesionActual.juezId === "OBSERVADOR") return;
-        const misionConfig = configuracionMisiones[window.sesionActual.mision];
-        const selectEtapa = document.getElementById('etapa-select');
-        const contenedorEtapa = document.getElementById('contenedor-etapa');
+    window.abrirModalSalir = () => { document.getElementById('modal-confirm-exit').classList.remove('hidden'); };
 
-        selectEtapa.innerHTML = '';
-        misionConfig.etapas.forEach(etapa => {
-            selectEtapa.innerHTML += `<option value="${etapa.id}">${etapa.nombre}</option>`;
-        });
-
-        if(misionConfig.etapas.length > 1) {
-            contenedorEtapa.classList.remove('hidden');
-        } else {
-            contenedorEtapa.classList.add('hidden');
-        }
-        window.cambiarEtapa(); 
-    };
-
-    window.cambiarEtapa = function() {
-        if (!window.sesionActual || window.sesionActual.juezId === "OBSERVADOR") return;
-        const misionConfig = configuracionMisiones[window.sesionActual.mision];
-        const etapaId = document.getElementById('etapa-select').value;
-        const etapaConfig = misionConfig.etapas.find(e => e.id === etapaId);
-        
-        const contenedorCriterios = document.getElementById('criterios-dinamicos');
-        contenedorCriterios.innerHTML = '';
-        
-        etapaConfig.criterios.forEach(crit => {
-            let botonesScore = '';
-            for(let i = 1; i <= 10; i++) {
-                botonesScore += `
-                    <div class="relative">
-                        <input type="radio" name="${crit.id}" id="${crit.id}-${i}" value="${i}" class="hidden score-radio">
-                        <label for="${crit.id}-${i}" class="block w-full text-center py-2 border-2 border-gray-300 bg-white rounded font-bold text-gray-600 cursor-pointer transition-all hover:bg-gray-100 text-xs md:text-sm shadow-sm">${i}</label>
-                    </div>
-                `;
-            }
-
-            contenedorCriterios.innerHTML += `
-                <div class="bg-gray-50 p-3 border-2 border-gray-200 rounded-lg shadow-sm" data-criterio-id="${crit.id}">
-                    <label class="flex items-center font-bold text-sm text-gray-800 mb-3 border-b-2 border-gray-200 pb-2">
-                        <i data-lucide="${crit.icono}" class="w-4 h-4 mr-2 text-blue-600"></i> ${crit.nombre}
-                    </label>
-                    <div class="grid grid-cols-5 gap-2">
-                        ${botonesScore}
-                    </div>
-                </div>
-            `;
-        });
-
-        lucide.createIcons(); 
-        document.getElementById('equipo-select').value = ""; 
-        window.actualizarEquiposDisponibles(); 
-    };
-
-    window.actualizarEquiposDisponibles = function() {
-        if (!window.sesionActual || window.sesionActual.juezId === "OBSERVADOR") return;
-        const misionId = window.sesionActual.mision;
-        const juez = window.sesionActual.juezId;
-        const etapaId = document.getElementById('etapa-select').value;
-        const selectEquipo = document.getElementById('equipo-select');
-
-        Array.from(selectEquipo.options).forEach(opt => {
-            if (opt.value !== "") {
-                opt.disabled = false;
-                opt.text = opt.text.replace(" (✓ Ya calificado)", "");
-                
-                const yaCalificado = window.baseDeDatosNube.some(r => r.mision === misionId && r.etapa === etapaId && r.equipo === opt.value && r.juez === juez);
-                
-                if (yaCalificado) {
-                    opt.disabled = true; 
-                    opt.text = opt.text + " (✓ Ya calificado)"; 
-                }
-            }
-        });
-    };
-
-    window.enviarCalificacion = async function() {
-        if (!window.sesionActual || window.sesionActual.juezId === "OBSERVADOR") return;
-        const misionId = window.sesionActual.mision;
-        const juez = window.sesionActual.juezId;
-        const etapaId = document.getElementById('etapa-select').value;
-        const equipo = document.getElementById('equipo-select').value;
-        const observaciones = document.getElementById('observaciones').value;
-        
-        if(!equipo) {
-            alert("Por favor selecciona un equipo a evaluar.");
-            return;
-        }
-
-        const yaCalificado = window.baseDeDatosNube.some(r => r.mision === misionId && r.etapa === etapaId && r.equipo === equipo && r.juez === juez);
-        if (yaCalificado) {
-            alert("¡Acción bloqueada! Ya has registrado una calificación para este equipo en esta fase.");
-            return;
-        }
-
-        const misionConfig = configuracionMisiones[misionId];
-        const etapaConfig = misionConfig.etapas.find(e => e.id === etapaId);
-        let sumaPuntos = 0;
-        let todasContestadas = true;
-
-        etapaConfig.criterios.forEach(crit => {
-            const seleccionado = document.querySelector(`input[name="${crit.id}"]:checked`);
-            if(seleccionado) {
-                sumaPuntos += parseInt(seleccionado.value);
-            } else {
-                todasContestadas = false;
-            }
-        });
-
-        if(!todasContestadas) {
-            alert("Faltan criterios por calificar. ¡Selecciona un número del 1 al 10 en todos!");
-            return;
-        }
-
-        const nuevoVoto = {
-            mision: misionId,
-            etapa: etapaId,
-            equipo: equipo,
-            juez: juez,
-            total: sumaPuntos,
-            notas: observaciones,
-            timestamp: new Date().toISOString()
-        };
-
-        if (!modoOffline && db && user && votosCollection) {
+    window.ejecutarCerrarSesion = async function() {
+        document.getElementById('modal-confirm-exit').classList.add('hidden');
+        if (window.sesionActual && window.sesionActual.code) {
             try {
-                await addDoc(votosCollection, nuevoVoto);
-                document.getElementById('success-modal').classList.remove('hidden');
-            } catch(e) {
-                console.error("Error guardando en la nube:", e);
-                // Si falla Firebase por alguna razón, guardamos en local para no perder el voto
-                window.baseDeDatosNube.push(nuevoVoto);
-                localStorage.setItem('uatyg_votos', JSON.stringify(window.baseDeDatosNube));
-                document.getElementById('success-modal').classList.remove('hidden');
-            }
-        } else {
-            // MODO OFFLINE: Guardado manual
-            window.baseDeDatosNube.push(nuevoVoto);
-            localStorage.setItem('uatyg_votos', JSON.stringify(window.baseDeDatosNube));
-            document.getElementById('success-modal').classList.remove('hidden');
+                const docRef = isCanvasEnv ? doc(db, 'artifacts', currentAppId, 'public', 'data', 'sesiones_jueces', window.sesionActual.code) : doc(db, 'sesiones_jueces', window.sesionActual.code);
+                await setDoc(docRef, { activa: false, deviceId: null });
+            } catch (e) {}
         }
+        localStorage.removeItem('uatyg_juez_sesion');
+        location.reload();
     };
 
-    window.cerrarModalExito = function() {
-        document.getElementById('success-modal').classList.add('hidden');
-        document.getElementById('equipo-select').value = "";
-        const radios = document.querySelectorAll('.score-radio');
-        radios.forEach(r => r.checked = false);
-        document.getElementById('observaciones').value = "";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        window.actualizarEquiposDisponibles();
-    };
+    window.cambiarFaseDrag = function() { window.cargarCriterios(); window.actualizarEquiposDisponibles(); window.actualizarProgreso(); };
 
-    window.mostrarResultados = function() {
-        if (!window.sesionActual) return;
-        
-        let misionId = window.sesionActual.mision;
-        
-        // Si es observador, tomamos la misión que seleccionó en el dropdown
-        if (window.sesionActual.juezId === "OBSERVADOR") {
-            misionId = document.getElementById('mision-obs-select').value;
-            if (!misionId) {
-                alert("Por favor, selecciona primero una misión de la lista para ver sus resultados.");
-                return;
-            }
-        }
-
-        document.getElementById('titulo-resultados').innerText = `Resultados en Vivo: ${configuracionMisiones[misionId].titulo}`;
-        
-        const sumaPorEquipo = {};
-        
-        window.baseDeDatosNube.forEach(registro => {
-            if(registro.mision === misionId) {
-                if(!sumaPorEquipo[registro.equipo]) {
-                    sumaPorEquipo[registro.equipo] = 0;
-                }
-                sumaPorEquipo[registro.equipo] += registro.total;
-            }
-        });
-
-        const ordenados = Object.keys(sumaPorEquipo).map(eq => ({
-            nombre: eq,
-            puntos: sumaPorEquipo[eq]
-        })).sort((a, b) => b.puntos - a.puntos);
-
-        const tabla = document.getElementById('tabla-resultados');
-        tabla.innerHTML = '';
-
-        if(ordenados.length === 0) {
-            tabla.innerHTML = '<p class="text-center text-gray-500 text-sm italic">Aún no hay calificaciones registradas en esta misión.</p>';
-        } else {
-            ordenados.forEach((equipo, index) => {
-                let medalla = '';
-                let color = 'bg-gray-50 border-gray-300';
-                if(index === 0) { medalla = '🥇'; color = 'bg-yellow-100 border-yellow-400 text-yellow-900'; }
-                else if(index === 1) { medalla = '🥈'; color = 'bg-gray-200 border-gray-400 text-gray-800'; }
-                else if(index === 2) { medalla = '🥉'; color = 'bg-orange-100 border-orange-400 text-orange-900'; }
-
-                tabla.innerHTML += `
-                    <div class="flex justify-between items-center p-3 border-2 rounded-lg ${color} shadow-sm">
-                        <div class="font-bold text-sm flex items-center gap-2">
-                            <span class="text-xl">${medalla || (index + 1 + '.')}</span>
-                            ${equipo.nombre}
-                        </div>
-                        <div class="font-pixel text-[10px] text-blue-700">
-                            ${equipo.puntos} pts
-                        </div>
-                    </div>
-                `;
+    window.cargarCriterios = function() {
+        const cont = document.getElementById('criterios-dinamicos'); cont.innerHTML = '';
+        const mision = configuracionMisiones[window.sesionActual.mision];
+        if(!mision) return;
+        const fase = window.sesionActual.mision === "m6" ? document.getElementById('categoria-select').value : null;
+        const criterios = fase ? mision.fases[fase] : mision.criterios;
+        criterios.forEach(crit => {
+            let rs = ''; const range = crit.customRange || [1,2,3,4,5,6,7,8,9,10];
+            range.forEach(i => {
+                const label = (crit.labels || {})[i] || i;
+                rs += `<div><input type="radio" name="${crit.id}" id="${crit.id}-${i}" value="${i}" class="hidden score-radio ${i===0?'score-radio-zero':''}" onclick="playSound('coin')"><label for="${crit.id}-${i}" class="block border-2 border-gray-300 py-2 rounded font-bold text-gray-600 text-[10px] cursor-pointer bg-white transition-all uppercase text-center">${label}</label></div>`;
             });
-        }
-
-        document.getElementById('resultados-modal').classList.remove('hidden');
+            cont.innerHTML += `<div class="bg-gray-50 p-3 border-2 border-gray-200 rounded-lg shadow-sm text-center"><label class="flex flex-col items-center font-bold text-[10px] text-gray-800 mb-3 uppercase tracking-tighter justify-center text-center"><span class="flex items-center text-center justify-center"><i data-lucide="${crit.icono}" class="w-4 h-4 mr-2 ${window.sesionActual.mision==='m6'?'text-pink-600':'text-blue-600'}"></i> ${crit.nombre}</span>${crit.desc ? `<span class="text-[8px] text-gray-500 mt-1">${crit.desc}</span>` : ''}</label><div class="grid ${range.length>6?'grid-cols-5':'grid-cols-2'} gap-2">${rs}</div></div>`;
+        });
         lucide.createIcons();
     };
 
-    window.cerrarResultados = function() {
-        document.getElementById('resultados-modal').classList.add('hidden');
-    };
-
-    window.confirmarSalida = function() {
-        document.getElementById('confirm-exit-modal').classList.remove('hidden');
-    };
-
-    window.cerrarConfirmarSalida = function() {
-        document.getElementById('confirm-exit-modal').classList.add('hidden');
-    };
-
-    window.ejecutarSalida = async function() {
-        document.getElementById('confirm-exit-modal').classList.add('hidden');
-        document.getElementById('main-app').classList.add('hidden');
-        
-        if (!modoOffline && window.sesionActual && db) {
-            try {
-                // Liberar la sesión en BD solo si NO es el observador
-                if (window.sesionActual.juezId !== "OBSERVADOR") {
-                    const docRef = getSesionDocRef(window.sesionActual.codigoAcceso);
-                    await setDoc(docRef, { activa: false, deviceId: null });
-                }
-            } catch (e) {
-                console.error("Error liberando la sesión:", e);
+    window.actualizarEquiposDisponibles = function() {
+        if (!window.sesionActual || window.sesionActual.mision === "todas") return;
+        const select = document.getElementById('equipo-select');
+        const fase = window.sesionActual.mision === "m6" ? document.getElementById('categoria-select').value : "general";
+        let top3 = []; if(fase === "lipsync_final") {
+            const totals = {}; window.baseDeDatosVotos.filter(v => v.mision === "m6" && (v.fase === "pasarela" || v.fase === "show" || v.fase === "lipsync")).forEach(v => { totals[v.equipo] = (totals[v.equipo] || 0) + v.puntos; });
+            top3 = Object.keys(totals).map(e => ({n:e, p:totals[e]})).sort((a,b)=>b.p-a.p).slice(0,3).map(x=>x.n);
+            document.getElementById('aviso-lipsync').classList.remove('hidden');
+        } else document.getElementById('aviso-lipsync').classList.add('hidden');
+        Array.from(select.options).forEach(opt => {
+            if (opt.value !== "") {
+                const ya = window.baseDeDatosVotos.some(v => v.mision === window.sesionActual.mision && v.fase === fase && v.equipo === opt.value && v.juez === window.sesionActual.juezId);
+                if (fase === "lipsync_final" && !top3.includes(opt.value)) { opt.disabled = true; opt.style.display = "none"; }
+                else { opt.disabled = ya; opt.style.display = "block"; }
+                if (ya && !opt.text.includes("✓")) opt.text += " ✓"; else if(!ya) opt.text = opt.text.replace(" ✓", "");
             }
-        }
-
-        window.sesionActual = null;
-        localStorage.removeItem('uatyg_juez_sesion'); 
-        
-        document.getElementById('codigo-juez').value = ""; 
-        document.getElementById('thank-you-screen').classList.remove('hidden');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
     };
 
+    window.actualizarProgreso = function() {
+        if (!window.sesionActual || window.sesionActual.mision === "todas") return;
+        const total = window.sesionActual.mision === "m6" ? 24 : window.obtenerTotalEquiposMenu();
+        const misVotos = window.baseDeDatosVotos.filter(v => v.mision === window.sesionActual.mision && v.juez === window.sesionActual.juezId);
+        const calificados = window.sesionActual.mision === "m6" ? misVotos.length : [...new Set(misVotos.map(v => v.equipo))].length;
+        const porc = total > 0 ? Math.min((calificados / total) * 100, 100) : 0;
+        document.getElementById('progress-bar').style.width = porc + '%';
+        document.getElementById('progress-text').innerText = `Progress: ${calificados}/${total}`;
+    };
+
+    window.enviarCalificacion = async function() {
+        const equipo = document.getElementById('equipo-select').value; if (!equipo) return alert("Selecciona personaje");
+        const fase = window.sesionActual.mision === "m6" ? document.getElementById('categoria-select').value : "general";
+        const m = configuracionMisiones[window.sesionActual.mision];
+        const criteria = fase !== "general" ? m.fases[fase] : m.criterios;
+        let total = 0, todas = true;
+        criteria.forEach(c => { const val = document.querySelector(`input[name="${c.id}"]:checked`); if (val) total += parseInt(val.value); else todas = false; });
+        if (!todas) return alert("Faltan criterios");
+        try {
+            await addDoc(coleccionVotos, { mision: window.sesionActual.mision, fase: fase, juez: window.sesionActual.juezId, juezNombre: window.sesionActual.nombre, equipo: equipo, puntos: total, notas: document.getElementById('observaciones').value, timestamp: new Date().toISOString() });
+            playSound('powerup');
+            if(window.validarMisionCompletada()) window.mostrarAgradecimientoFinal(); else window.cerrarModalExito();
+        } catch (e) { alert("Error"); }
+    };
+
+    window.cerrarModalExito = function() { document.getElementById('success-modal').classList.add('hidden'); document.getElementById('evaluacion-form').reset(); window.actualizarEquiposDisponibles(); window.actualizarProgreso(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+
+    window.mostrarResultados = function() {
+        if (!window.sesionActual) return;
+        let mId = window.sesionActual.mision === "todas" ? document.getElementById('filtro-mision-ranking').value : window.sesionActual.mision;
+        const ts = {}; window.baseDeDatosVotos.filter(v => v.mision === mId).forEach(v => { ts[v.equipo] = (ts[v.equipo] || 0) + v.puntos; });
+        const r = Object.keys(ts).map(eq => ({ n: eq, p: ts[eq] })).sort((a,b) => b.p - a.p);
+        const t = document.getElementById('tabla-resultados'); t.innerHTML = '';
+        r.forEach((eq, i) => { const med = i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : '👾')); t.innerHTML += `<div class="flex justify-between items-center p-3 border-2 rounded ${i===0?'bg-yellow-50 border-yellow-400':'bg-gray-50 border-black'} shadow-sm uppercase font-bold text-[10px] text-center"><span>${med} ${eq.n}</span><span class="font-pixel text-blue-700 text-[8px]">${eq.p} PTS</span></div>`; });
+        document.getElementById('resultados-modal').classList.remove('hidden');
+    };
+
+    window.cerrarResultados = function() { document.getElementById('resultados-modal').classList.add('hidden'); };
+
+    // --- INICIALIZACIÓN ---
+    async function initApp() {
+        await initFirebase();
+        const guardada = localStorage.getItem('uatyg_juez_sesion');
+        if (guardada) {
+            window.sesionActual = JSON.parse(guardada);
+            onSnapshot(coleccionVotos, (sn) => {
+                window.baseDeDatosVotos = []; sn.forEach(d => window.baseDeDatosVotos.push({id:d.id, ...d.data()}));
+                if (window.sesionActual.mision !== "todas" && window.validarMisionCompletada()) {
+                    window.mostrarAgradecimientoFinal();
+                } else { 
+                    document.getElementById('login-screen').classList.add('hidden'); 
+                    document.getElementById('main-app').classList.remove('hidden'); 
+                    document.getElementById('display-nombre-juez').innerText = window.sesionActual.nombre; 
+                    document.getElementById('display-avatar-juez').innerText = window.sesionActual.avatar; 
+                    const mData = configuracionMisiones[window.sesionActual.mision] || {titulo:"Admin"};
+                    document.getElementById('display-mision-juez').innerText = mData.titulo; 
+                    
+                    if (window.sesionActual.mision === "todas") {
+                        document.getElementById('vista-testigo').classList.remove('hidden');
+                        document.getElementById('evaluacion-form').classList.add('hidden');
+                        document.getElementById('barra-progreso-cont').classList.add('hidden');
+                        const s = document.getElementById('filtro-mision-ranking');
+                        document.getElementById('selector-ranking-mision').classList.remove('hidden');
+                        s.innerHTML = ''; Object.entries(configuracionMisiones).forEach(([k,v]) => s.innerHTML += `<option value="${k}">${v.titulo}</option>`);
+                    } else {
+                        if(window.sesionActual.mision === "m6") document.getElementById('contenedor-fase-drag').classList.remove('hidden');
+                        window.cargarCriterios(); window.actualizarProgreso(); window.actualizarEquiposDisponibles(); 
+                    }
+                }
+            });
+        }
+    }
+    initApp();
     lucide.createIcons();
 </script>
 </body>
 </html>
-
