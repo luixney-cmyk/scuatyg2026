@@ -53,44 +53,90 @@
             100% { transform: translateY(0px); }
         }
 
-        .block-title {
-            background-color: #e52521; 
-            color: white;
-            border: 4px solid black;
-            box-shadow: inset -4px -4px 0px rgba(0,0,0,0.2), 4px 4px 0px rgba(0,0,0,0.2);
-            padding: 0.75rem;
-            display: inline-block;
-            transform: rotate(-1deg);
+        /* EFECTOS DEL BOTÓN PRESS START (Reemplaza el blink anterior) */
+        .blink-text { animation: blink-text 1s step-start infinite; }
+        @keyframes blink-text { 50% { color: transparent; } }
+
+        .glow-pulse { animation: glow-pulse 1.5s infinite; }
+        @keyframes glow-pulse {
+            0% { box-shadow: 0 0 0 0px rgba(220, 38, 38, 0.8); }
+            70% { box-shadow: 0 0 0 15px rgba(220, 38, 38, 0); }
+            100% { box-shadow: 0 0 0 0px rgba(220, 38, 38, 0); }
+        }
+
+        /* CIELO RETRO ANIMADO PARA LA PANTALLA DE INICIO */
+        .pixel-sky {
+            background-color: #000022;
+            background-image:
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 4px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 3px),
+                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 4px),
+                radial-gradient(rgba(255,255,255,.4), rgba(255,255,255,.1) 2px, transparent 5px);
+            background-size: 550px 550px, 350px 350px, 250px 250px, 150px 150px;
+            background-position: 0 0, 40px 60px, 130px 270px, 70px 100px;
+            animation: star-scroll 60s linear infinite;
+            border: 8px solid #3b82f6;
+            box-shadow: inset 0 0 20px rgba(0,0,0,1);
+        }
+        @keyframes star-scroll {
+            0% { background-position: 0 0, 40px 60px, 130px 270px, 70px 100px; }
+            100% { background-position: 550px 550px, 590px 610px, 680px 820px, 620px 650px; }
         }
     </style>
 </head>
 <body class="min-h-screen text-gray-800 flex flex-col items-center py-8 px-4">
 
     <!-- ==========================================
-         PANTALLA 1: SELECCIÓN DE JUEZ
+         PANTALLA 0: BIENVENIDA (ARCADE RETRO)
          ========================================== -->
-    <div id="pantalla-seleccion" class="w-full max-w-4xl flex flex-col gap-8">
-        
-        <!-- HERO SECTION -->
-        <header class="bg-yellow-400 border-4 border-black p-8 rounded-lg shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden text-center">
-            <div class="absolute top-2 right-2 text-yellow-600 opacity-20"><i data-lucide="star" class="w-24 h-24 md:w-32 md:h-32"></i></div>
-            <div class="absolute bottom-2 left-2 text-yellow-600 opacity-20"><i data-lucide="crown" class="w-24 h-24 md:w-32 md:h-32"></i></div>
+    <div id="pantalla-bienvenida" class="w-full max-w-3xl flex flex-col gap-8 animate-[fadeIn_0.5s_ease-out]">
+        <div class="pixel-sky p-8 md:p-12 rounded-lg text-center relative mt-10 overflow-hidden">
             
-            <div class="flex justify-center items-center gap-6 md:gap-12 mb-6 relative z-10 px-2 md:px-8">
-                <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/logo%20uan%20azul%20transparente%20unidad.png" alt="Logo UAN" class="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-md">
-                <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/mario2.png" alt="Mario" class="w-20 h-20 md:w-28 md:h-28 object-contain drop-shadow-lg scale-110 floating">
-                <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/logo%20cetyg%20azul%20transparente.png" alt="Logo CETyG" class="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-md">
+            <!-- Logos -->
+            <div class="flex justify-center items-center gap-6 mb-6 relative z-10">
+                <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/logo%20uan%20azul%20transparente%20unidad.png" alt="Logo UAN" class="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
+                <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/logo%20cetyg%20azul%20transparente.png" alt="Logo CETyG" class="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
             </div>
             
-            <h2 class="text-red-600 font-pixel text-lg md:text-2xl mb-2 floating relative z-10 drop-shadow-sm">SÚPER SEMANA CULTURAL</h2>
-            <h1 class="text-3xl md:text-5xl font-black mb-4 uppercase tracking-tighter relative z-10">UATyG 2026</h1>
-            <p class="text-base md:text-lg font-bold mb-4 relative z-10 text-gray-800">Panel de Jueces y Jurado Honorario</p>
-        </header>
+            <!-- Título Principal Arcade -->
+            <h2 class="font-pixel text-yellow-400 text-xl md:text-3xl mb-8 leading-relaxed relative z-10 drop-shadow-[4px_4px_0_rgba(220,38,38,1)] floating">
+                SÚPER SEMANA CULTURAL<br>
+                <span class="text-white text-lg md:text-2xl drop-shadow-[2px_2px_0_rgba(37,99,235,1)]">UATyG 2026</span>
+            </h2>
+            
+            <!-- Recuadro oscuro para el texto -->
+            <div class="text-center bg-black/60 border-2 border-blue-500 p-6 rounded-lg mb-10 text-sm md:text-base text-gray-200 leading-relaxed font-medium relative z-10 backdrop-blur-sm">
+                <p class="mb-4 text-green-400 font-bold font-pixel text-[10px] md:text-xs">ESTIMADO INVITADO:</p>
+                <p class="mb-4">El Comité Estudiantil de Turismo y Gastronomía (CETyG), tiene el honor de invitarle a formar parte del panel de jueces de nuestras competencias.</p>
+                <p class="mb-4">Para facilitar la evaluación de los equipos hemos desarrollado esta plataforma interactiva de invitación y confirmación.</p>
+                <p class="text-yellow-300 font-bold text-xs uppercase tracking-widest">Por favor, presione Start para descubrir su misión especial.</p>
+            </div>
+            
+            <!-- Botón de Continuar (Modificado para ser fijo con pulso) -->
+            <button onclick="iniciarSeleccion()" class="nes-btn w-full bg-red-600 hover:bg-red-700 text-white font-pixel py-5 px-4 text-sm md:text-base relative z-10 mx-auto max-w-sm glow-pulse">
+                <span class="blink-text">PRESS START</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         PANTALLA 1: SELECCIÓN DE JUEZ
+         ========================================== -->
+    <div id="pantalla-seleccion" class="hidden w-full max-w-4xl flex-col gap-6">
+        
+        <!-- FRASE DE RETO EN LUGAR DE CONTADOR -->
+        <div class="nes-container bg-black text-white p-4 text-center border-4 border-yellow-400 rounded-lg shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
+            <h3 class="font-pixel text-yellow-400 text-[10px] md:text-xs flex items-center justify-center gap-2 leading-relaxed">
+                <i data-lucide="gamepad-2" class="w-5 h-5 hidden md:block text-red-500"></i> 
+                ACEPTA EL RETO DE SER EL MEJOR JUEZ DE LA SÚPER SEMANA CULTURAL UATyG 2026
+                <i data-lucide="gamepad-2" class="w-5 h-5 hidden md:block text-blue-500"></i> 
+            </h3>
+        </div>
 
         <!-- SELECCIÓN DE PERSONAJE -->
         <section class="nes-container bg-gray-900 text-white rounded-lg border-4 border-black p-6 md:p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-            <h3 class="font-pixel text-center text-yellow-400 text-sm md:text-base mb-2">ERES NUESTRO JUGADOR INVITADO</h3>
-            <p class="text-center text-xs mb-8 text-gray-400 font-medium">Selecciona tu nombre.</p>
+            <h3 class="font-pixel text-center text-yellow-400 text-sm md:text-base mb-2">SELECT YOUR PLAYER</h3>
+            <p class="text-center text-xs mb-8 text-gray-400 font-medium">Selecciona tu nombre para ver tu misión.</p>
             
             <!-- Grid de Jueces -->
             <div id="grid-jueces" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -99,7 +145,7 @@
         </section>
 
         <!-- BOTÓN DE ACCESO AL COMITÉ -->
-        <div class="text-center mt-4">
+        <div class="text-center mt-2">
             <button onclick="abrirAdminAuth()" class="font-pixel text-[10px] text-blue-900 hover:text-red-600 transition-colors bg-transparent border-none cursor-pointer">
                 [ ACCESO COMITÉ ]
             </button>
@@ -116,26 +162,35 @@
             <i data-lucide="arrow-left" class="w-6 h-6"></i>
         </button>
 
-        <div class="flex justify-center items-center gap-3 mb-6 relative z-10">
+        <div class="flex justify-center items-center gap-3 mb-6 relative z-10 mt-6 md:mt-0">
             <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/logo%20uan%20azul%20transparente%20unidad.png" alt="Logo UAN" class="w-10 h-10 object-contain drop-shadow-md">
             <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/mario2.png" alt="Mario" class="w-12 h-12 object-contain drop-shadow-xl">
             <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/logo%20cetyg%20azul%20transparente.png" alt="Logo CETyG" class="w-10 h-10 object-contain drop-shadow-md">
         </div>
 
-        <h2 id="titulo-juez" class="text-2xl md:text-3xl font-black text-blue-800 uppercase border-b-4 border-blue-600 inline-block pb-2 mb-8 transition-colors">
-            [NOMBRE]
-        </h2>
+        <div class="relative inline-block mb-8">
+            <!-- AVATAR DEL JUEZ AQUÍ -->
+            <div id="avatar-juez-display" class="absolute -top-8 -left-8 text-4xl md:text-5xl drop-shadow-[2px_2px_0_rgba(0,0,0,1)] floating">👨‍🏫</div>
+            <h2 id="titulo-juez" class="text-2xl md:text-3xl font-black text-blue-800 uppercase border-b-4 border-blue-600 inline-block pb-2 px-8 transition-colors">
+                [NOMBRE]
+            </h2>
+        </div>
 
         <div id="caja-mensaje" class="bg-gray-50 border-4 border-gray-300 p-6 rounded-lg shadow-sm mb-8 relative text-left transition-all duration-300">
-            <div id="icono-estrella" class="absolute -top-4 -left-4 bg-yellow-400 border-2 border-black p-2 rounded-full rotate-[-10deg] transition-all">
+            <div id="icono-estrella" class="absolute -top-4 -right-4 bg-yellow-400 border-2 border-black p-2 rounded-full rotate-[10deg] transition-all">
                 <i data-lucide="star" class="w-6 h-6 text-white fill-white"></i>
             </div>
             
-            <p class="text-base md:text-lg font-medium text-gray-800 leading-relaxed text-justify relative z-10">
-                A nombre del Comité Estudiantil de Turismo y Gastronomía (CETyG) y con el respaldo de la Unidad Académica de Turismo y Gastronomía, te extendemos una cordial invitación para que nos apoyes con tu destacada trayectoria, experiencia y gran criterio. 
-                <br><br>
-                Nos entusiasma extenderle una cordial invitación para que nos acompañe como <strong id="texto-cargo" class="text-red-600 uppercase">Juez Honorario</strong> en la misión: <strong id="texto-mision" class="text-blue-700 font-bold">[MISIÓN]</strong>, que consiste en <span id="texto-descripcion" class="font-bold text-gray-900">[DESCRIPCIÓN]</span> dentro de la Súper Semana Cultural UATyG 2026.
-            </p>
+            <div class="relative z-10">
+                <!-- MENSAJE ESPECIAL OCULTO POR DEFECTO -->
+                <p id="texto-especial" class="hidden text-lg md:text-xl font-bold text-red-600 mb-4 text-center italic border-b-2 border-red-200 pb-2 drop-shadow-sm"></p>
+
+                <p class="text-base md:text-lg font-medium text-gray-800 leading-relaxed text-justify">
+                    A nombre del Comité Estudiantil de Turismo y Gastronomía (CETyG) y con el respaldo de la Unidad Académica de Turismo y Gastronomía, te extendemos una cordial invitación para que nos apoyes con tu destacada trayectoria, experiencia y gran criterio. 
+                    <br><br>
+                    Nos entusiasma extenderle una cordial invitación para que nos acompañe como <strong id="texto-cargo" class="text-red-600 uppercase">Juez Honorario</strong> en la misión: <strong id="texto-mision" class="text-blue-700 font-bold">[MISIÓN]</strong>, que consiste en <span id="texto-descripcion" class="font-bold text-gray-900">[DESCRIPCIÓN]</span> dentro de la Súper Semana Cultural UATyG 2026.
+                </p>
+            </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 bg-gray-900 text-white p-4 border-4 border-black rounded shadow-[4px_4px_0px_#111827] relative z-10">
                 <div class="text-center bg-gray-800 p-2 rounded border border-gray-700">
@@ -154,6 +209,7 @@
                     <p id="texto-lugar" class="font-bold text-sm leading-tight mt-1 text-red-300">[SEDE]</p>
                 </div>
             </div>
+            
         </div>
 
         <div id="area-botones" class="mb-4">
@@ -179,15 +235,17 @@
          ========================================== -->
 
     <!-- Modal: ACEPTAR -->
-    <div id="modal-aceptar" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+    <div id="modal-aceptar" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
         <div class="nes-container bg-white p-6 md:p-10 text-center max-w-lg w-full rounded-lg animate-[bounce_0.5s_ease-out]">
             <i data-lucide="party-popper" class="w-16 h-16 mx-auto text-yellow-400 mb-4 animate-pulse"></i>
-            <h3 class="font-pixel text-green-600 text-lg md:text-xl mb-4 leading-relaxed">¡EXCELENTE!</h3>
+            <h3 class="font-pixel text-green-600 text-base md:text-xl mb-4 leading-relaxed tracking-wide">🎉 MISIÓN ACEPTADA</h3>
             
             <div class="bg-green-50 border-2 border-green-200 p-4 rounded text-gray-800 font-medium text-sm md:text-base mb-6 leading-relaxed">
-                Muchas gracias por ayudarnos en esta semana cultural, en lo inmediato te haremos llegar el oficio formal para esta actividad. 
+                Gracias por formar parte del panel de jueces.
                 <br><br>
-                <strong class="text-green-700">¡Nos vemos en la Súper Semana Cultural UATyG 2026!</strong>
+                <span class="text-sm italic text-green-900 font-bold">En breve le haremos llegar el oficio formal.</span>
+                <br><br>
+                <strong class="text-green-700">Nos vemos en la Súper Semana Cultural UATyG 2026.</strong>
             </div>
 
             <button onclick="location.reload()" class="nes-btn w-full bg-blue-600 hover:bg-blue-700 text-white font-pixel py-3 px-4 text-xs">
@@ -197,7 +255,7 @@
     </div>
 
     <!-- Modal: RECHAZAR -->
-    <div id="modal-rechazar" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+    <div id="modal-rechazar" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
         <div class="nes-container bg-white p-6 md:p-10 text-center max-w-lg w-full rounded-lg">
             <i data-lucide="heart-handshake" class="w-16 h-16 mx-auto text-blue-400 mb-4"></i>
             <h3 class="font-pixel text-blue-600 text-lg md:text-xl mb-4 leading-relaxed">ENTENDIDO</h3>
@@ -215,7 +273,7 @@
     </div>
 
     <!-- Modal: COMITÉ AUTENTICACIÓN -->
-    <div id="modal-comite-auth" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+    <div id="modal-comite-auth" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
         <div class="nes-container bg-white p-6 md:p-8 text-center max-w-sm w-full rounded-lg">
             <h3 class="font-pixel text-red-600 text-sm md:text-base mb-4">ZONA COMITÉ</h3>
             <p class="text-xs font-bold mb-4 text-gray-700">Ingresa el código de seguridad para gestionar jueces:</p>
@@ -228,8 +286,8 @@
         </div>
     </div>
 
-    <!-- Modal: PANEL COMITÉ (GESTOR DE JUECES) -->
-    <div id="modal-comite-panel" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+    <!-- Modal: PANEL COMITÉ -->
+    <div id="modal-comite-panel" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
         <div class="nes-container bg-white p-4 md:p-6 text-center max-w-2xl w-full rounded-lg max-h-[90vh] flex flex-col">
             <div class="flex justify-between items-center border-b-4 border-gray-200 pb-4 mb-4">
                 <h3 class="font-pixel text-blue-600 text-sm md:text-base">PANEL ADMINISTRATIVO</h3>
@@ -245,8 +303,8 @@
         </div>
     </div>
 
-    <!-- Modal: MENSAJE SISTEMA (Reemplaza los alerts) -->
-    <div id="modal-sistema" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+    <!-- Modal: MENSAJE SISTEMA -->
+    <div id="modal-sistema" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
         <div class="nes-container bg-white p-6 md:p-8 text-center max-w-sm w-full rounded-lg">
             <h3 id="modal-sistema-titulo" class="font-pixel text-blue-600 text-sm md:text-base mb-4">AVISO</h3>
             <p id="modal-sistema-mensaje" class="text-xs font-bold mb-6 text-gray-700">Mensaje</p>
@@ -255,7 +313,7 @@
     </div>
 
     <!-- Modal: CONFIRMAR RESETEO -->
-    <div id="modal-confirmar-reset" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+    <div id="modal-confirmar-reset" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
         <div class="nes-container bg-white p-6 md:p-8 text-center max-w-sm w-full rounded-lg">
             <h3 class="font-pixel text-red-600 text-sm md:text-base mb-4">¿LIBERAR JUEZ?</h3>
             <p class="text-xs font-bold mb-4 text-gray-700">Esto borrará su respuesta actual para que pueda elegir de nuevo.</p>
@@ -276,44 +334,127 @@
 
         lucide.createIcons();
 
-        // 1. BASE DE DATOS LOCAL
+        // --- SISTEMA DE AUDIO RETRO ---
+        let audioCtx;
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        // Sonido Start
+        window.playStartSound = function() {
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1);
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1);
+            osc.frequency.exponentialRampToValueAtTime(1760, audioCtx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+        };
+
+        // Sonido Nivel Desbloqueado
+        window.playUnlockSound = function() {
+            initAudio();
+            const notes = [
+                { f: 523.25, d: 0.1 }, { f: 659.25, d: 0.1 }, 
+                { f: 783.99, d: 0.1 }, { f: 1046.50, d: 0.3 } 
+            ];
+            let startTime = audioCtx.currentTime;
+            notes.forEach(note => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.value = note.f;
+                gain.gain.setValueAtTime(0.05, startTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, startTime + note.d - 0.02);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(startTime);
+                osc.stop(startTime + note.d);
+                startTime += note.d;
+            });
+        };
+
+        // 1. BASE DE DATOS LOCAL (HORARIOS DE PRESENTACIÓN A LAS 9:00 AM Y MENSAJE CELINA)
         const listaJueces = [
-            // PRESENTACIÓN
-            { id: "j1", nombre: "Brayan Alexis Rodríguez Sánchez", cargo: "Juez Honorario", mision: "Presentación de Equipos", descripcion: "evaluar la coreografía, sincronización y presentación inicial de los equipos en la explanada", fecha: "22 de Abril", hora: "16:00 Hrs", lugar: "Explanada UATyG", color: "bg-green-500", border: "border-green-700", text: "text-white" },
-            { id: "j2", nombre: "Alejandra Alvarado", cargo: "Juez Honorario", mision: "Presentación de Equipos", descripcion: "evaluar la coreografía, sincronización y presentación inicial de los equipos en la explanada", fecha: "22 de Abril", hora: "16:00 Hrs", lugar: "Explanada UATyG", color: "bg-green-500", border: "border-green-700", text: "text-white" },
-            { id: "j3", nombre: "Alonso de Jesús Ortega Castro", cargo: "Juez Honorario", mision: "Presentación de Equipos", descripcion: "evaluar la coreografía, sincronización y presentación inicial de los equipos en la explanada", fecha: "22 de Abril", hora: "16:00 Hrs", lugar: "Explanada UATyG", color: "bg-green-500", border: "border-green-700", text: "text-white" },
-            { id: "j4", nombre: "Meredith Pizano Rubio", cargo: "Juez Honorario", mision: "Presentación de Equipos", descripcion: "evaluar la coreografía, sincronización y presentación inicial de los equipos en la explanada", fecha: "22 de Abril", hora: "16:00 Hrs", lugar: "Explanada UATyG", color: "bg-green-500", border: "border-green-700", text: "text-white" },
-            { id: "j5", nombre: "Maestra Maria Celina Agraz", cargo: "Juez Honorario", mision: "Presentación de Equipos", descripcion: "evaluar la coreografía, sincronización y presentación inicial de los equipos en la explanada", fecha: "22 de Abril", hora: "16:00 Hrs", lugar: "Explanada UATyG", color: "bg-green-500", border: "border-green-700", text: "text-white" },
+            // PRESENTACIÓN (Ahora a las 9:00 AM)
+            { id: "j1", avatar: "👟", nombre: "Brayan Alexis Rodríguez Sánchez", cargo: "Juez Honorario", mision: "Presentación de Equipos", descripcion: "evaluar la coreografía, sincronización y presentación inicial de los equipos en la explanada", fecha: "22 de Abril", hora: "9:00 AM", lugar: "Explanada UATyG", color: "bg-green-500", border: "border-green-700", text: "text-white" },
+            { id: "j2", avatar: "💃", nombre: "Alejandra Alvarado", cargo: "Juez Honorario", mision: "Presentación de Equipos", descripcion: "evaluar la coreografía, sincronización y presentación inicial de los equipos en la explanada", fecha: "22 de Abril", hora: "9:00 AM", lugar: "Explanada UATyG", color: "bg-green-500", border: "border-green-700", text: "text-white" },
+            { id: "j3", avatar: "🕺", nombre: "Alonso de Jesús Ortega Castro", cargo: "Juez Honorario", mision: "Presentación de Equipos", descripcion: "evaluar la coreografía, sincronización y presentación inicial de los equipos en la explanada", fecha: "22 de Abril", hora: "9:00 AM", lugar: "Explanada UATyG", color: "bg-green-500", border: "border-green-700", text: "text-white" },
+            { id: "j4", avatar: "🎶", nombre: "Meredith Pizano Rubio", cargo: "Juez Honorario", mision: "Presentación de Equipos", descripcion: "evaluar la coreografía, sincronización y presentación inicial de los equipos en la explanada", fecha: "22 de Abril", hora: "9:00 AM", lugar: "Explanada UATyG", color: "bg-green-500", border: "border-green-700", text: "text-white" },
+            { id: "j5", avatar: "🎵", nombre: "Maestra Maria Celina Agraz", cargo: "Juez Honorario", mision: "Presentación de Equipos", descripcion: "evaluar la coreografía, sincronización y presentación inicial de los equipos en la explanada", fecha: "22 de Abril", hora: "9:00 AM", lugar: "Explanada UATyG", color: "bg-green-500", border: "border-green-700", text: "text-white", mensajeEspecial: "Querida directora de nuestra unidad académica," },
             
             // TALENTO
-            { id: "j6", nombre: "Korvin Cobarrubias", cargo: "Juez Honorario", mision: "Super Star Talent", descripcion: "evaluar las habilidades, talentos artísticos y la presencia escénica de los participantes", fecha: "22 de Abril", hora: "16:00 Hrs", lugar: "Explanada UATyG", color: "bg-yellow-400", border: "border-yellow-600", text: "text-black" },
-            { id: "j7", nombre: "Ricardo Cueto", cargo: "Juez Honorario", mision: "Super Star Talent", descripcion: "evaluar las habilidades, talentos artísticos y la presencia escénica de los participantes", fecha: "22 de Abril", hora: "16:00 Hrs", lugar: "Explanada UATyG", color: "bg-yellow-400", border: "border-yellow-600", text: "text-black" },
-            { id: "j8", nombre: "Maestra Yuri Vanessa Berumen", cargo: "Juez Honorario", mision: "Super Star Talent", descripcion: "evaluar las habilidades, talentos artísticos y la presencia escénica de los participantes", fecha: "22 de Abril", hora: "16:00 Hrs", lugar: "Explanada UATyG", color: "bg-yellow-400", border: "border-yellow-600", text: "text-black" },
+            { id: "j6", avatar: "🎤", nombre: "Korvin Cobarrubias", cargo: "Juez Honorario", mision: "Super Star Talent", descripcion: "evaluar las habilidades, talentos artísticos y la presencia escénica de los participantes", fecha: "22 de Abril", hora: "16:00 Hrs", lugar: "Explanada UATyG", color: "bg-yellow-400", border: "border-yellow-600", text: "text-black" },
+            { id: "j7", avatar: "🎭", nombre: "Ricardo Cueto", cargo: "Juez Honorario", mision: "Super Star Talent", descripcion: "evaluar las habilidades, talentos artísticos y la presencia escénica de los participantes", fecha: "22 de Abril", hora: "16:00 Hrs", lugar: "Explanada UATyG", color: "bg-yellow-400", border: "border-yellow-600", text: "text-black" },
+            { id: "j8", avatar: "⭐", nombre: "Maestra Yuri Vanessa Berumen", cargo: "Juez Honorario", mision: "Super Star Talent", descripcion: "evaluar las habilidades, talentos artísticos y la presencia escénica de los participantes", fecha: "22 de Abril", hora: "16:00 Hrs", lugar: "Explanada UATyG", color: "bg-yellow-400", border: "border-yellow-600", text: "text-black" },
             
             // DRAG
-            { id: "j9", nombre: "Sissy Hera", cargo: "Juez Estelar", mision: "Diva Drag (Gala Real)", descripcion: "evaluar a los participantes en un concurso Drag, calificando pasarela, show y lipsync", fecha: "22 de Abril", hora: "20:00 Hrs", lugar: "Bar Mr. Ribs", color: "bg-pink-500", border: "border-purple-800", text: "text-white" },
-            { id: "j10", nombre: "Athena Steele", cargo: "Juez Estelar", mision: "Diva Drag (Gala Real)", descripcion: "evaluar a los participantes en un concurso Drag, calificando pasarela, show y lipsync", fecha: "22 de Abril", hora: "20:00 Hrs", lugar: "Bar Mr. Ribs", color: "bg-pink-500", border: "border-purple-800", text: "text-white" },
-            { id: "j11", nombre: "Rosa Perré", cargo: "Juez Estelar", mision: "Diva Drag (Gala Real)", descripcion: "evaluar a los participantes en un concurso Drag, calificando pasarela, show y lipsync", fecha: "22 de Abril", hora: "20:00 Hrs", lugar: "Bar Mr. Ribs", color: "bg-pink-500", border: "border-purple-800", text: "text-white" },
+            { id: "j9", avatar: "👑", nombre: "Sissy Hera", cargo: "Juez Estelar", mision: "Diva Drag (Gala Real)", descripcion: "evaluar a los participantes en un concurso Drag, calificando pasarela, show y lipsync", fecha: "22 de Abril", hora: "20:00 Hrs", lugar: "Bar Mr. Ribs", color: "bg-pink-500", border: "border-purple-800", text: "text-white" },
+            { id: "j10", avatar: "💅", nombre: "Athena Steele", cargo: "Juez Estelar", mision: "Diva Drag (Gala Real)", descripcion: "evaluar a los participantes en un concurso Drag, calificando pasarela, show y lipsync", fecha: "22 de Abril", hora: "20:00 Hrs", lugar: "Bar Mr. Ribs", color: "bg-pink-500", border: "border-purple-800", text: "text-white" },
+            { id: "j11", avatar: "✨", nombre: "Rosa Perré", cargo: "Juez Estelar", mision: "Diva Drag (Gala Real)", descripcion: "evaluar a los participantes en un concurso Drag, calificando pasarela, show y lipsync", fecha: "22 de Abril", hora: "20:00 Hrs", lugar: "Bar Mr. Ribs", color: "bg-pink-500", border: "border-purple-800", text: "text-white" },
             
             // COCINA
-            { id: "j12", nombre: "Chef Martha Jazmin Acero", cargo: "Juez Honorario", mision: "Chef Toad's Kitchen", descripcion: "evaluar los platillos temáticos preparados por los alumnos, calificando sabor y estética", fecha: "24 de Abril", hora: "12:00 Hrs", lugar: "Lab. Gastronomía UATyG", color: "bg-orange-500", border: "border-orange-700", text: "text-white" },
-            { id: "j13", nombre: "Chef Jesus G Lamas", cargo: "Juez Honorario", mision: "Chef Toad's Kitchen", descripcion: "evaluar los platillos temáticos preparados por los alumnos, calificando sabor y estética", fecha: "24 de Abril", hora: "12:00 Hrs", lugar: "Lab. Gastronomía UATyG", color: "bg-orange-500", border: "border-orange-700", text: "text-white" },
-            { id: "j14", nombre: "Doctor Jeraar Atahualpa Ramos", cargo: "Juez Honorario", mision: "Chef Toad's Kitchen", descripcion: "evaluar los platillos temáticos preparados por los alumnos, calificando sabor y estética", fecha: "24 de Abril", hora: "12:00 Hrs", lugar: "Lab. Gastronomía UATyG", color: "bg-orange-500", border: "border-orange-700", text: "text-white" },
+            { id: "j12", avatar: "👨‍🍳", nombre: "Chef Martha Jazmin Acero", cargo: "Juez Honorario", mision: "Chef Toad's Kitchen", descripcion: "evaluar los platillos temáticos preparados por los alumnos, calificando sabor y estética", fecha: "24 de Abril", hora: "12:00 Hrs", lugar: "Lab. Gastronomía UATyG", color: "bg-orange-500", border: "border-orange-700", text: "text-white" },
+            { id: "j13", avatar: "🍳", nombre: "Chef Jesus G Lamas", cargo: "Juez Honorario", mision: "Chef Toad's Kitchen", descripcion: "evaluar los platillos temáticos preparados por los alumnos, calificando sabor y estética", fecha: "24 de Abril", hora: "12:00 Hrs", lugar: "Lab. Gastronomía UATyG", color: "bg-orange-500", border: "border-orange-700", text: "text-white" },
+            { id: "j14", avatar: "🍕", nombre: "Doctor Jeraar Atahualpa Ramos", cargo: "Juez Honorario", mision: "Chef Toad's Kitchen", descripcion: "evaluar los platillos temáticos preparados por los alumnos, calificando sabor y estética", fecha: "24 de Abril", hora: "12:00 Hrs", lugar: "Lab. Gastronomía UATyG", color: "bg-orange-500", border: "border-orange-700", text: "text-white" },
             
             // CARAVANA
-            { id: "j15", nombre: "Maestro Mario Jauregui", cargo: "Juez Honorario", mision: "Gran Premio Final (Caravana)", descripcion: "evaluar el diseño, montaje y ambiente de los carros alegóricos creados por los equipos", fecha: "24 de Abril", hora: "18:00 Hrs", lugar: "Costado del Mesón (UAN)", color: "bg-blue-500", border: "border-blue-800", text: "text-white" },
-            { id: "j16", nombre: "Maestra Dalia Gutiérrez Alcaraz", cargo: "Juez Honorario", mision: "Gran Premio Final (Caravana)", descripcion: "evaluar el diseño, montaje y ambiente de los carros alegóricos creados por los equipos", fecha: "24 de Abril", hora: "18:00 Hrs", lugar: "Costado del Mesón (UAN)", color: "bg-blue-500", border: "border-blue-800", text: "text-white" },
-            { id: "j17", nombre: "Maestro Antonio Cabello Sandoval", cargo: "Juez Honorario", mision: "Gran Premio Final (Caravana)", descripcion: "evaluar el diseño, montaje y ambiente de los carros alegóricos creados por los equipos", fecha: "24 de Abril", hora: "18:00 Hrs", lugar: "Costado del Mesón (UAN)", color: "bg-blue-500", border: "border-blue-800", text: "text-white" }
+            { id: "j15", avatar: "🚗", nombre: "Maestro Mario Jauregui", cargo: "Juez Honorario", mision: "Gran Premio Final (Caravana)", descripcion: "evaluar el diseño, montaje y ambiente de los carros alegóricos creados por los equipos", fecha: "24 de Abril", hora: "18:00 Hrs", lugar: "Costado del Mesón (UAN)", color: "bg-blue-500", border: "border-blue-800", text: "text-white" },
+            { id: "j16", avatar: "🏎️", nombre: "Maestra Dalia Gutiérrez Alcaraz", cargo: "Juez Honorario", mision: "Gran Premio Final (Caravana)", descripcion: "evaluar el diseño, montaje y ambiente de los carros alegóricos creados por los equipos", fecha: "24 de Abril", hora: "18:00 Hrs", lugar: "Costado del Mesón (UAN)", color: "bg-blue-500", border: "border-blue-800", text: "text-white" },
+            { id: "j17", avatar: "🏁", nombre: "Maestro Antonio Cabello Sandoval", cargo: "Juez Honorario", mision: "Gran Premio Final (Caravana)", descripcion: "evaluar el diseño, montaje y ambiente de los carros alegóricos creados por los equipos", fecha: "24 de Abril", hora: "18:00 Hrs", lugar: "Costado del Mesón (UAN)", color: "bg-blue-500", border: "border-blue-800", text: "text-white" }
         ];
 
         let juezActual = null;
-        window.estadosJuecesGlobal = {}; // Guardar el estado global para el panel de Admin
+        window.estadosJuecesGlobal = {}; 
 
         window.mostrarMensaje = function(titulo, mensaje, colorClass = 'text-blue-600') {
             document.getElementById('modal-sistema-titulo').innerText = titulo;
             document.getElementById('modal-sistema-titulo').className = `font-pixel ${colorClass} text-sm md:text-base mb-4`;
             document.getElementById('modal-sistema-mensaje').innerText = mensaje;
             document.getElementById('modal-sistema').classList.remove('hidden');
+        };
+
+        // NAVEGACIÓN DE PANTALLAS
+        window.iniciarSeleccion = function() {
+            playStartSound(); // Sonido Retro
+            document.getElementById('pantalla-bienvenida').classList.add('hidden');
+            document.getElementById('pantalla-seleccion').classList.remove('hidden');
+            document.getElementById('pantalla-seleccion').classList.add('flex');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        // ENLACES PERSONALIZADOS POR URL (?juez=j1)
+        window.revisarURLParams = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const juezParam = urlParams.get('juez');
+            if (juezParam) {
+                const juezElegido = listaJueces.find(j => j.id === juezParam);
+                if (juezElegido) {
+                    // Esperar un momento y simular el flujo
+                    setTimeout(() => {
+                        const miRespuestaLocal = localStorage.getItem('uatyg_juez_respondido');
+                        const estado = window.estadosJuecesGlobal[juezElegido.id];
+                        
+                        if (estado) {
+                            // Ya contestó
+                            const msg = estado.respuesta === 'aceptado' ? "¡Misión aceptada! Este jugador ya ha confirmado su participación." : "Este jugador ha declinado la invitación en esta ocasión.";
+                            window.mostrarMensaje("INFORMACIÓN", msg, "text-blue-600");
+                        } else if (miRespuestaLocal && miRespuestaLocal !== juezElegido.id) {
+                            // Contestó por otro en este teléfono
+                            window.mostrarMensaje("BLOQUEADO", "Por seguridad, solo puedes registrar una respuesta por dispositivo.", "text-red-600");
+                        } else {
+                            // Todo libre, abrir carta
+                            abrirInvitacion(juezElegido, true); // True para saltar el sonido y transición larga inicial
+                        }
+                    }, 800);
+                }
+            }
         };
 
         // 2. GENERAR LOS BOTONES DE LA PANTALLA 1
@@ -329,7 +470,7 @@
                 const estadoRespuesta = isRespondido ? estadoObj.respuesta : null;
                 
                 const div = document.createElement('div');
-                div.className = `${juez.color} ${juez.border} ${juez.text} border-b-4 p-3 rounded flex flex-col items-center justify-center min-h-[90px] relative overflow-hidden shadow-sm ${isRespondido ? 'opacity-80 cursor-not-allowed' : 'cursor-pointer hover:scale-105 transition-transform'}`;
+                div.className = `${juez.color} ${juez.border} ${juez.text} border-b-4 p-3 rounded flex flex-col items-center justify-center min-h-[100px] relative overflow-hidden shadow-sm ${isRespondido ? 'opacity-80 cursor-not-allowed' : 'cursor-pointer hover:scale-105 transition-transform'}`;
                 
                 let selloHTML = '';
                 if (estadoRespuesta === 'aceptado') {
@@ -340,6 +481,7 @@
 
                 div.innerHTML = `
                     ${selloHTML}
+                    <div class="text-2xl mb-1 drop-shadow-md">${juez.avatar}</div>
                     <span class="font-bold uppercase tracking-wider text-sm text-center leading-tight">${juez.nombre}</span>
                 `;
                 
@@ -360,26 +502,41 @@
                 
                 gridJueces.appendChild(div);
             });
+            
             lucide.createIcons();
         };
 
         renderizarJueces({});
 
         // 3. FUNCIONES DE LA INTERFAZ USUARIO
-        window.abrirInvitacion = function(juez) {
+        window.abrirInvitacion = function(juez, skipTransition = false) {
             juezActual = juez;
             
+            document.getElementById('pantalla-bienvenida').classList.add('hidden');
             document.getElementById('pantalla-seleccion').classList.add('hidden');
-            const pantallaInv = document.getElementById('pantalla-invitacion');
-            pantallaInv.classList.remove('hidden');
+            document.getElementById('pantalla-seleccion').classList.remove('flex');
             
+            const pantallaInv = document.getElementById('pantalla-invitacion');
+            
+            // Llenar datos
             document.getElementById('titulo-juez').innerText = juez.nombre;
+            document.getElementById('avatar-juez-display').innerText = juez.avatar;
             document.getElementById('texto-cargo').innerText = juez.cargo;
             document.getElementById('texto-mision').innerText = juez.mision;
             document.getElementById('texto-descripcion').innerText = juez.descripcion;
             document.getElementById('texto-fecha').innerText = juez.fecha;
             document.getElementById('texto-hora').innerText = juez.hora;
             document.getElementById('texto-lugar').innerText = juez.lugar;
+
+            // MENSAJE ESPECIAL PARA LA DIRECTORA
+            const textoEspecial = document.getElementById('texto-especial');
+            if (juez.mensajeEspecial) {
+                textoEspecial.innerText = juez.mensajeEspecial;
+                textoEspecial.classList.remove('hidden');
+            } else {
+                textoEspecial.classList.add('hidden');
+                textoEspecial.innerText = "";
+            }
 
             const tituloJuez = document.getElementById('titulo-juez');
             const cajaMensaje = document.getElementById('caja-mensaje');
@@ -388,38 +545,38 @@
 
             if (juez.mision.includes("Diva Drag")) {
                 pantallaInv.className = "nes-container w-full max-w-3xl p-6 md:p-10 text-center relative z-10 mt-4 bg-gradient-to-br from-pink-200 via-fuchsia-200 to-purple-200 transition-all duration-300";
-                tituloJuez.className = "text-2xl md:text-3xl font-black text-fuchsia-700 uppercase border-b-4 border-fuchsia-500 inline-block pb-2 mb-8 transition-colors";
+                tituloJuez.className = "text-2xl md:text-3xl font-black text-fuchsia-700 uppercase border-b-4 border-fuchsia-500 inline-block pb-2 mb-8 px-8 transition-colors";
                 cajaMensaje.className = "bg-white/90 border-4 border-pink-400 p-6 rounded-lg shadow-[0_0_20px_rgba(236,72,153,0.4)] mb-8 relative text-left transition-all duration-300 backdrop-blur-sm";
-                iconoEstrella.className = "absolute -top-4 -left-4 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 border-2 border-black p-2 rounded-full rotate-[-10deg] transition-all";
+                iconoEstrella.className = "absolute -top-4 -right-4 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 border-2 border-black p-2 rounded-full rotate-[10deg] transition-all";
                 textoCargo.className = "text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-purple-600 font-black uppercase text-xl drop-shadow-sm";
             } else {
                 pantallaInv.className = "nes-container w-full max-w-3xl p-6 md:p-10 text-center relative z-10 mt-4 bg-white transition-all duration-300";
-                tituloJuez.className = "text-2xl md:text-3xl font-black text-blue-800 uppercase border-b-4 border-blue-600 inline-block pb-2 mb-8 transition-colors";
+                tituloJuez.className = "text-2xl md:text-3xl font-black text-blue-800 uppercase border-b-4 border-blue-600 inline-block pb-2 mb-8 px-8 transition-colors";
                 cajaMensaje.className = "bg-gray-50 border-4 border-gray-300 p-6 rounded-lg shadow-sm mb-8 relative text-left transition-all duration-300";
-                iconoEstrella.className = "absolute -top-4 -left-4 bg-yellow-400 border-2 border-black p-2 rounded-full rotate-[-10deg] transition-all";
+                iconoEstrella.className = "absolute -top-4 -right-4 bg-yellow-400 border-2 border-black p-2 rounded-full rotate-[10deg] transition-all";
                 textoCargo.className = "text-red-600 uppercase";
             }
             
+            // Mostrar la invitación de forma directa
+            pantallaInv.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+        };
 
         window.volverSeleccion = function() {
             document.getElementById('pantalla-invitacion').classList.add('hidden');
             document.getElementById('pantalla-seleccion').classList.remove('hidden');
+            document.getElementById('pantalla-seleccion').classList.add('flex');
             juezActual = null;
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // 4. FUNCIONES DEL PANEL COMITÉ (ADMIN)
+        // 4. FUNCIONES DEL PANEL COMITÉ
         window.abrirAdminAuth = () => {
             document.getElementById('admin-password').value = '';
             document.getElementById('admin-error').classList.add('hidden');
             document.getElementById('modal-comite-auth').classList.remove('hidden');
         };
-
-        window.cerrarAdminAuth = () => {
-            document.getElementById('modal-comite-auth').classList.add('hidden');
-        };
+        window.cerrarAdminAuth = () => document.getElementById('modal-comite-auth').classList.add('hidden');
 
         window.verificarAdminAuth = () => {
             const pass = document.getElementById('admin-password').value.toUpperCase();
@@ -435,10 +592,7 @@
             document.getElementById('modal-comite-panel').classList.remove('hidden');
             renderizarListaAdmin();
         };
-
-        window.cerrarAdminPanel = () => {
-            document.getElementById('modal-comite-panel').classList.add('hidden');
-        };
+        window.cerrarAdminPanel = () => document.getElementById('modal-comite-panel').classList.add('hidden');
 
         window.renderizarListaAdmin = () => {
             const container = document.getElementById('lista-admin-jueces');
@@ -465,16 +619,11 @@
                 }
             });
 
-            if (!hasItems) {
-                container.innerHTML = '<p class="text-center text-xs text-gray-500 font-bold p-6">No hay respuestas registradas aún.</p>';
-            }
+            if (!hasItems) container.innerHTML = '<p class="text-center text-xs text-gray-500 font-bold p-6">No hay respuestas registradas aún.</p>';
         };
 
         // 5. CONFIGURACIÓN FIREBASE Y CONEXIÓN
-        let db = null;
-        let auth = null;
-        let currentUser = null;
-        
+        let db = null, auth = null, currentUser = null;
         const isCanvasEnv = typeof __firebase_config !== 'undefined';
         const currentAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
@@ -500,39 +649,31 @@
 
                 onAuthStateChanged(auth, (user) => {
                     currentUser = user;
-                    
                     if (currentUser) {
-                        const coleccionRef = isCanvasEnv 
-                            ? collection(db, 'artifacts', currentAppId, 'public', 'data', 'confirmaciones_jueces')
-                            : collection(db, 'confirmaciones_jueces');
-                        
+                        const coleccionRef = isCanvasEnv ? collection(db, 'artifacts', currentAppId, 'public', 'data', 'confirmaciones_jueces') : collection(db, 'confirmaciones_jueces');
                         onSnapshot(coleccionRef, (snapshot) => {
-                            window.estadosJuecesGlobal = {}; // Actualizamos la global
+                            window.estadosJuecesGlobal = {};
                             snapshot.forEach((doc) => {
                                 const data = doc.data();
-                                window.estadosJuecesGlobal[data.idJuez] = {
-                                    respuesta: data.respuesta,
-                                    docId: doc.id
-                                };
+                                window.estadosJuecesGlobal[data.idJuez] = { respuesta: data.respuesta, docId: doc.id };
                             });
                             renderizarJueces(window.estadosJuecesGlobal);
+                            if (!document.getElementById('modal-comite-panel').classList.contains('hidden')) renderizarListaAdmin();
                             
-                            // Si el panel de admin está abierto, actualizarlo también en tiempo real
-                            if (!document.getElementById('modal-comite-panel').classList.contains('hidden')) {
-                                renderizarListaAdmin();
+                            // Revisar param de URL una vez que cargaron los datos
+                            if(!window.urlRevisada) {
+                                window.revisarURLParams();
+                                window.urlRevisada = true;
                             }
-                        }, (error) => {
-                            console.error("Error leyendo confirmaciones:", error);
-                        });
+
+                        }, (error) => { console.error("Error leyendo confirmaciones:", error); });
                     }
                 });
-            } catch (error) {
-                console.error("Error iniciando Firebase:", error);
-            }
+            } catch (error) { console.error("Error iniciando Firebase:", error); }
         };
         initFirebase();
 
-        // 6. ENVIAR Y ELIMINAR RESPUESTAS A BD
+        // 6. ENVIAR Y ELIMINAR RESPUESTAS
         window.enviarRespuesta = async function(estado) {
             if (!juezActual) return;
             
@@ -549,10 +690,7 @@
 
             try {
                 if (db && currentUser) {
-                    const coleccionRef = isCanvasEnv 
-                        ? collection(db, 'artifacts', currentAppId, 'public', 'data', 'confirmaciones_jueces')
-                        : collection(db, 'confirmaciones_jueces');
-                    
+                    const coleccionRef = isCanvasEnv ? collection(db, 'artifacts', currentAppId, 'public', 'data', 'confirmaciones_jueces') : collection(db, 'confirmaciones_jueces');
                     await addDoc(coleccionRef, respuestaInfo);
                 }
 
@@ -566,20 +704,17 @@
                 }
 
             } catch (error) {
-                console.error("Error al guardar:", error);
-                window.mostrarMensaje("ERROR", "Hubo un error al enviar tu respuesta. Por favor, intenta de nuevo o comunícate con el comité.", "text-red-600");
+                window.mostrarMensaje("ERROR", "Hubo un error al enviar tu respuesta. Por favor, intenta de nuevo.", "text-red-600");
                 document.getElementById('area-botones').classList.remove('hidden');
                 document.getElementById('indicador-guardando').classList.add('hidden');
             }
         };
 
         window.juezAResetear = null;
-
         window.resetearJuez = function(idJuez, docId) {
             window.juezAResetear = { idJuez, docId };
             document.getElementById('modal-confirmar-reset').classList.remove('hidden');
         };
-
         window.cerrarConfirmarReset = function() {
             document.getElementById('modal-confirmar-reset').classList.add('hidden');
             window.juezAResetear = null;
@@ -591,24 +726,15 @@
             document.getElementById('modal-confirmar-reset').classList.add('hidden');
             
             try {
-                const docRef = isCanvasEnv 
-                    ? doc(db, 'artifacts', currentAppId, 'public', 'data', 'confirmaciones_jueces', docId)
-                    : doc(db, 'confirmaciones_jueces', docId);
-                
+                const docRef = isCanvasEnv ? doc(db, 'artifacts', currentAppId, 'public', 'data', 'confirmaciones_jueces', docId) : doc(db, 'confirmaciones_jueces', docId);
                 await deleteDoc(docRef);
                 
-                // Si fuiste tú mismo quien se equivocó probando en el dispositivo, liberamos tu memoria local:
-                if (localStorage.getItem('uatyg_juez_respondido') === idJuez) {
-                    localStorage.removeItem('uatyg_juez_respondido');
-                }
-                
+                if (localStorage.getItem('uatyg_juez_respondido') === idJuez) localStorage.removeItem('uatyg_juez_respondido');
                 window.mostrarMensaje("ÉXITO", "Respuesta borrada. El juez puede volver a elegir su casilla.", "text-green-600");
             } catch (error) {
-                console.error("Error al resetear:", error);
-                window.mostrarMensaje("ERROR", "Hubo un error de conexión al intentar borrar el registro.", "text-red-600");
+                window.mostrarMensaje("ERROR", "Hubo un error al intentar borrar el registro.", "text-red-600");
             }
         };
-
     </script>
 </body>
 </html>
