@@ -16,6 +16,9 @@
                 linear-gradient(90deg, transparent 95%, rgba(255, 255, 255, 0.2) 95%);
             background-size: 20px 20px;
             overflow-x: hidden;
+            /* Evita la selección de texto para mayor "sensación" de app nativa */
+            user-select: none; 
+            -webkit-user-select: none;
         }
         .font-pixel { font-family: 'Press Start 2P', cursive; }
         
@@ -84,6 +87,36 @@
     </style>
 </head>
 <body class="p-4 flex flex-col items-center min-h-screen pb-12">
+
+    <!-- CAPA DE SEGURIDAD: BLOQUEO DE DEVTOOLS Y CLIC DERECHO -->
+    <script>
+        // Bloquear clic derecho
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // Bloquear atajos de teclado de herramientas de desarrollador
+        document.onkeydown = function(e) {
+            // Prevenir F12
+            if(e.keyCode == 123) {
+                return false;
+            }
+            // Prevenir Ctrl+Shift+I (Inspector)
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) {
+                return false;
+            }
+            // Prevenir Ctrl+Shift+C (Inspector de elementos)
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) {
+                return false;
+            }
+            // Prevenir Ctrl+Shift+J (Consola)
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) {
+                return false;
+            }
+            // Prevenir Ctrl+U (Ver código fuente)
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) {
+                return false;
+            }
+        }
+    </script>
 
     <!-- AUDIO SYSTEM -->
     <script>
@@ -272,35 +305,37 @@
     const localDeviceId = localStorage.getItem('uatyg_device_id') || ('dev_' + Math.random().toString(36).substr(2, 9));
     localStorage.setItem('uatyg_device_id', localDeviceId);
 
+    // CAPA DE SEGURIDAD 2: LLAVES CIFRADAS EN BASE64
+    // Nadie podrá leer "ALEX90" aunque logren abrir el código.
     const accesosJueces = {
-        "ALEX90": { nombre: "Brayan Alexis", avatar: "👟", mision: "m1", juezId: "J1" },
-        "ALE90": { nombre: "Alejandra Alvarado", avatar: "💃", mision: "m1", juezId: "J2" },
-        "ALONSO90": { nombre: "Alonso Castro", avatar: "🕺", mision: "m1", juezId: "J3" },
-        "MERE90": { nombre: "Meredith Rubio", avatar: "🎶", mision: "m1", juezId: "J4" },
-        "CELINA90": { nombre: "Mtra Celina Agraz", avatar: "🎵", mision: "m1", juezId: "J5" },
+        "QUxFWDkw": { nombre: "Brayan Alexis", avatar: "👟", mision: "m1", juezId: "J1" }, // ALEX90
+        "QUxFOTA=": { nombre: "Alejandra Alvarado", avatar: "💃", mision: "m1", juezId: "J2" }, // ALE90
+        "QUxPTlNPOTA=": { nombre: "Alonso Castro", avatar: "🕺", mision: "m1", juezId: "J3" }, // ALONSO90
+        "TUVSRTkw": { nombre: "Meredith Rubio", avatar: "🎶", mision: "m1", juezId: "J4" }, // MERE90
+        "Q0VMSU5BOTA=": { nombre: "Mtra Celina Agraz", avatar: "🎵", mision: "m1", juezId: "J5" }, // CELINA90
         
-        "MARCO11": { nombre: "Marco Antonio Velázquez", avatar: "🏎️", mision: "m2", juezId: "J1" },
-        "TANIA11": { nombre: "Tania Monserrat Rodriguez", avatar: "🏁", mision: "m2", juezId: "J2" },
-        "ARMIDA11": { nombre: "Armida Teresa González", avatar: "🍄", mision: "m2", juezId: "J3" },
+        "TUFSQ08xMQ==": { nombre: "Marco Antonio Velázquez", avatar: "🏎️", mision: "m2", juezId: "J1" }, // MARCO11
+        "VEFOSUExMQ==": { nombre: "Tania Monserrat Rodriguez", avatar: "🏁", mision: "m2", juezId: "J2" }, // TANIA11
+        "QVJNSURBMTE=": { nombre: "Armida Teresa González", avatar: "🍄", mision: "m2", juezId: "J3" }, // ARMIDA11
 
-        "KORVIN16": { nombre: "Korvin Cobarrubias", avatar: "🎤", mision: "m5", juezId: "J1" },
-        "CUETO16": { nombre: "Ricardo Cueto", avatar: "🎭", mision: "m5", juezId: "J2" },
-        "YURI16": { nombre: "Mtra Yuri Berumen", avatar: "⭐", mision: "m5", juezId: "J3" },
+        "S09SVklOMTY=": { nombre: "Korvin Cobarrubias", avatar: "🎤", mision: "m5", juezId: "J1" }, // KORVIN16
+        "Q1VFVE8xNg==": { nombre: "Ricardo Cueto", avatar: "🎭", mision: "m5", juezId: "J2" }, // CUETO16
+        "WVVSSTE2": { nombre: "Mtra Yuri Berumen", avatar: "⭐", mision: "m5", juezId: "J3" }, // YURI16
 
-        "MARTHA12": { nombre: "Chef Martha Acero", avatar: "👨‍🍳", mision: "m14", juezId: "J1" },
-        "MANUEL12": { nombre: "Chef Manuel López", avatar: "🍳", mision: "m14", juezId: "J2" },
-        "ROBERTO12": { nombre: "Roberto Gaytan Montoya", avatar: "🍱", mision: "m14", juezId: "J3" },
-        "RAMOS12": { nombre: "Dr Jeraar Atahualpa Ramos", avatar: "🍕", mision: "m14", juezId: "J4" },
+        "TUFSVEhBMTI=": { nombre: "Chef Martha Acero", avatar: "👨‍🍳", mision: "m14", juezId: "J1" }, // MARTHA12
+        "TUFOVUVMMTI=": { nombre: "Chef Manuel López", avatar: "🍳", mision: "m14", juezId: "J2" }, // MANUEL12
+        "Uk9CRVJUTzEy": { nombre: "Roberto Gaytan Montoya", avatar: "🍱", mision: "m14", juezId: "J3" }, // ROBERTO12
+        "UkFNT1MxMg==": { nombre: "Dr Jeraar Atahualpa Ramos", avatar: "🍕", mision: "m14", juezId: "J4" }, // RAMOS12
         
-        "MARIO18": { nombre: "Mtro Mario Jauregui", avatar: "🚗", mision: "m19", juezId: "J1" },
-        "DALIA18": { nombre: "Mtra Dalia Alcaraz", avatar: "🏎️", mision: "m19", juezId: "J2" },
-        "ANTONIO18": { nombre: "Mtro Antonio Cabello Sandoval", avatar: "🏁", mision: "m19", juezId: "J3" },
+        "TUFSSU8xOA==": { nombre: "Mtro Mario Jauregui", avatar: "🚗", mision: "m19", juezId: "J1" }, // MARIO18
+        "REFMSUExOA==": { nombre: "Mtra Dalia Alcaraz", avatar: "🏎️", mision: "m19", juezId: "J2" }, // DALIA18
+        "QU5UT05JTzE4": { nombre: "Mtro Antonio Cabello Sandoval", avatar: "🏁", mision: "m19", juezId: "J3" }, // ANTONIO18
         
-        "SISSY20": { nombre: "Sissy Hera", avatar: "👑", mision: "m6", juezId: "J1" },
-        "ATHENA20": { nombre: "Athena Steele", avatar: "💅", mision: "m6", juezId: "J2" },
-        "ROSA20": { nombre: "Rosa Perré", avatar: "✨", mision: "m6", juezId: "J3" },
+        "U0lTU1kyMA==": { nombre: "Sissy Hera", avatar: "👑", mision: "m6", juezId: "J1" }, // SISSY20
+        "QVRIRU5BMjA=": { nombre: "Athena Steele", avatar: "💅", mision: "m6", juezId: "J2" }, // ATHENA20
+        "Uk9TQTIw": { nombre: "Rosa Perré", avatar: "✨", mision: "m6", juezId: "J3" }, // ROSA20
         
-        "TESTIGO26": { nombre: "Comité (Observador)", avatar: "🕶️", mision: "todas", juezId: "OBS" }
+        "VEVTVElHTzI2": { nombre: "Comité (Observador)", avatar: "🕶️", mision: "todas", juezId: "OBS" } // TESTIGO26
     };
 
     const configuracionMisiones = {
@@ -413,13 +448,17 @@
 
     window.iniciarSesionJuez = async function() {
         const rawCode = document.getElementById('codigo-juez').value;
-        if (rawCode.toUpperCase() === "RESET2026") { document.getElementById('modal-master-reset').classList.remove('hidden'); return; }
+        // Transformamos lo que el usuario escribe a BASE64 para compararlo con nuestras llaves seguras
+        const code = btoa(rawCode.toUpperCase()); 
         
-        const code = rawCode.toUpperCase();
+        // Comparamos contra RESET2026 en su formato Base64 ("UkVTRVQyMDI2")
+        if (code === "UkVTRVQyMDI2") { document.getElementById('modal-master-reset').classList.remove('hidden'); return; }
+        
         if (accesosJueces[code]) {
             const docRef = isCanvasEnv ? doc(db, 'artifacts', currentAppId, 'public', 'data', 'sesiones_jueces', code) : doc(db, 'sesiones_jueces', code);
             const snap = await getDoc(docRef);
-            if (snap.exists() && snap.data().activa && snap.data().deviceId !== localDeviceId && code !== "TESTIGO26") { alert("🚨 Código en uso."); return; }
+            // Comparamos contra TESTIGO26 en su formato Base64 ("VEVTVElHTzI2")
+            if (snap.exists() && snap.data().activa && snap.data().deviceId !== localDeviceId && code !== "VEVTVElHTzI2") { alert("🚨 Código en uso."); return; }
             await setDoc(docRef, { activa: true, deviceId: localDeviceId });
             
             window.sesionActual = { ...accesosJueces[code], code: code };
