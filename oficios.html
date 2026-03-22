@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Oficios - UATyG 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Fredoka:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- ESTILOS DE INTERFAZ WEB --- */
+        body { 
+            font-family: 'Fredoka', sans-serif; 
+            background-color: #5c94fc; 
+            background-image: 
+                linear-gradient(transparent 95%, rgba(255, 255, 255, 0.2) 95%),
+                linear-gradient(90deg, transparent 95%, rgba(255, 255, 255, 0.2) 95%);
+            background-size: 20px 20px;
+        }
+        .font-pixel { font-family: 'Press Start 2P', cursive; }
+        
+        .nes-container { 
+            border: 4px solid black; 
+            padding: 1rem; 
+            border-radius: 4px; 
+            background: white;
+        }
+
+        /* --- ESTILO DE LA HOJA TAMAÑO CARTA --- */
+        .hoja-oficio {
+            width: 21.59cm;
+            height: 27.94cm;
+            background: white;
+            margin: 20px auto;
+            padding: 2cm 2.5cm; /* Margen formal */
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.5);
+            position: relative;
+            box-sizing: border-box;
+            border: 2px solid #ccc;
+        }
+
+        /* --- REGLAS MÁGICAS PARA IMPRESIÓN/PDF --- */
+        @media print {
+            @page {
+                size: letter;
+                margin: 0; /* Quitamos márgenes del navegador para usar los de la hoja */
+            }
+            body { 
+                background: white; 
+                margin: 0; 
+                padding: 0; 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+            }
+            .no-print { display: none !important; } /* Oculta el panel de control */
+            
+            .hoja-oficio {
+                box-shadow: none;
+                border: none;
+                margin: 0;
+                width: 21.59cm;
+                height: 27.94cm;
+                padding: 2.5cm; /* Ajuste para la impresora */
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- ==========================================
+         PANEL DE CONTROL DEL COMITÉ (No se imprime)
+         ========================================== -->
+    <div class="no-print bg-gray-900 text-white p-6 rounded-lg border-4 border-black max-w-4xl mx-auto mb-8 shadow-[8px_8px_0px_#000]">
+        <div class="flex items-center justify-between border-b-4 border-gray-700 pb-4 mb-4">
+            <div>
+                <h2 class="font-pixel text-yellow-400 text-sm md:text-base">🖨️ GENERADOR DE OFICIOS OFICIALES</h2>
+                <p class="text-xs text-gray-400 mt-2">Herramienta exclusiva del Comité UATyG 2026</p>
+            </div>
+        </div>
+        
+        <p class="text-sm mb-4 font-medium text-blue-200">1. Selecciona a un juez de la lista.<br>2. Revisa que el documento se llene correctamente abajo.<br>3. Presiona "GENERAR PDF" (En la ventana, elige 'Guardar como PDF' y quita encabezados/pies de página).</p>
+        
+        <div class="flex flex-col md:flex-row gap-4 items-center">
+            <select id="selector-juez" class="flex-1 w-full p-4 text-black font-bold text-sm md:text-base border-4 border-blue-500 rounded focus:outline-none cursor-pointer uppercase">
+                <option value="">-- SELECCIONA UN JUEZ AQUÍ --</option>
+                <!-- Opciones cargadas por JS -->
+            </select>
+            
+            <button onclick="window.print()" class="w-full md:w-auto bg-red-600 hover:bg-red-700 border-4 border-black shadow-[4px_4px_0px_#000] text-white font-pixel py-4 px-6 text-[10px] md:text-xs transition-transform active:translate-y-1 active:translate-x-1 active:shadow-none cursor-pointer">
+                GENERAR PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         DOCUMENTO OFICIAL (Esto es lo que se exporta)
+         ========================================== -->
+    <div class="hoja-oficio text-gray-900 flex flex-col justify-between" id="documento-oficial">
+        
+        <!-- ENCABEZADO -->
+        <div>
+            <!-- Logos -->
+            <div class="flex justify-between items-center mb-6 pb-2 border-b-2 border-gray-300">
+                <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/logo%20uan%20azul%20transparente%20unidad.png" alt="UAN" class="h-16 object-contain">
+                <div class="text-center">
+                    <h1 class="font-pixel text-[10px] text-blue-900">SÚPER SEMANA CULTURAL</h1>
+                    <h2 class="font-pixel text-xs text-red-600 mt-1">UATyG 2026</h2>
+                </div>
+                <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/logo%20cetyg%20azul%20transparente.png" alt="CETyG" class="h-16 object-contain">
+            </div>
+
+            <!-- Lugar, Fecha y Asunto -->
+            <div class="text-right font-medium text-sm mb-8 text-gray-800">
+                <p>Tepic, Nayarit a 21 de marzo de 2026</p>
+                <p class="mt-1"><strong>Asunto:</strong> Invitación Oficial a Panel de Jueces</p>
+            </div>
+
+            <!-- Destinatario -->
+            <div class="mb-8">
+                <p class="font-black text-lg uppercase text-black" id="oficio-nombre">[NOMBRE DEL JUEZ]</p>
+                <p class="font-bold text-blue-800 uppercase text-sm tracking-wide" id="oficio-cargo">[CARGO]</p>
+                <p class="font-bold text-gray-800 text-sm mt-1">Presente.-</p>
+            </div>
+
+            <!-- Cuerpo del texto -->
+            <div class="text-justify text-base leading-relaxed text-gray-800">
+                <p class="mb-4">Por medio de la presente, reciba un cordial y respetuoso saludo a nombre del Comité Estudiantil de Turismo y Gastronomía (CETyG).</p>
+                
+                <p class="mb-4">Es un honor para nosotros extenderle una invitación formal para formar parte de la <strong>Súper Semana Cultural UATyG 2026</strong>. Reconociendo su destacada trayectoria, profesionalismo y excelente criterio, solicitamos su invaluable apoyo para evaluar el desempeño de nuestros estudiantes en las actividades de competencia.</p>
+                
+                <p class="mb-6">Su participación ha sido asignada para la siguiente prueba oficial:</p>
+
+                <!-- CAJA DE MISIÓN (Estilo Retro Formal) -->
+                <div class="bg-gray-50 border-2 border-black p-4 rounded-lg mb-6 shadow-sm">
+                    <h3 class="font-pixel text-black text-[10px] mb-3 uppercase flex items-center gap-2 border-b-2 border-gray-300 pb-2" id="oficio-mision">
+                        MISIÓN: [NOMBRE DE LA MISIÓN]
+                    </h3>
+                    <p class="text-sm mb-4 text-gray-700"><strong>Objetivo de Evaluación:</strong> <span id="oficio-descripcion">[Descripción de lo que evaluará el juez en esta misión].</span></p>
+                    
+                    <div class="grid grid-cols-3 gap-2 text-center border-t-2 border-gray-300 pt-3 bg-white p-2 rounded border border-gray-200">
+                        <div>
+                            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">FECHA</p>
+                            <p class="font-bold text-sm text-black" id="oficio-fecha">[FECHA]</p>
+                        </div>
+                        <div class="border-l border-r border-gray-300">
+                            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">HORA</p>
+                            <p class="font-bold text-sm text-black" id="oficio-hora">[HORA]</p>
+                        </div>
+                        <div>
+                            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">SEDE</p>
+                            <p class="font-bold text-sm text-black" id="oficio-lugar">[LUGAR]</p>
+                        </div>
+                    </div>
+                </div>
+
+                <p>Agradecemos de antemano su tiempo, disposición y el gran respaldo que siempre brinda a las iniciativas estudiantiles. Quedamos a sus apreciables órdenes para cualquier duda o confirmación de su asistencia.</p>
+            </div>
+        </div>
+
+        <!-- FIRMA (Pie de página) -->
+        <div class="text-center mt-auto pt-8">
+            <p class="font-bold text-gray-800 mb-16">Atentamente,</p>
+            <div class="w-72 border-b-2 border-black mx-auto mb-2"></div>
+            <p class="font-black text-black uppercase text-sm">C. Gloria Estefanía Barraza Taracena</p>
+            <p class="text-xs font-bold text-gray-600 mt-1 uppercase tracking-wide">Presidenta del Comité Estudiantil de Turismo y Gastronomía CETyG</p>
+        </div>
+
+    </div>
+
+    <!-- ==========================================
+         SCRIPT DE LÓGICA
+         ========================================== -->
+    <script>
+        // Base de datos de Jueces extraída de invitacion(4).html
+        const listaJueces = [
+            // PRESENTACIÓN DE EQUIPOS
+            { id: "j1", nombre: "Brayan Alexis Rodríguez Sánchez", cargo: "Juez Honorario", mision: "Presentación de Equipos", descripcion: "Evaluar la coreografía, sincronización y presentación inicial de los equipos en la explanada.", fecha: "22 de Abril", hora: "9:00 AM", lugar: "Explanada UATyG" },
+            { id: "j2", nombre: "Alejandra Alvarado", cargo: "Juez Honorario", mision: "Presentación de Equipos", descripcion: "Evaluar la coreografía, sincronización y presentación inicial de los equipos en la explanada.", fecha: "22 de Abril", hora: "9:00 AM", lugar: "Explanada UATyG" },
+            { id: "j3", nombre: "Alonso de Jesús Ortega Castro", cargo: "Juez Honorario", mision: "Presentación de Equipos", descripcion: "Evaluar la coreografía, sincronización y presentación inicial de los equipos en la explanada.", fecha: "22 de Abril", hora: "9:00 AM", lugar: "Explanada UATyG" },
+            { id: "j4", nombre: "Meredith Pizano Rubio", cargo: "Juez Honorario", mision: "Presentación de Equipos", descripcion: "Evaluar la coreografía, sincronización y presentación inicial de los equipos en la explanada.", fecha: "22 de Abril", hora: "9:00 AM", lugar: "Explanada UATyG" },
+            { id: "j5", nombre: "Dra. Maria Celina Agraz", cargo: "Juez Honorario", mision: "Presentación de Equipos", descripcion: "Evaluar la coreografía, sincronización y presentación inicial de los equipos en la explanada.", fecha: "22 de Abril", hora: "9:00 AM", lugar: "Explanada UATyG" },
+            
+            // TALENTO
+            { id: "j6", nombre: "Korvin Cobarrubias", cargo: "Juez Honorario", mision: "Super Star Talent", descripcion: "Evaluar las habilidades, talentos artísticos y la presencia escénica de los participantes.", fecha: "22 de Abril", hora: "16:00 Hrs", lugar: "Explanada UATyG" },
+            { id: "j7", nombre: "Ricardo Cueto", cargo: "Juez Honorario", mision: "Super Star Talent", descripcion: "Evaluar las habilidades, talentos artísticos y la presencia escénica de los participantes.", fecha: "22 de Abril", hora: "16:00 Hrs", lugar: "Explanada UATyG" },
+            { id: "j8", nombre: "Maestra Yuri Vanessa Berumen", cargo: "Juez Honorario", mision: "Super Star Talent", descripcion: "Evaluar las habilidades, talentos artísticos y la presencia escénica de los participantes.", fecha: "22 de Abril", hora: "16:00 Hrs", lugar: "Explanada UATyG" },
+            
+            // DRAG
+            { id: "j9", nombre: "Sissy Hera", cargo: "Juez Estelar", mision: "Diva Drag (Gala Real)", descripcion: "Evaluar a los participantes en un concurso Drag, calificando pasarela, show y lipsync.", fecha: "22 de Abril", hora: "20:00 Hrs", lugar: "Bar Mr. Ribs" },
+            { id: "j10", nombre: "Athena Steele", cargo: "Juez Estelar", mision: "Diva Drag (Gala Real)", descripcion: "Evaluar a los participantes en un concurso Drag, calificando pasarela, show y lipsync.", fecha: "22 de Abril", hora: "20:00 Hrs", lugar: "Bar Mr. Ribs" },
+            { id: "j11", nombre: "Rosa Perré", cargo: "Juez Estelar", mision: "Diva Drag (Gala Real)", descripcion: "Evaluar a los participantes en un concurso Drag, calificando pasarela, show y lipsync.", fecha: "22 de Abril", hora: "20:00 Hrs", lugar: "Bar Mr. Ribs" },
+            
+            // COCINA
+            { id: "j12", nombre: "Chef Martha Jazmin Acero", cargo: "Juez Honorario", mision: "Chef Toad's Kitchen", descripcion: "Evaluar los platillos temáticos preparados por los alumnos, calificando sabor, técnica y estética.", fecha: "24 de Abril", hora: "12:00 Hrs", lugar: "Lab. Gastronomía UATyG" },
+            { id: "j13", nombre: "Chef Manuel Lopez", cargo: "Juez Honorario", mision: "Chef Toad's Kitchen", descripcion: "Evaluar los platillos temáticos preparados por los alumnos, calificando sabor, técnica y estética.", fecha: "24 de Abril", hora: "12:00 Hrs", lugar: "Lab. Gastronomía UATyG" },
+            { id: "j14", nombre: "Doctor Jeraar Atahualpa Ramos", cargo: "Juez Honorario", mision: "Chef Toad's Kitchen", descripcion: "Evaluar los platillos temáticos preparados por los alumnos, calificando sabor, técnica y estética.", fecha: "24 de Abril", hora: "12:00 Hrs", lugar: "Lab. Gastronomía UATyG" },
+            { id: "j15", nombre: "Roberto Gaytán Montoya", cargo: "Juez Honorario", mision: "Chef Toad's Kitchen", descripcion: "Evaluar los platillos temáticos preparados por los alumnos, calificando sabor, técnica y estética.", fecha: "24 de Abril", hora: "12:00 Hrs", lugar: "Lab. Gastronomía UATyG" },
+            
+            // CARAVANA
+            { id: "j16", nombre: "Maestro Mario Jauregui", cargo: "Juez Honorario", mision: "Gran Premio Final (Caravana)", descripcion: "Evaluar el diseño, montaje y ambiente de los carros alegóricos creados por los equipos.", fecha: "24 de Abril", hora: "18:00 Hrs", lugar: "Costado del Mesón (UAN)" },
+            { id: "j17", nombre: "Maestra Dalia Gutiérrez Alcaraz", cargo: "Juez Honorario", mision: "Gran Premio Final (Caravana)", descripcion: "Evaluar el diseño, montaje y ambiente de los carros alegóricos creados por los equipos.", fecha: "24 de Abril", hora: "18:00 Hrs", lugar: "Costado del Mesón (UAN)" },
+            { id: "j18", nombre: "Maestro Antonio Cabello Sandoval", cargo: "Juez Honorario", mision: "Gran Premio Final (Caravana)", descripcion: "Evaluar el diseño, montaje y ambiente de los carros alegóricos creados por los equipos.", fecha: "24 de Abril", hora: "18:00 Hrs", lugar: "Costado del Mesón (UAN)" },
+
+            // GRAND PRIX (KARTS)
+            { id: "j19", nombre: "Marco Antonio Velázquez", cargo: "Juez Honorario", mision: "Grand Prix UAN: La Copa Champiñón", descripcion: "Evaluar el diseño, estética y creatividad de los Karts (vehículos manuales) elaborados por los equipos.", fecha: "24 de Abril", hora: "11:00 AM", lugar: "Av. Del Meson al Estadio" },
+            { id: "j20", nombre: "Tania Monserrat Rodriguez", cargo: "Juez Honorario", mision: "Grand Prix UAN: La Copa Champiñón", descripcion: "Evaluar el diseño, estética y creatividad de los Karts (vehículos manuales) elaborados por los equipos.", fecha: "24 de Abril", hora: "11:00 AM", lugar: "Av. Del Meson al Estadio" },
+            { id: "j21", nombre: "Armida Teresa González", cargo: "Juez Honorario", mision: "Grand Prix UAN: La Copa Champiñón", descripcion: "Evaluar el diseño, estética y creatividad de los Karts (vehículos manuales) elaborados por los equipos.", fecha: "24 de Abril", hora: "11:00 AM", lugar: "Av. Del Meson al Estadio" }
+        ];
+
+        const selector = document.getElementById('selector-juez');
+
+        // Llenar el <select> ordenado por Misión
+        let misionActual = "";
+        let optGroup = null;
+
+        listaJueces.forEach(juez => {
+            // Agrupar visualmente en el selector
+            if (juez.mision !== misionActual) {
+                optGroup = document.createElement('optgroup');
+                optGroup.label = "--- " + juez.mision.toUpperCase() + " ---";
+                selector.appendChild(optGroup);
+                misionActual = juez.mision;
+            }
+            let option = document.createElement('option');
+            option.value = juez.id;
+            option.textContent = juez.nombre;
+            optGroup.appendChild(option);
+        });
+
+        // Evento al cambiar de Juez
+        selector.addEventListener('change', function() {
+            const id = this.value;
+            if (!id) return; // No hacer nada si elige la opción por defecto
+            
+            const juezElegido = listaJueces.find(j => j.id === id);
+            if (juezElegido) {
+                // Inyectar datos en el HTML del documento
+                document.getElementById('oficio-nombre').textContent = juezElegido.nombre;
+                document.getElementById('oficio-cargo').textContent = juezElegido.cargo;
+                document.getElementById('oficio-mision').textContent = "MISIÓN: " + juezElegido.mision;
+                document.getElementById('oficio-descripcion').textContent = juezElegido.descripcion;
+                document.getElementById('oficio-fecha').textContent = juezElegido.fecha;
+                document.getElementById('oficio-hora').textContent = juezElegido.hora;
+                document.getElementById('oficio-lugar').textContent = juezElegido.lugar;
+            }
+        });
+    </script>
+</body>
+</html>
