@@ -80,7 +80,6 @@
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
         }
     </style>
 </head>
@@ -124,20 +123,18 @@
 
     <!-- MODALES DE SISTEMA -->
     
-    <!-- Modal: Confirmar Salida -->
     <div id="modal-confirm-exit" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
         <div class="nes-container bg-white p-6 text-center max-w-sm w-full rounded-lg">
             <i data-lucide="log-out" class="w-12 h-12 mx-auto text-red-600 mb-4"></i>
             <h3 class="font-pixel text-red-600 text-sm mb-4 uppercase">¿QUIERES SALIR?</h3>
             <p class="text-xs font-bold mb-6 text-gray-700 uppercase leading-tight text-center">Tu progreso se guarda automáticamente.</p>
-            <div class="flex gap-2">
+            <div class="flex gap-2 text-center justify-center">
                 <button onclick="document.getElementById('modal-confirm-exit').classList.add('hidden')" class="btn-pixel w-1/2 bg-gray-200 py-3 text-[10px] font-pixel">NO</button>
                 <button onclick="window.ejecutarCerrarSesion()" class="btn-pixel w-1/2 bg-red-600 text-white py-3 text-[10px] font-pixel">SÍ, SALIR</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal: Master Reset Confirm -->
     <div id="modal-master-reset" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-red-900/90 p-4 backdrop-blur-md text-center">
         <div class="nes-container bg-white p-6 md:p-8 text-center max-w-sm w-full rounded-lg border-red-600 border-8">
             <i data-lucide="bomb" class="w-16 h-16 mx-auto text-red-600 mb-4 animate-bounce"></i>
@@ -153,10 +150,9 @@
         </div>
     </div>
 
-    <!-- Modal: Éxito Calificación -->
     <div id="success-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm text-center">
         <div class="nes-container bg-white p-6 text-center max-w-sm w-full rounded-lg">
-            <i data-lucide="trophy" class="w-16 h-16 mx-auto text-yellow-400 mb-4 floating text-center"></i>
+            <i data-lucide="trophy" class="w-16 h-16 mx-auto text-yellow-400 mb-4 floating"></i>
             <h3 class="font-pixel text-green-600 text-sm mb-4 uppercase text-center">¡Puntaje Guardado!</h3>
             <button type="button" onclick="window.cerrarModalExito()" class="btn-pixel bg-blue-600 text-white font-pixel py-3 px-4 w-full text-[10px] text-center">
                 SIGUIENTE EQUIPO
@@ -164,51 +160,36 @@
         </div>
     </div>
 
-    <!-- PANTALLA: LOGIN -->
     <div id="login-screen" class="nes-container w-full max-w-md p-6 relative pixel-sky mt-10 text-center rounded-lg">
         <div class="absolute -top-5 left-1/2 transform -translate-x-1/2 bg-red-600 text-white font-pixel px-4 py-2 border-4 border-black text-[10px] z-20 uppercase tracking-tighter">JUEZ LOGIN</div>
         <h1 class="font-pixel text-yellow-400 text-xs md:text-sm mt-6 mb-8 uppercase leading-loose text-center">Súper Semana Cultural<br><span class="text-white">UATyG 2026</span></h1>
-        <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/mario2.png" alt="Mario" class="h-24 mx-auto mb-6 floating">
+        <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/mario2.png" alt="Mario" class="h-24 mx-auto mb-6 floating text-center">
         <p class="font-pixel text-[10px] text-yellow-400 mb-4 uppercase text-center">Ingresa tu código único de juez</p>
         <input type="text" id="codigo-juez" class="w-full border-4 border-black bg-white p-4 mb-2 font-pixel text-center uppercase focus:outline-none focus:border-yellow-500" placeholder="CÓDIGO">
         <p id="error-login" class="text-red-500 font-bold text-[10px] mb-4 hidden font-pixel uppercase text-center">Código no válido</p>
         <button type="button" onclick="window.iniciarSesionJuez()" class="btn-pixel w-full bg-green-500 text-white font-pixel py-4 px-4 text-xs mt-4 uppercase text-center tracking-widest">Start Mission</button>
     </div>
 
-    <!-- PANTALLA: PANEL PRINCIPAL -->
     <div id="main-app" class="nes-container w-full max-w-md p-6 relative hidden bg-white mt-10 text-center">
-        
         <div id="barra-progreso-cont" class="absolute -top-10 left-0 w-full px-4">
             <div class="bg-black border-2 border-white h-6 rounded-full overflow-hidden flex items-center px-1 relative">
                 <div id="progress-bar" class="bg-green-500 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
                 <span id="progress-text" class="absolute inset-0 flex items-center justify-center font-pixel text-[8px] text-white uppercase">Progress: 0/0</span>
             </div>
         </div>
-
         <div class="flex justify-between items-start border-b-4 border-gray-200 pb-4 mb-6 mt-4">
-            <div class="text-left">
-                <span id="display-avatar-juez" class="text-3xl block">👨‍🏫</span>
-                <h2 id="display-nombre-juez" class="font-bold text-gray-800 text-[10px] md:text-xs uppercase leading-tight mt-1 text-center">Nombre</h2>
-            </div>
-            <div class="text-right">
-                <p id="display-mision-juez" class="text-[8px] text-blue-800 font-bold bg-blue-100 border-2 border-blue-300 px-2 py-1 rounded uppercase">Misión</p>
-            </div>
+            <div class="text-left"><span id="display-avatar-juez" class="text-3xl block">👨‍🏫</span><h2 id="display-nombre-juez" class="font-bold text-gray-800 text-[10px] md:text-xs uppercase leading-tight mt-1 text-center">Nombre</h2></div>
+            <div class="text-right"><p id="display-mision-juez" class="text-[8px] text-blue-800 font-bold bg-blue-100 border-2 border-blue-300 px-2 py-1 rounded uppercase">Misión</p></div>
         </div>
 
-        <!-- VISTA ESPECIAL: TESTIGO -->
         <div id="vista-testigo" class="hidden space-y-6 py-6 text-center">
-            <div class="bg-blue-50 border-4 border-blue-200 p-6 rounded-lg mb-4 text-center">
-                <i data-lucide="eye" class="w-12 h-12 mx-auto text-blue-600 mb-4 animate-pulse"></i>
-                <h3 class="font-pixel text-blue-800 text-xs mb-2 text-center">MODO OBSERVADOR</h3>
-                <p class="text-xs text-gray-600 font-bold uppercase leading-tight text-center">Supervisión de resultados en vivo.</p>
-            </div>
+            <div class="bg-blue-50 border-4 border-blue-200 p-6 rounded-lg mb-4 text-center"><i data-lucide="eye" class="w-12 h-12 mx-auto text-blue-600 mb-4 animate-pulse"></i><h3 class="font-pixel text-blue-800 text-xs mb-2 text-center uppercase">Modo Observador</h3><p class="text-xs text-gray-600 font-bold uppercase leading-tight text-center">Supervisión de resultados en vivo de todos los concursos.</p></div>
             <button type="button" onclick="window.mostrarResultados()" class="btn-pixel w-full bg-yellow-400 font-pixel py-5 text-xs uppercase text-center">VER TABLA DE POSICIONES</button>
         </div>
 
-        <!-- FORMULARIO: CALIFICACIÓN -->
         <form id="evaluacion-form" class="space-y-6 text-center">
             <div id="contenedor-fase-drag" class="hidden bg-pink-50 p-4 border-4 border-pink-400 rounded relative shadow-sm text-center">
-                <label class="block font-pixel text-pink-800 text-[8px] mb-2 uppercase text-center">Fase:</label>
+                <label class="block font-pixel text-pink-800 text-[8px] mb-2 uppercase text-center">Fase del Concurso:</label>
                 <select id="categoria-select" onchange="window.cambiarFaseDrag()" class="w-full border-2 border-black p-2 font-bold text-gray-800 text-sm bg-white text-center">
                     <option value="pasarela">1. Pasarela</option>
                     <option value="show">2. Show / Performance</option>
@@ -229,7 +210,7 @@
                     <option value="Toad (Azul)">Toad (Azul)</option>
                     <option value="Bowser (Amarillo)">Bowser (Amarillo)</option>
                 </select>
-                <p id="aviso-lipsync" class="hidden text-[8px] font-bold text-red-600 mt-2 uppercase text-center">* Solo las 3 mejores reinas</p>
+                <p id="aviso-lipsync" class="hidden text-[8px] font-bold text-red-600 mt-2 uppercase text-center">* Calificando solo a las 3 mejores puntuaciones acumuladas</p>
             </div>
 
             <div id="rubrica-container" class="space-y-4 pt-4 border-t-4 border-dashed border-gray-200 text-center">
@@ -242,7 +223,7 @@
             </div>
 
             <div class="flex flex-col gap-2 pt-4 border-t-2 border-gray-100 text-center">
-                <button type="button" onclick="window.mostrarResultados()" class="w-full bg-blue-50 text-blue-800 font-bold py-3 border-2 border-blue-400 border-dashed rounded text-xs uppercase text-center">Ver Tabla</button>
+                <button type="button" onclick="window.mostrarResultados()" class="w-full bg-blue-50 text-blue-800 font-bold py-3 border-2 border-blue-400 border-dashed rounded text-xs uppercase text-center text-center">Ver Tabla de Posiciones</button>
             </div>
         </form>
 
@@ -251,38 +232,23 @@
         </div>
     </div>
 
-    <!-- PANTALLA: AGRADECIMIENTO FINAL -->
     <div id="thank-you-screen" class="hidden nes-container w-full max-w-lg p-8 relative mt-10 text-center bg-gradient-to-b from-blue-700 to-blue-900 border-4 border-white rounded-xl shadow-2xl text-center">
         <div class="text-white relative z-10 text-center">
-            <div class="bg-yellow-400 w-20 h-20 rounded-full mx-auto mb-6 border-4 border-black flex items-center justify-center shadow-lg animate-bounce">
-                <i data-lucide="crown" class="w-10 h-10 text-white fill-white"></i>
-            </div>
-            <h2 class="font-pixel text-yellow-300 text-2xl mb-4 text-glow text-center uppercase leading-tight">ENORME GRACIAS</h2>
-            <p class="font-pixel text-[10px] mb-8 text-blue-100 uppercase tracking-widest text-center">Fuiste nuestro mejor jugador</p>
-            <div class="mb-8 text-center">
-                <h4 class="font-pixel text-[9px] text-yellow-400 mb-4 uppercase text-center tracking-tighter">Ranking Final Misión:</h4>
-                <div id="ranking-final-container" class="space-y-2 text-left"></div>
-            </div>
-            <div class="bg-white/10 p-4 border-2 border-white/20 rounded-lg mb-8 text-center">
-                <p class="font-bold text-xs uppercase leading-relaxed text-center">El CETyG agradece profundamente tu apoyo.</p>
-            </div>
-            <button onclick="window.ejecutarCerrarSesion()" class="btn-pixel bg-red-600 text-white font-pixel text-[10px] py-3 w-full uppercase text-center">VOLVER AL INICIO</button>
+            <div class="bg-yellow-400 w-20 h-20 rounded-full mx-auto mb-6 border-4 border-black flex items-center justify-center shadow-lg animate-bounce text-center"><i data-lucide="crown" class="w-10 h-10 text-white fill-white text-center mx-auto"></i></div>
+            <h2 class="font-pixel text-yellow-300 text-2xl mb-4 text-glow text-center uppercase leading-tight text-center">ENORME GRACIAS</h2>
+            <p class="font-pixel text-[10px] mb-8 text-blue-100 uppercase tracking-widest text-center text-center">Fuiste nuestro mejor jugador</p>
+            <div class="mb-8 text-center"><h4 class="font-pixel text-[9px] text-yellow-400 mb-4 uppercase text-center tracking-tighter text-center">Ranking Final Misión:</h4><div id="ranking-final-container" class="space-y-2 text-left"></div></div>
+            <div class="bg-white/10 p-4 border-2 border-white/20 rounded-lg mb-8 text-center text-center"><p class="font-bold text-xs uppercase leading-relaxed text-center">El CETyG agradece profundamente tu apoyo.</p></div>
+            <button onclick="window.ejecutarCerrarSesion()" class="btn-pixel bg-red-600 text-white font-pixel text-[10px] py-3 w-full uppercase text-center text-center">VOLVER AL INICIO</button>
         </div>
     </div>
 
-    <!-- MODAL: RESULTADOS -->
     <div id="resultados-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md overflow-y-auto text-center">
         <div class="nes-container bg-white border-4 border-black p-6 w-full max-w-md my-auto rounded-lg shadow-2xl text-center">
-            <div class="flex justify-between items-center mb-4 border-b-4 border-gray-200 pb-2 text-center">
-                <h3 class="font-pixel text-blue-600 text-[10px] uppercase text-center">Live Scores</h3>
-                <button type="button" onclick="window.cerrarResultados()" class="text-red-500 hover:text-red-700 transition-colors"><i data-lucide="x-circle"></i></button>
-            </div>
-            <div id="selector-ranking-mision" class="mb-4 hidden text-center">
-                <label class="block text-[8px] font-bold text-gray-500 mb-1 uppercase text-center">Filtrar por concurso:</label>
-                <select id="filtro-mision-ranking" onchange="window.mostrarResultados()" class="w-full border-2 border-black p-2 text-xs font-bold rounded bg-yellow-50 outline-none text-center"></select>
-            </div>
+            <div class="flex justify-between items-center mb-4 border-b-4 border-gray-200 pb-2 text-center"><h3 class="font-pixel text-blue-600 text-[10px] uppercase text-center">Live Scores</h3><button type="button" onclick="window.cerrarResultados()" class="text-red-500 hover:text-red-700 transition-colors text-center text-center"><i data-lucide="x-circle" class="text-center mx-auto text-center"></i></button></div>
+            <div id="selector-ranking-mision" class="mb-4 hidden text-center"><label class="block text-[8px] font-bold text-gray-500 mb-1 uppercase text-center">Filtrar por concurso:</label><select id="filtro-mision-ranking" onchange="window.mostrarResultados()" class="w-full border-2 border-black p-2 text-xs font-bold rounded bg-yellow-50 outline-none text-center"></select></div>
             <div id="tabla-resultados" class="space-y-2 mb-6"></div>
-            <button type="button" onclick="window.cerrarResultados()" class="btn-pixel bg-gray-200 py-3 w-full font-pixel text-[10px] border-2 border-black uppercase text-center">Cerrar</button>
+            <button type="button" onclick="window.cerrarResultados()" class="btn-pixel bg-gray-200 py-3 w-full font-pixel text-[10px] border-2 border-black uppercase text-center text-center">Cerrar Tabla</button>
         </div>
     </div>
 
@@ -312,18 +278,28 @@
         "ALONSO90": { nombre: "Alonso Castro", avatar: "🕺", mision: "m1", juezId: "J3" },
         "MERE90": { nombre: "Meredith Rubio", avatar: "🎶", mision: "m1", juezId: "J4" },
         "CELINA90": { nombre: "Mtra Celina Agraz", avatar: "🎵", mision: "m1", juezId: "J5" },
+        
+        "MARCO11": { nombre: "Marco Antonio Velázquez", avatar: "🏎️", mision: "m2", juezId: "J1" },
+        "TANIA11": { nombre: "Tania Monserrat Rodriguez", avatar: "🏁", mision: "m2", juezId: "J2" },
+        "ARMIDA11": { nombre: "Armida Teresa González", avatar: "🍄", mision: "m2", juezId: "J3" },
+
         "KORVIN16": { nombre: "Korvin Cobarrubias", avatar: "🎤", mision: "m5", juezId: "J1" },
         "CUETO16": { nombre: "Ricardo Cueto", avatar: "🎭", mision: "m5", juezId: "J2" },
         "YURI16": { nombre: "Mtra Yuri Berumen", avatar: "⭐", mision: "m5", juezId: "J3" },
+
         "MARTHA12": { nombre: "Chef Martha Acero", avatar: "👨‍🍳", mision: "m14", juezId: "J1" },
-        "LAMAS12": { nombre: "Chef Jesus G Lamas", avatar: "🍳", mision: "m14", juezId: "J2" },
-        "RAMOS12": { nombre: "Dr Jeraar Atahualpa Ramos", avatar: "🍕", mision: "m14", juezId: "J3" },
+        "MANUEL12": { nombre: "Chef Manuel López", avatar: "🍳", mision: "m14", juezId: "J2" },
+        "ROBERTO12": { nombre: "Roberto Gaytan Montoya", avatar: "🍱", mision: "m14", juezId: "J3" },
+        "RAMOS12": { nombre: "Dr Jeraar Atahualpa Ramos", avatar: "🍕", mision: "m14", juezId: "J4" },
+        
         "MARIO18": { nombre: "Mtro Mario Jauregui", avatar: "🚗", mision: "m19", juezId: "J1" },
         "DALIA18": { nombre: "Mtra Dalia Alcaraz", avatar: "🏎️", mision: "m19", juezId: "J2" },
         "ANTONIO18": { nombre: "Mtro Antonio Cabello Sandoval", avatar: "🏁", mision: "m19", juezId: "J3" },
+        
         "SISSY20": { nombre: "Sissy Hera", avatar: "👑", mision: "m6", juezId: "J1" },
         "ATHENA20": { nombre: "Athena Steele", avatar: "💅", mision: "m6", juezId: "J2" },
         "ROSA20": { nombre: "Rosa Perré", avatar: "✨", mision: "m6", juezId: "J3" },
+        
         "TESTIGO26": { nombre: "Comité (Observador)", avatar: "🕶️", mision: "todas", juezId: "OBS" }
     };
 
@@ -335,17 +311,32 @@
             {id:"c4", nombre:"Vestuario y Presentación", icono:"shirt"},
             {id:"c5", nombre:"Cosplay", icono:"palette"}
         ]},
-        "m5": { titulo: "Star Talent", criterios: [{id:"c1",nombre:"Talento",icono:"star"},{id:"c2",nombre:"Presencia",icono:"shirt"}] },
-        "m14": { titulo: "Chef Toad", criterios: [
-            {id:"c1",nombre:"Sabor y Textura",icono:"utensils"},{id:"c2",nombre:"Creatividad",icono:"lightbulb"},{id:"c3",nombre:"Presentación",icono:"eye"},
-            {id:"c4",nombre:"Bebida (Maridaje)",icono:"glass-water",customRange:[0,1,2,3,4,5],labels:{0:"N/P"}}
+        "m2": { titulo: "Grand Prix: Copa Champiñón", criterios: [
+            {id:"c1", nombre:"Diseño y Estética", icono:"pen-tool"},
+            {id:"c2", nombre:"Alusivo al Personaje", icono:"user"},
+            {id:"c3", nombre:"Creatividad", icono:"sparkles"},
+            {id:"c4", nombre:"Calidad de Construcción", icono:"settings"},
+            {id:"c5", nombre:"Bono: Espectacularidad", icono:"flame", customRange: [1, 2, 3, 4, 5]}
+        ]},
+        "m5": { titulo: "Show de Talentos", criterios: [
+            {id:"c1", nombre:"Talento y Habilidad Técnica", icono:"star"},
+            {id:"c2", nombre:"Presencia y Carisma", icono:"user-check"},
+            {id:"c3", nombre:"Creatividad y Originalidad", icono:"lightbulb"},
+            {id:"c4", nombre:"Dominio Escénico e Impacto", icono:"zap"}
+        ]},
+        "m14": { titulo: "Chef Toad Kitchen", criterios: [
+            {id:"c1", nombre:"Sabor y Textura", icono:"utensils"},
+            {id:"c2", nombre:"Creatividad y Concepto", icono:"lightbulb"},
+            {id:"c3", nombre:"Presentación", icono:"eye"},
+            {id:"c4", nombre:"Bebida (Maridaje)", icono:"glass-water", customRange: [0, 1, 2, 3, 4, 5], labels: {0: "N/P"}}
         ]},
         "m19": { titulo: "Gran Caravana", criterios: [
-            {id:"c1", nombre:"Diseño", icono:"pen-tool"},{id:"c2", nombre:"Creatividad", icono:"sparkles"},
-            {id:"c3", nombre:"Composición", icono:"palette", desc: "Luces, Sonidos y Visuales"},
+            {id:"c1", nombre:"Diseño", icono:"pen-tool"},
+            {id:"c2", nombre:"Creatividad", icono:"sparkles"},
+            {id:"c3", nombre:"Composición (Luces/Audio)", icono:"palette"},
             {id:"c4", nombre:"¿Integró Cosplay?", icono:"person-standing", customRange: [0, 5], labels: {0: "NO", 5: "SÍ"}}
         ]},
-        "m6": { titulo: "Gala Drag", fases: {
+        "m6": { titulo: "Gala Diva Drag", fases: {
             "pasarela": [{id:"c1",nombre:"Vestuario",icono:"shirt"},{id:"c2",nombre:"Pasarela",icono:"zap"}],
             "show": [{id:"c3",nombre:"Performance",icono:"sparkles"},{id:"c4",nombre:"Creatividad",icono:"palette"}],
             "lipsync": [{id:"c5",nombre:"LipSync",icono:"mic"},{id:"c6",nombre:"Energía",icono:"volume-2"}],
@@ -353,7 +344,7 @@
         }}
     };
 
-    // --- LÓGICA DE FIREBASE Y RESET ---
+    // --- LÓGICA CORE ---
 
     async function initFirebase() {
         if (isCanvasEnv && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
@@ -373,8 +364,6 @@
         });
     }
 
-    // --- FUNCIONES ASOCIADAS A WINDOW ---
-
     window.ejecutarResetTotal = async function() {
         document.getElementById('modal-master-reset').classList.add('hidden');
         try {
@@ -384,9 +373,9 @@
             for (const d of snapSesiones.docs) { await deleteDoc(d.ref); }
             localStorage.removeItem('uatyg_juez_sesion');
             localStorage.removeItem('uatyg_device_id');
-            alert("✅ SISTEMA REINICIADO CON ÉXITO.");
+            alert("✅ SISTEMA REINICIADO.");
             location.reload();
-        } catch (e) { alert("Error en el reinicio."); }
+        } catch (e) { alert("Error."); }
     };
 
     window.obtenerTotalEquiposMenu = function() {
@@ -423,16 +412,20 @@
     };
 
     window.iniciarSesionJuez = async function() {
-        const code = document.getElementById('codigo-juez').value.toUpperCase();
-        if (code === "RESET2026") { document.getElementById('modal-master-reset').classList.remove('hidden'); return; }
+        const rawCode = document.getElementById('codigo-juez').value;
+        if (rawCode.toUpperCase() === "RESET2026") { document.getElementById('modal-master-reset').classList.remove('hidden'); return; }
+        
+        const code = rawCode.toUpperCase();
         if (accesosJueces[code]) {
             const docRef = isCanvasEnv ? doc(db, 'artifacts', currentAppId, 'public', 'data', 'sesiones_jueces', code) : doc(db, 'sesiones_jueces', code);
             const snap = await getDoc(docRef);
             if (snap.exists() && snap.data().activa && snap.data().deviceId !== localDeviceId && code !== "TESTIGO26") { alert("🚨 Código en uso."); return; }
             await setDoc(docRef, { activa: true, deviceId: localDeviceId });
+            
             window.sesionActual = { ...accesosJueces[code], code: code };
             localStorage.setItem('uatyg_juez_sesion', JSON.stringify(window.sesionActual));
             if (window.sesionActual.mision !== "todas" && window.validarMisionCompletada()) { window.mostrarAgradecimientoFinal(); return; }
+            
             playSound('powerup');
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
@@ -440,6 +433,7 @@
             document.getElementById('display-avatar-juez').innerText = window.sesionActual.avatar;
             const mData = configuracionMisiones[window.sesionActual.mision] || {titulo:"Admin"};
             document.getElementById('display-mision-juez').innerText = mData.titulo;
+
             if (window.sesionActual.mision === "todas") {
                 document.getElementById('vista-testigo').classList.remove('hidden');
                 document.getElementById('evaluacion-form').classList.add('hidden');
@@ -458,97 +452,90 @@
     };
 
     window.abrirModalSalir = () => { document.getElementById('modal-confirm-exit').classList.remove('hidden'); };
-
-    window.ejecutarCerrarSesion = async function() {
-        document.getElementById('modal-confirm-exit').classList.add('hidden');
-        if (window.sesionActual && window.sesionActual.code) {
-            try {
-                const docRef = isCanvasEnv ? doc(db, 'artifacts', currentAppId, 'public', 'data', 'sesiones_jueces', window.sesionActual.code) : doc(db, 'sesiones_jueces', window.sesionActual.code);
-                await setDoc(docRef, { activa: false, deviceId: null });
-            } catch (e) {}
-        }
-        localStorage.removeItem('uatyg_juez_sesion');
-        location.reload();
-    };
-
+    window.ejecutarCerrarSesion = async function() { document.getElementById('modal-confirm-exit').classList.add('hidden'); if (window.sesionActual && window.sesionActual.code) { try { const docRef = isCanvasEnv ? doc(db, 'artifacts', currentAppId, 'public', 'data', 'sesiones_jueces', window.sesionActual.code) : doc(db, 'sesiones_jueces', window.sesionActual.code); await setDoc(docRef, { activa: false, deviceId: null }); } catch (e) {} } localStorage.removeItem('uatyg_juez_sesion'); location.reload(); };
     window.cambiarFaseDrag = function() { window.cargarCriterios(); window.actualizarEquiposDisponibles(); window.actualizarProgreso(); };
-
-    window.cargarCriterios = function() {
-        const cont = document.getElementById('criterios-dinamicos'); cont.innerHTML = '';
-        const mision = configuracionMisiones[window.sesionActual.mision];
-        if(!mision) return;
-        const fase = window.sesionActual.mision === "m6" ? document.getElementById('categoria-select').value : null;
-        const criterios = fase ? mision.fases[fase] : mision.criterios;
-        criterios.forEach(crit => {
-            let rs = ''; const range = crit.customRange || [1,2,3,4,5,6,7,8,9,10];
-            range.forEach(i => {
-                const label = (crit.labels || {})[i] || i;
-                rs += `<div><input type="radio" name="${crit.id}" id="${crit.id}-${i}" value="${i}" class="hidden score-radio ${i===0?'score-radio-zero':''}" onclick="playSound('coin')"><label for="${crit.id}-${i}" class="block border-2 border-gray-300 py-2 rounded font-bold text-gray-600 text-[10px] cursor-pointer bg-white transition-all uppercase text-center">${label}</label></div>`;
-            });
-            cont.innerHTML += `<div class="bg-gray-50 p-3 border-2 border-gray-200 rounded-lg shadow-sm text-center"><label class="flex flex-col items-center font-bold text-[10px] text-gray-800 mb-3 uppercase tracking-tighter justify-center text-center"><span class="flex items-center text-center justify-center"><i data-lucide="${crit.icono}" class="w-4 h-4 mr-2 ${window.sesionActual.mision==='m6'?'text-pink-600':'text-blue-600'}"></i> ${crit.nombre}</span>${crit.desc ? `<span class="text-[8px] text-gray-500 mt-1">${crit.desc}</span>` : ''}</label><div class="grid ${range.length>6?'grid-cols-5':'grid-cols-2'} gap-2">${rs}</div></div>`;
-        });
-        lucide.createIcons();
+    
+    window.cargarCriterios = function() { 
+        const cont = document.getElementById('criterios-dinamicos'); 
+        cont.innerHTML = ''; 
+        const mision = configuracionMisiones[window.sesionActual.mision]; 
+        if(!mision) return; 
+        const fase = window.sesionActual.mision === "m6" ? document.getElementById('categoria-select').value : null; 
+        const criterios = fase ? mision.fases[fase] : mision.criterios; 
+        criterios.forEach(crit => { 
+            let rs = ''; const range = crit.customRange || [1,2,3,4,5,6,7,8,9,10]; 
+            range.forEach(i => { 
+                const label = (crit.labels || {})[i] || i; 
+                rs += `<div><input type="radio" name="${crit.id}" id="${crit.id}-${i}" value="${i}" class="hidden score-radio ${i===0?'score-radio-zero':''}" onclick="playSound('coin')"><label for="${crit.id}-${i}" class="block border-2 border-gray-300 py-2 rounded font-bold text-gray-600 text-[10px] cursor-pointer bg-white transition-all uppercase text-center">${label}</label></div>`; 
+            }); 
+            cont.innerHTML += `<div class="bg-gray-50 p-3 border-2 border-gray-200 rounded-lg shadow-sm text-center"><label class="flex flex-col items-center font-bold text-[10px] text-gray-800 mb-3 uppercase tracking-tighter justify-center text-center"><span class="flex items-center text-center justify-center"><i data-lucide="${crit.icono}" class="w-4 h-4 mr-2 ${window.sesionActual.mision==='m6'?'text-pink-600':'text-blue-600'}"></i> ${crit.nombre}</span>${crit.desc ? `<span class="text-[8px] text-gray-500 mt-1">${crit.desc}</span>` : ''}</label><div class="grid ${range.length>6?'grid-cols-5':'grid-cols-2'} gap-2">${rs}</div></div>`; 
+        }); 
+        lucide.createIcons(); 
     };
 
-    window.actualizarEquiposDisponibles = function() {
-        if (!window.sesionActual || window.sesionActual.mision === "todas") return;
-        const select = document.getElementById('equipo-select');
-        const fase = window.sesionActual.mision === "m6" ? document.getElementById('categoria-select').value : "general";
-        let top3 = []; if(fase === "lipsync_final") {
-            const totals = {}; window.baseDeDatosVotos.filter(v => v.mision === "m6" && (v.fase === "pasarela" || v.fase === "show" || v.fase === "lipsync")).forEach(v => { totals[v.equipo] = (totals[v.equipo] || 0) + v.puntos; });
-            top3 = Object.keys(totals).map(e => ({n:e, p:totals[e]})).sort((a,b)=>b.p-a.p).slice(0,3).map(x=>x.n);
-            document.getElementById('aviso-lipsync').classList.remove('hidden');
-        } else document.getElementById('aviso-lipsync').classList.add('hidden');
-        Array.from(select.options).forEach(opt => {
-            if (opt.value !== "") {
-                const ya = window.baseDeDatosVotos.some(v => v.mision === window.sesionActual.mision && v.fase === fase && v.equipo === opt.value && v.juez === window.sesionActual.juezId);
-                if (fase === "lipsync_final" && !top3.includes(opt.value)) { opt.disabled = true; opt.style.display = "none"; }
-                else { opt.disabled = ya; opt.style.display = "block"; }
-                if (ya && !opt.text.includes("✓")) opt.text += " ✓"; else if(!ya) opt.text = opt.text.replace(" ✓", "");
-            }
-        });
+    window.actualizarEquiposDisponibles = function() { 
+        if (!window.sesionActual || window.sesionActual.mision === "todas") return; 
+        const select = document.getElementById('equipo-select'); 
+        const fase = window.sesionActual.mision === "m6" ? document.getElementById('categoria-select').value : "general"; 
+        let top3 = []; if(fase === "lipsync_final") { 
+            const totals = {}; window.baseDeDatosVotos.filter(v => v.mision === "m6" && (v.fase === "pasarela" || v.fase === "show" || v.fase === "lipsync")).forEach(v => { totals[v.equipo] = (totals[v.equipo] || 0) + v.puntos; }); 
+            top3 = Object.keys(totals).map(e => ({n:e, p:totals[e]})).sort((a,b)=>b.p-a.p).slice(0,3).map(x=>x.n); 
+            document.getElementById('aviso-lipsync').classList.remove('hidden'); 
+        } else document.getElementById('aviso-lipsync').classList.add('hidden'); 
+        Array.from(select.options).forEach(opt => { 
+            if (opt.value !== "") { 
+                const ya = window.baseDeDatosVotos.some(v => v.mision === window.sesionActual.mision && v.fase === fase && v.equipo === opt.value && v.juez === window.sesionActual.juezId); 
+                if (fase === "lipsync_final" && !top3.includes(opt.value)) { opt.disabled = true; opt.style.display = "none"; } 
+                else { opt.disabled = ya; opt.style.display = "block"; } 
+                if (ya && !opt.text.includes("✓")) opt.text += " ✓"; else if(!ya) opt.text = opt.text.replace(" ✓", ""); 
+            } 
+        }); 
     };
 
-    window.actualizarProgreso = function() {
-        if (!window.sesionActual || window.sesionActual.mision === "todas") return;
-        const total = window.sesionActual.mision === "m6" ? 24 : window.obtenerTotalEquiposMenu();
-        const misVotos = window.baseDeDatosVotos.filter(v => v.mision === window.sesionActual.mision && v.juez === window.sesionActual.juezId);
-        const calificados = window.sesionActual.mision === "m6" ? misVotos.length : [...new Set(misVotos.map(v => v.equipo))].length;
-        const porc = total > 0 ? Math.min((calificados / total) * 100, 100) : 0;
-        document.getElementById('progress-bar').style.width = porc + '%';
-        document.getElementById('progress-text').innerText = `Progress: ${calificados}/${total}`;
+    window.actualizarProgreso = function() { 
+        if (!window.sesionActual || window.sesionActual.mision === "todas") return; 
+        const total = window.sesionActual.mision === "m6" ? 24 : window.obtenerTotalEquiposMenu(); 
+        const misVotos = window.baseDeDatosVotos.filter(v => v.mision === window.sesionActual.mision && v.juez === window.sesionActual.juezId); 
+        const calificados = window.sesionActual.mision === "m6" ? misVotos.length : [...new Set(misVotos.map(v => v.equipo))].length; 
+        const porc = total > 0 ? Math.min((calificados / total) * 100, 100) : 0; 
+        document.getElementById('progress-bar').style.width = porc + '%'; 
+        document.getElementById('progress-text').innerText = `Progress: ${calificados}/${total}`; 
     };
 
-    window.enviarCalificacion = async function() {
-        const equipo = document.getElementById('equipo-select').value; if (!equipo) return alert("Selecciona personaje");
-        const fase = window.sesionActual.mision === "m6" ? document.getElementById('categoria-select').value : "general";
-        const m = configuracionMisiones[window.sesionActual.mision];
-        const criteria = fase !== "general" ? m.fases[fase] : m.criterios;
-        let total = 0, todas = true;
-        criteria.forEach(c => { const val = document.querySelector(`input[name="${c.id}"]:checked`); if (val) total += parseInt(val.value); else todas = false; });
-        if (!todas) return alert("Faltan criterios");
-        try {
-            await addDoc(coleccionVotos, { mision: window.sesionActual.mision, fase: fase, juez: window.sesionActual.juezId, juezNombre: window.sesionActual.nombre, equipo: equipo, puntos: total, notas: document.getElementById('observaciones').value, timestamp: new Date().toISOString() });
-            playSound('powerup');
-            if(window.validarMisionCompletada()) window.mostrarAgradecimientoFinal(); else window.cerrarModalExito();
-        } catch (e) { alert("Error"); }
+    window.enviarCalificacion = async function() { 
+        const equipo = document.getElementById('equipo-select').value; if (!equipo) return alert("Selecciona equipo"); 
+        const fase = window.sesionActual.mision === "m6" ? document.getElementById('categoria-select').value : "general"; 
+        const m = configuracionMisiones[window.sesionActual.mision]; 
+        const criteria = fase !== "general" ? m.fases[fase] : m.criterios; 
+        let total = 0, todas = true; 
+        criteria.forEach(c => { const val = document.querySelector(`input[name="${c.id}"]:checked`); if (val) total += parseInt(val.value); else todas = false; }); 
+        if (!todas) return alert("Faltan criterios"); 
+        try { 
+            await addDoc(coleccionVotos, { mision: window.sesionActual.mision, fase: fase, juez: window.sesionActual.juezId, juezNombre: window.sesionActual.nombre, equipo: equipo, puntos: total, notas: document.getElementById('observaciones').value, timestamp: new Date().toISOString() }); 
+            playSound('powerup'); 
+            if(window.validarMisionCompletada()) window.mostrarAgradecimientoFinal(); else window.cerrarModalExito(); 
+        } catch (e) { alert("Error"); } 
     };
 
     window.cerrarModalExito = function() { document.getElementById('success-modal').classList.add('hidden'); document.getElementById('evaluacion-form').reset(); window.actualizarEquiposDisponibles(); window.actualizarProgreso(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-
-    window.mostrarResultados = function() {
-        if (!window.sesionActual) return;
-        let mId = window.sesionActual.mision === "todas" ? document.getElementById('filtro-mision-ranking').value : window.sesionActual.mision;
-        const ts = {}; window.baseDeDatosVotos.filter(v => v.mision === mId).forEach(v => { ts[v.equipo] = (ts[v.equipo] || 0) + v.puntos; });
-        const r = Object.keys(ts).map(eq => ({ n: eq, p: ts[eq] })).sort((a,b) => b.p - a.p);
-        const t = document.getElementById('tabla-resultados'); t.innerHTML = '';
-        r.forEach((eq, i) => { const med = i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : '👾')); t.innerHTML += `<div class="flex justify-between items-center p-3 border-2 rounded ${i===0?'bg-yellow-50 border-yellow-400':'bg-gray-50 border-black'} shadow-sm uppercase font-bold text-[10px] text-center"><span>${med} ${eq.n}</span><span class="font-pixel text-blue-700 text-[8px]">${eq.p} PTS</span></div>`; });
-        document.getElementById('resultados-modal').classList.remove('hidden');
+    
+    window.mostrarResultados = function() { 
+        if (!window.sesionActual) return; 
+        let mId = window.sesionActual.mision === "todas" ? document.getElementById('filtro-mision-ranking').value : window.sesionActual.mision; 
+        const ts = {}; 
+        window.baseDeDatosVotos.filter(v => v.mision === mId).forEach(v => { ts[v.equipo] = (ts[v.equipo] || 0) + v.puntos; }); 
+        const r = Object.keys(ts).map(eq => ({ n: eq, p: ts[eq] })).sort((a,b) => b.p - a.p); 
+        const t = document.getElementById('tabla-resultados'); 
+        t.innerHTML = ''; 
+        r.forEach((eq, i) => { 
+            const med = i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : '👾')); 
+            t.innerHTML += `<div class="flex justify-between items-center p-3 border-2 rounded ${i===0?'bg-yellow-50 border-yellow-400':'bg-gray-50 border-black'} shadow-sm uppercase font-bold text-[10px] text-center"><span>${med} ${eq.n}</span><span class="font-pixel text-blue-700 text-[8px]">${eq.p} PTS</span></div>`; 
+        }); 
+        document.getElementById('resultados-modal').classList.remove('hidden'); 
     };
 
     window.cerrarResultados = function() { document.getElementById('resultados-modal').classList.add('hidden'); };
 
-    // --- INICIALIZACIÓN ---
     async function initApp() {
         await initFirebase();
         const guardada = localStorage.getItem('uatyg_juez_sesion');
@@ -556,16 +543,14 @@
             window.sesionActual = JSON.parse(guardada);
             onSnapshot(coleccionVotos, (sn) => {
                 window.baseDeDatosVotos = []; sn.forEach(d => window.baseDeDatosVotos.push({id:d.id, ...d.data()}));
-                if (window.sesionActual.mision !== "todas" && window.validarMisionCompletada()) {
-                    window.mostrarAgradecimientoFinal();
-                } else { 
+                if (window.sesionActual.mision !== "todas" && window.validarMisionCompletada()) window.mostrarAgradecimientoFinal();
+                else { 
                     document.getElementById('login-screen').classList.add('hidden'); 
                     document.getElementById('main-app').classList.remove('hidden'); 
                     document.getElementById('display-nombre-juez').innerText = window.sesionActual.nombre; 
                     document.getElementById('display-avatar-juez').innerText = window.sesionActual.avatar; 
                     const mData = configuracionMisiones[window.sesionActual.mision] || {titulo:"Admin"};
                     document.getElementById('display-mision-juez').innerText = mData.titulo; 
-                    
                     if (window.sesionActual.mision === "todas") {
                         document.getElementById('vista-testigo').classList.remove('hidden');
                         document.getElementById('evaluacion-form').classList.add('hidden');
