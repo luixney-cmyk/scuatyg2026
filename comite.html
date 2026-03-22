@@ -15,6 +15,9 @@
                 linear-gradient(transparent 95%, rgba(255, 255, 255, 0.2) 95%),
                 linear-gradient(90deg, transparent 95%, rgba(255, 255, 255, 0.2) 95%);
             background-size: 20px 20px;
+            /* CAPA DE SEGURIDAD: Evitar selección de texto */
+            user-select: none; 
+            -webkit-user-select: none;
         }
         .font-pixel { font-family: 'Press Start 2P', cursive; }
         
@@ -61,6 +64,28 @@
     </style>
 </head>
 <body class="p-4 flex flex-col items-center min-h-screen mt-4 pb-12">
+
+    <!-- ==========================================
+         CAPA DE SEGURIDAD: BLOQUEO DE DEVTOOLS
+         ========================================== -->
+    <script>
+        // Bloquear clic derecho
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // Bloquear atajos de teclado de herramientas de desarrollador
+        document.onkeydown = function(e) {
+            // Prevenir F12
+            if(e.keyCode == 123) return false;
+            // Prevenir Ctrl+Shift+I (Inspector)
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false;
+            // Prevenir Ctrl+Shift+C (Inspector de elementos)
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false;
+            // Prevenir Ctrl+Shift+J (Consola)
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false;
+            // Prevenir Ctrl+U (Ver código fuente)
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
+        }
+    </script>
 
     <!-- ==========================================
          MODALES DEL SISTEMA (Reemplazo de Alerts)
@@ -170,7 +195,6 @@
             Súper Semana Cultural<br>UATyG 2026
         </h1>
 
-        <!-- NUEVO DISEÑO DE LOGOS EN BURBUJAS BLANCAS -->
         <div class="flex justify-center items-center gap-3 md:gap-4 mb-6 relative z-10">
             <div class="bg-white p-1.5 md:p-2 rounded-full border-2 border-black shadow-[2px_2px_0px_rgba(0,0,0,1)] flex items-center justify-center w-14 h-14 md:w-16 md:h-16">
                 <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/logo%20uan%20azul%20transparente%20unidad.png" alt="Logo UAN" class="w-full h-full object-contain">
@@ -192,6 +216,7 @@
         
         <h2 class="font-bold text-blue-100 text-xs mb-2 relative z-10">Código de Autorización:</h2>
         
+        <!-- Input de Contraseña -->
         <input type="text" id="codigo-comite" class="w-full border-4 border-black p-3 mb-2 font-pixel text-center uppercase focus:outline-none focus:border-yellow-400 transition-colors shadow-inner relative z-10" placeholder="CLAVE" autocomplete="off" onkeypress="if(event.key === 'Enter') iniciarSesionComite()">
         
         <p id="error-login" class="text-red-300 font-pixel text-[9px] mb-4 h-4 hidden animate-pulse relative z-10">¡ACCESO DENEGADO!</p>
@@ -356,7 +381,9 @@
     window.baseDeDatosComite = JSON.parse(localStorage.getItem('uatyg_comite_votos')) || []; 
     let modoOffline = false; 
 
-    const CODIGO_MAESTRO = "COMITE26";
+    // CAPA DE SEGURIDAD: Contraseñas Cifradas en Base64
+    const CODIGO_MAESTRO = "Q0VUWUcyMjI3"; // Equivale a "CETYG2227"
+    const CODIGO_RESET   = "UkVTRVQyMDI2"; // Equivale a "RESET2026"
 
     // --- LISTA DE TODOS LOS EQUIPOS Y LLENADO ---
     const listaEquipos = ["Mario", "Luigi", "Peach", "Yoshi", "Toad", "Bowser", "Boo", "Huesitos"];
@@ -462,7 +489,7 @@
     };
     initCloud();
 
-    // --- SISTEMA DE ALERTAS CUSTOM (Sustituye a alert y confirm) ---
+    // --- SISTEMA DE ALERTAS CUSTOM ---
     window.mostrarAlerta = function(mensaje) {
         document.getElementById('custom-alert-msg').innerText = mensaje;
         document.getElementById('custom-alert-modal').classList.remove('hidden');
@@ -507,15 +534,19 @@
 
     window.iniciarSesionComite = function() {
         const codigoInput = document.getElementById('codigo-comite');
-        const codigo = codigoInput.value.trim().toUpperCase();
+        const rawCodigo = codigoInput.value.trim().toUpperCase();
+        // Convertimos a base64 para evitar contraseñas a simple vista
+        const codigoCifrado = btoa(rawCodigo);
+        
         const errorMsg = document.getElementById('error-login');
 
-        if (codigo === "RESET2026") {
+        // Comparar contraseñas cifradas
+        if (codigoCifrado === CODIGO_RESET) { // "RESET2026"
             document.getElementById('custom-reset-modal').classList.remove('hidden');
             return; 
         }
 
-        if (codigo === CODIGO_MAESTRO) {
+        if (codigoCifrado === CODIGO_MAESTRO) { // "CETYG2227"
             if (modoOffline) document.getElementById('aviso-offline').classList.remove('hidden');
             localStorage.setItem('uatyg_comite_sesion', "ACTIVA");
             document.getElementById('login-screen').classList.add('hidden');
@@ -780,8 +811,6 @@
         let puntosAnteriores = -1;
 
         ranking.forEach((equipo, index) => {
-            // LÓGICA DE EMPATE: Si el equipo actual tiene puntos distintos al anterior, actualizamos su rango a la posición real del array
-            // Si tiene los mismos puntos, conservará el valor de "rankActual" del equipo anterior, generando un empate visual.
             if (equipo.puntos !== puntosAnteriores) {
                 rankActual = index + 1;
             }
