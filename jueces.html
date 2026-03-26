@@ -266,12 +266,29 @@
         </div>
     </div>
 
+    <!-- PANTALLA DE AGRADECIMIENTO ACTUALIZADA -->
     <div id="thank-you-screen" class="hidden nes-container w-full max-w-lg p-8 relative mt-10 text-center bg-gradient-to-b from-blue-700 to-blue-900 border-4 border-white rounded-xl shadow-2xl text-center">
         <div class="text-white relative z-10 text-center">
-            <div class="bg-yellow-400 w-20 h-20 rounded-full mx-auto mb-6 border-4 border-black flex items-center justify-center shadow-lg animate-bounce text-center"><i data-lucide="crown" class="w-10 h-10 text-white fill-white text-center mx-auto"></i></div>
+            <div class="bg-yellow-400 w-20 h-20 rounded-full mx-auto mb-6 border-4 border-black flex items-center justify-center shadow-lg animate-bounce text-center">
+                <i data-lucide="crown" class="w-10 h-10 text-white fill-white text-center mx-auto"></i>
+            </div>
             <h2 class="font-pixel text-yellow-300 text-2xl mb-4 text-glow text-center uppercase leading-tight text-center">ENORME GRACIAS</h2>
             <p class="font-pixel text-[10px] mb-8 text-blue-100 uppercase tracking-widest text-center text-center">Fuiste nuestro mejor jugador</p>
-            <div class="mb-8 text-center"><h4 class="font-pixel text-[9px] text-yellow-400 mb-4 uppercase text-center tracking-tighter text-center">Ranking Final Misión:</h4><div id="ranking-final-container" class="space-y-2 text-left"></div></div>
+            
+            <div class="mb-8 text-center" id="ranking-section-container">
+                <h4 id="ranking-title" class="font-pixel text-[9px] text-yellow-400 mb-4 uppercase text-center tracking-tighter text-center">Ranking Final Misión:</h4>
+                <div id="ranking-final-container" class="space-y-2 text-left"></div>
+                
+                <!-- NUEVO MENSAJE DE ESPERA GLOBAL -->
+                <div id="waiting-judges-message" class="hidden bg-blue-900/60 p-5 border-2 border-blue-400 border-dashed rounded-lg text-center mt-4 shadow-inner">
+                    <i data-lucide="hourglass" class="w-10 h-10 mx-auto text-blue-300 mb-3 animate-spin"></i>
+                    <p class="text-[10px] text-blue-100 font-bold uppercase leading-relaxed">
+                        A continuación se presentará la tabla final de resultados una vez que <span class="text-yellow-300">TODOS LOS JUECES</span> emitan su voto final.
+                    </p>
+                    <p class="text-[8px] text-blue-300 mt-2 animate-pulse">Sincronizando con la base de datos en tiempo real...</p>
+                </div>
+            </div>
+
             <div class="bg-white/10 p-4 border-2 border-white/20 rounded-lg mb-8 text-center text-center"><p class="font-bold text-xs uppercase leading-relaxed text-center">El CETyG agradece profundamente tu apoyo.</p></div>
             <button onclick="window.ejecutarCerrarSesion()" class="btn-pixel bg-red-600 text-white font-pixel text-[10px] py-3 w-full uppercase text-center text-center">CERRAR SESIÓN</button>
         </div>
@@ -436,6 +453,25 @@
         }
     };
 
+    // Función global para saber si todos los jueces de una misión han terminado
+    window.todasLasJuezasTerminaronMision = function() {
+        if (!window.sesionActual) return false;
+        const mId = window.sesionActual.mision;
+        
+        // Total de jueces asignados a la misión actual
+        const totalJueces = Object.values(accesosJueces).filter(j => j.mision === mId).length;
+        const totalEquipos = window.obtenerTotalEquiposMenu();
+
+        if (mId === "m6") {
+            const votosGlobalesM6 = window.baseDeDatosVotos.filter(v => v.mision === mId);
+            // 24 votos (fases base) + 3 votos (lipsync_final) = 27 votos requeridos por cada juez
+            return votosGlobalesM6.length >= (27 * totalJueces);
+        } else {
+            const votosGlobales = window.baseDeDatosVotos.filter(v => v.mision === mId);
+            return votosGlobales.length >= (totalEquipos * totalJueces);
+        }
+    };
+
     async function initFirebase() {
         if (isCanvasEnv && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
         else await signInAnonymously(auth);
@@ -450,7 +486,11 @@
                         window.actualizarProgreso(); 
                         window.actualizarEquiposDisponibles();
                         if (!document.getElementById('resultados-modal').classList.contains('hidden')) window.mostrarResultados();
-                        if (window.sesionActual.mision !== "todas" && window.validarMisionCompletada()) window.mostrarAgradecimientoFinal();
+                        
+                        // Si el juez actual terminó la misión
+                        if (window.sesionActual.mision !== "todas" && window.validarMisionCompletada()) {
+                            window.mostrarAgradecimientoFinal();
+                        }
                     }
                 });
             }
@@ -485,23 +525,45 @@
 
     window.mostrarAgradecimientoFinal = function() {
         const container = document.getElementById('ranking-final-container');
+        const waitingMsg = document.getElementById('waiting-judges-message');
+        const rankingTitle = document.getElementById('ranking-title');
+        
         if(!container) return;
+        
         const mId = window.sesionActual.mision;
-        const totalPorEquipo = {};
-        window.baseDeDatosVotos.filter(v => v.mision === mId).forEach(v => {
-            totalPorEquipo[v.equipo] = (totalPorEquipo[v.equipo] || 0) + v.puntos;
-        });
-        const ranking = Object.keys(totalPorEquipo).map(eq => ({ n: eq, p: totalPorEquipo[eq] })).sort((a,b) => b.p - a.p);
-        container.innerHTML = '';
-        ranking.forEach((eq, i) => {
-            const med = i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : '•'));
-            container.innerHTML += `<div class="final-ranking-item flex justify-between items-center p-3 rounded-lg mb-1 text-white uppercase font-bold text-[10px]"><span>${med} ${eq.n}</span><span class="font-pixel text-yellow-300 text-[8px]">${eq.p} PTS</span></div>`;
-        });
+        const todasTerminaron = window.todasLasJuezasTerminaronMision();
+
+        if (todasTerminaron) {
+            // Ocultamos el mensaje de espera y revelamos el podio
+            waitingMsg.classList.add('hidden');
+            container.classList.remove('hidden');
+            rankingTitle.classList.remove('hidden');
+
+            const totalPorEquipo = {};
+            window.baseDeDatosVotos.filter(v => v.mision === mId).forEach(v => {
+                totalPorEquipo[v.equipo] = (totalPorEquipo[v.equipo] || 0) + v.puntos;
+            });
+            const ranking = Object.keys(totalPorEquipo).map(eq => ({ n: eq, p: totalPorEquipo[eq] })).sort((a,b) => b.p - a.p);
+            
+            container.innerHTML = '';
+            ranking.forEach((eq, i) => {
+                const med = i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : '•'));
+                container.innerHTML += `<div class="final-ranking-item flex justify-between items-center p-3 rounded-lg mb-1 text-white uppercase font-bold text-[10px]"><span>${med} ${eq.n}</span><span class="font-pixel text-yellow-300 text-[8px]">${eq.p} PTS</span></div>`;
+            });
+
+            if(!window.victoryPlayed) { playSound('victory'); window.victoryPlayed = true; }
+        } else {
+            // Si el juez terminó pero faltan los demás, mostramos la sala de espera
+            waitingMsg.classList.remove('hidden');
+            container.classList.add('hidden');
+            rankingTitle.classList.add('hidden');
+        }
+
         document.getElementById('main-app').classList.add('hidden');
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('thank-you-screen').classList.remove('hidden');
-        if(!window.victoryPlayed) { playSound('victory'); window.victoryPlayed = true; }
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        lucide.createIcons();
     };
 
     window.iniciarSesionJuez = async function() {
