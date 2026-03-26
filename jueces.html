@@ -199,7 +199,7 @@
         <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/mario2.png" alt="Mario" class="h-24 mx-auto mb-6 floating text-center">
         <p class="font-pixel text-[10px] text-yellow-400 mb-4 uppercase text-center">Ingresa tu código único de juez</p>
         <input type="text" id="codigo-juez" class="w-full border-4 border-black bg-white p-4 mb-2 font-pixel text-center uppercase focus:outline-none focus:border-yellow-500" placeholder="CÓDIGO">
-        <p id="error-login" class="text-red-500 font-bold text-[10px] mb-4 hidden font-pixel uppercase text-center">Código no válido</p>
+        <p id="error-login" class="text-red-500 font-bold text-[10px] mb-4 hidden font-pixel uppercase text-center">Código no válido o en uso</p>
         <button type="button" onclick="window.iniciarSesionJuez()" class="btn-pixel w-full bg-green-500 text-white font-pixel py-4 px-4 text-xs mt-4 uppercase text-center tracking-widest">Start Mission</button>
     </div>
 
@@ -262,7 +262,7 @@
         </form>
 
         <div class="text-center pt-4">
-            <button type="button" onclick="window.abrirModalSalir()" class="text-red-500 font-bold text-[10px] uppercase hover:underline text-center">Cerrar Sesión</button>
+            <button type="button" onclick="window.abrirModalSalir()" class="text-red-500 font-bold text-[10px] uppercase hover:underline text-center">Cerrar Sesión / Cambiar Juez</button>
         </div>
     </div>
 
@@ -273,7 +273,7 @@
             <p class="font-pixel text-[10px] mb-8 text-blue-100 uppercase tracking-widest text-center text-center">Fuiste nuestro mejor jugador</p>
             <div class="mb-8 text-center"><h4 class="font-pixel text-[9px] text-yellow-400 mb-4 uppercase text-center tracking-tighter text-center">Ranking Final Misión:</h4><div id="ranking-final-container" class="space-y-2 text-left"></div></div>
             <div class="bg-white/10 p-4 border-2 border-white/20 rounded-lg mb-8 text-center text-center"><p class="font-bold text-xs uppercase leading-relaxed text-center">El CETyG agradece profundamente tu apoyo.</p></div>
-            <button onclick="window.ejecutarCerrarSesion()" class="btn-pixel bg-red-600 text-white font-pixel text-[10px] py-3 w-full uppercase text-center text-center">VOLVER AL INICIO</button>
+            <button onclick="window.ejecutarCerrarSesion()" class="btn-pixel bg-red-600 text-white font-pixel text-[10px] py-3 w-full uppercase text-center text-center">CERRAR SESIÓN</button>
         </div>
     </div>
 
@@ -289,7 +289,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, onSnapshot, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, onSnapshot, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // --- CONFIGURACIÓN ---
     const isCanvasEnv = typeof __firebase_config !== 'undefined';
@@ -307,36 +307,35 @@
     localStorage.setItem('uatyg_device_id', localDeviceId);
 
     // CAPA DE SEGURIDAD 2: LLAVES CIFRADAS EN BASE64
-    // Nadie podrá leer "ALEX90" aunque logren abrir el código.
     const accesosJueces = {
-        "QUxFWDkw": { nombre: "Brayan Alexis", avatar: "👟", mision: "m1", juezId: "J1" }, // ALEX90
-        "QUxFOTA=": { nombre: "Alejandra Alvarado", avatar: "💃", mision: "m1", juezId: "J2" }, // ALE90
-        "QUxPTlNPOTA=": { nombre: "Alonso Castro", avatar: "🕺", mision: "m1", juezId: "J3" }, // ALONSO90
-        "TUVSRTkw": { nombre: "Meredith Rubio", avatar: "🎶", mision: "m1", juezId: "J4" }, // MERE90
-        "Q0VMSU5BOTA=": { nombre: "Mtra Celina Agraz", avatar: "🎵", mision: "m1", juezId: "J5" }, // CELINA90
+        "QUxFWDkw": { nombre: "Brayan Alexis", avatar: "👟", mision: "m1", juezId: "J1" },
+        "QUxFOTA=": { nombre: "Alejandra Alvarado", avatar: "💃", mision: "m1", juezId: "J2" },
+        "QUxPTlNPOTA=": { nombre: "Alonso Castro", avatar: "🕺", mision: "m1", juezId: "J3" },
+        "TUVSRTkw": { nombre: "Meredith Rubio", avatar: "🎶", mision: "m1", juezId: "J4" },
+        "Q0VMSU5BOTA=": { nombre: "Mtra Celina Agraz", avatar: "🎵", mision: "m1", juezId: "J5" },
         
-        "TUFSQ08xMQ==": { nombre: "Marco Antonio Velázquez", avatar: "🏎️", mision: "m2", juezId: "J1" }, // MARCO11
-        "VEFOSUExMQ==": { nombre: "Tania Monserrat Rodriguez", avatar: "🏁", mision: "m2", juezId: "J2" }, // TANIA11
-        "QVJNSURBMTE=": { nombre: "Armida Teresa González", avatar: "🍄", mision: "m2", juezId: "J3" }, // ARMIDA11
+        "TUFSQ08xMQ==": { nombre: "Marco Antonio Velázquez", avatar: "🏎️", mision: "m2", juezId: "J1" },
+        "VEFOSUExMQ==": { nombre: "Tania Monserrat Rodriguez", avatar: "🏁", mision: "m2", juezId: "J2" },
+        "QVJNSURBMTE=": { nombre: "Armida Teresa González", avatar: "🍄", mision: "m2", juezId: "J3" },
 
-        "S09SVklOMTY=": { nombre: "Korvin Cobarrubias", avatar: "🎤", mision: "m5", juezId: "J1" }, // KORVIN16
-        "Q1VFVE8xNg==": { nombre: "Ricardo Cueto", avatar: "🎭", mision: "m5", juezId: "J2" }, // CUETO16
-        "WVVSSTE2": { nombre: "Mtra Yuri Berumen", avatar: "⭐", mision: "m5", juezId: "J3" }, // YURI16
+        "S09SVklOMTY=": { nombre: "Korvin Cobarrubias", avatar: "🎤", mision: "m5", juezId: "J1" },
+        "Q1VFVE8xNg==": { nombre: "Ricardo Cueto", avatar: "🎭", mision: "m5", juezId: "J2" },
+        "WVVSSTE2": { nombre: "Mtra Yuri Berumen", avatar: "⭐", mision: "m5", juezId: "J3" },
 
-        "TUFSVEhBMTI=": { nombre: "Chef Martha Acero", avatar: "👨‍🍳", mision: "m14", juezId: "J1" }, // MARTHA12
-        "TUFOVUVMMTI=": { nombre: "Chef Manuel López", avatar: "🍳", mision: "m14", juezId: "J2" }, // MANUEL12
-        "Uk9CRVJUTzEy": { nombre: "Roberto Gaytan Montoya", avatar: "🍱", mision: "m14", juezId: "J3" }, // ROBERTO12
-        "UkFNT1MxMg==": { nombre: "Dr Jeraar Atahualpa Ramos", avatar: "🍕", mision: "m14", juezId: "J4" }, // RAMOS12
+        "TUFSVEhBMTI=": { nombre: "Chef Martha Acero", avatar: "👨‍🍳", mision: "m14", juezId: "J1" },
+        "TUFOVUVMMTI=": { nombre: "Chef Manuel López", avatar: "🍳", mision: "m14", juezId: "J2" },
+        "Uk9CRVJUTzEy": { nombre: "Roberto Gaytan Montoya", avatar: "🍱", mision: "m14", juezId: "J3" },
+        "UkFNT1MxMg==": { nombre: "Dr Jeraar Atahualpa Ramos", avatar: "🍕", mision: "m14", juezId: "J4" },
         
-        "TUFSSU8xOA==": { nombre: "Mtro Mario Jauregui", avatar: "🚗", mision: "m19", juezId: "J1" }, // MARIO18
-        "REFMSUExOA==": { nombre: "Mtra Dalia Alcaraz", avatar: "🏎️", mision: "m19", juezId: "J2" }, // DALIA18
-        "QU5UT05JTzE4": { nombre: "Mtro Antonio Cabello Sandoval", avatar: "🏁", mision: "m19", juezId: "J3" }, // ANTONIO18
+        "TUFSSU8xOA==": { nombre: "Mtro Mario Jauregui", avatar: "🚗", mision: "m19", juezId: "J1" },
+        "REFMSUExOA==": { nombre: "Mtra Dalia Alcaraz", avatar: "🏎️", mision: "m19", juezId: "J2" },
+        "QU5UT05JTzE4": { nombre: "Mtro Antonio Cabello Sandoval", avatar: "🏁", mision: "m19", juezId: "J3" },
         
-        "U0lTU1kyMA==": { nombre: "Sissy Hera", avatar: "👑", mision: "m6", juezId: "J1" }, // SISSY20
-        "QVRIRU5BMjA=": { nombre: "Athena Steele", avatar: "💅", mision: "m6", juezId: "J2" }, // ATHENA20
-        "Uk9TQTIw": { nombre: "Rosa Perré", avatar: "✨", mision: "m6", juezId: "J3" }, // ROSA20
+        "U0lTU1kyMA==": { nombre: "Sissy Hera", avatar: "👑", mision: "m6", juezId: "J1" },
+        "QVRIRU5BMjA=": { nombre: "Athena Steele", avatar: "💅", mision: "m6", juezId: "J2" },
+        "Uk9TQTIw": { nombre: "Rosa Perré", avatar: "✨", mision: "m6", juezId: "J3" },
         
-        "VEVTVElHTzI2": { nombre: "Comité (Observador)", avatar: "🕶️", mision: "todas", juezId: "OBS" } // TESTIGO26
+        "VEVTVElHTzI2": { nombre: "Comité (Observador)", avatar: "🕶️", mision: "todas", juezId: "OBS" }
     };
 
     const configuracionMisiones = {
@@ -507,18 +506,21 @@
 
     window.iniciarSesionJuez = async function() {
         const rawCode = document.getElementById('codigo-juez').value;
-        // Transformamos lo que el usuario escribe a BASE64 para compararlo con nuestras llaves seguras
         const code = btoa(rawCode.toUpperCase()); 
         
-        // Comparamos contra RESET2026 en su formato Base64 ("UkVTRVQyMDI2")
         if (code === "UkVTRVQyMDI2") { document.getElementById('modal-master-reset').classList.remove('hidden'); return; }
         
         if (accesosJueces[code]) {
             const docRef = isCanvasEnv ? doc(db, 'artifacts', currentAppId, 'public', 'data', 'sesiones_jueces', code) : doc(db, 'sesiones_jueces', code);
             const snap = await getDoc(docRef);
-            // Comparamos contra TESTIGO26 en su formato Base64 ("VEVTVElHTzI2")
-            if (snap.exists() && snap.data().activa && snap.data().deviceId !== localDeviceId && code !== "VEVTVElHTzI2") { alert("🚨 Código en uso."); return; }
-            await setDoc(docRef, { activa: true, deviceId: localDeviceId });
+            
+            // Verificamos si alguien más lo está usando (que no seamos nosotros mismos)
+            if (snap.exists() && snap.data().activa === true && snap.data().deviceId !== localDeviceId && code !== "VEVTVElHTzI2") { 
+                document.getElementById('error-login').classList.remove('hidden');
+                return; 
+            }
+            
+            await setDoc(docRef, { activa: true, deviceId: localDeviceId }, { merge: true });
             
             window.sesionActual = { ...accesosJueces[code], code: code };
             localStorage.setItem('uatyg_juez_sesion', JSON.stringify(window.sesionActual));
@@ -526,6 +528,7 @@
             
             playSound('powerup');
             document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('error-login').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
             document.getElementById('display-nombre-juez').innerText = window.sesionActual.nombre;
             document.getElementById('display-avatar-juez').innerText = window.sesionActual.avatar;
@@ -553,7 +556,28 @@
     };
 
     window.abrirModalSalir = () => { document.getElementById('modal-confirm-exit').classList.remove('hidden'); };
-    window.ejecutarCerrarSesion = async function() { document.getElementById('modal-confirm-exit').classList.add('hidden'); if (window.sesionActual && window.sesionActual.code) { try { const docRef = isCanvasEnv ? doc(db, 'artifacts', currentAppId, 'public', 'data', 'sesiones_jueces', window.sesionActual.code) : doc(db, 'sesiones_jueces', window.sesionActual.code); await setDoc(docRef, { activa: false, deviceId: null }); } catch (e) {} } localStorage.removeItem('uatyg_juez_sesion'); location.reload(); };
+
+    // --- CORRECCIÓN: LIBERAR EL DISPOSITIVO EN LA NUBE ---
+    window.ejecutarCerrarSesion = async function() { 
+        document.getElementById('modal-confirm-exit').classList.add('hidden'); 
+        
+        if (window.sesionActual && window.sesionActual.code) { 
+            try { 
+                const docRef = isCanvasEnv ? doc(db, 'artifacts', currentAppId, 'public', 'data', 'sesiones_jueces', window.sesionActual.code) : doc(db, 'sesiones_jueces', window.sesionActual.code); 
+                // Actualizamos Firebase para indicar que este código ya no está activo
+                // y borramos el deviceId asociado para que otra tablet lo pueda usar.
+                await updateDoc(docRef, { activa: false, deviceId: null }); 
+            } catch (e) {
+                console.error("No se pudo liberar la sesión en Firebase", e);
+            } 
+        } 
+        
+        // Limpiamos la memoria local
+        localStorage.removeItem('uatyg_juez_sesion'); 
+        
+        // Recargamos la página para volver a la pantalla de inicio
+        location.reload(); 
+    };
     
     window.cambiarFaseDrag = function() { 
         if (window.sesionActual.mision === "m6") window.actualizarFasesDisponibles();
@@ -568,7 +592,7 @@
         if(!mision) return; 
         const fase = window.sesionActual.mision === "m6" ? document.getElementById('categoria-select').value : null; 
         
-        if (fase === "esperando") return; // Si está bloqueado esperando juezas, no pintar la rúbrica
+        if (fase === "esperando") return; 
 
         cont.innerHTML = ''; 
         const criterios = fase ? mision.fases[fase] : mision.criterios; 
@@ -624,7 +648,6 @@
             await addDoc(coleccionVotos, { mision: window.sesionActual.mision, fase: fase, juez: window.sesionActual.juezId, juezNombre: window.sesionActual.nombre, equipo: equipo, puntos: total, notas: document.getElementById('observaciones').value, timestamp: new Date().toISOString() }); 
             playSound('powerup'); 
             
-            // Mostrar la medalla de éxito antes de seguir
             document.getElementById('success-modal').classList.remove('hidden');
         } catch (e) { alert("Error"); } 
     };
@@ -632,7 +655,16 @@
     window.cerrarModalExito = function() { 
         document.getElementById('success-modal').classList.add('hidden'); 
         
+        let faseGuardada = null;
+        if (window.sesionActual && window.sesionActual.mision === "m6") {
+            faseGuardada = document.getElementById('categoria-select').value;
+        }
+        
         document.getElementById('evaluacion-form').reset(); 
+        
+        if (faseGuardada) {
+            document.getElementById('categoria-select').value = faseGuardada;
+        }
         
         if (window.sesionActual && window.sesionActual.mision === "m6") {
             window.actualizarFasesDisponibles(); 
