@@ -382,6 +382,61 @@
 
     // --- LÓGICA CORE ---
 
+    window.actualizarFasesDisponibles = function() {
+        if (!window.sesionActual || window.sesionActual.mision !== "m6") return;
+
+        const selectFase = document.getElementById('categoria-select');
+        const valorActual = selectFase.value;
+        const totalEquipos = window.obtenerTotalEquiposMenu();
+
+        // 1. Obtener los votos del JUEZ ACTUAL
+        const misVotos = window.baseDeDatosVotos.filter(v => v.mision === "m6" && v.juez === window.sesionActual.juezId);
+        const completadas = {
+            pasarela: misVotos.filter(v => v.fase === "pasarela").length >= totalEquipos,
+            show: misVotos.filter(v => v.fase === "show").length >= totalEquipos,
+            lipsync: misVotos.filter(v => v.fase === "lipsync").length >= totalEquipos
+        };
+
+        // 2. Comprobar si TODAS las juezas ya calificaron las 3 fases
+        const votosGlobalesM6 = window.baseDeDatosVotos.filter(v => v.mision === "m6" && ['pasarela', 'show', 'lipsync'].includes(v.fase));
+        const todasLasJuezasTerminaron = votosGlobalesM6.length >= (totalEquipos * 3 * 3); // 8 equipos * 3 juezas * 3 fases = 72
+
+        selectFase.innerHTML = ''; 
+
+        // 3. Ocultar dinámicamente las fases ya calificadas por este juez
+        if (!completadas.pasarela) selectFase.innerHTML += '<option value="pasarela">1. Pasarela</option>';
+        if (!completadas.show) selectFase.innerHTML += '<option value="show">2. Show / Performance</option>';
+        if (!completadas.lipsync) selectFase.innerHTML += '<option value="lipsync">3. Lipsync General</option>';
+
+        // 4. Lógica de Lipsync Final (Top 3)
+        if (todasLasJuezasTerminaron) {
+            selectFase.innerHTML += '<option value="lipsync_final">4. Gran Final Top 3</option>';
+        } else if (completadas.pasarela && completadas.show && completadas.lipsync) {
+            selectFase.innerHTML += '<option value="esperando">-- Esperando a las demás Juezas --</option>';
+        }
+
+        // Mantener la fase que estaba seleccionada o elegir la primera disponible
+        let opcionEncontrada = Array.from(selectFase.options).find(opt => opt.value === valorActual);
+        if (opcionEncontrada) {
+            selectFase.value = valorActual;
+        } else if (selectFase.options.length > 0) {
+            selectFase.selectedIndex = 0;
+        }
+
+        // Bloqueo de UI si estamos esperando
+        const esperando = selectFase.value === "esperando";
+        document.getElementById('equipo-select').disabled = esperando;
+        if (esperando) {
+            document.getElementById('criterios-dinamicos').innerHTML = '<div class="bg-red-50 p-4 border-2 border-red-400 rounded-lg shadow-sm text-center"><i data-lucide="clock" class="w-8 h-8 mx-auto text-red-500 mb-2 animate-pulse"></i><p class="text-xs text-red-600 font-bold uppercase">Sincronizando...<br>Faltan juezas por terminar de calificar las primeras 3 fases.</p></div>';
+            document.querySelector('button[onclick="window.enviarCalificacion()"]').classList.add('hidden');
+            document.getElementById('observaciones').disabled = true;
+            lucide.createIcons();
+        } else {
+            document.querySelector('button[onclick="window.enviarCalificacion()"]').classList.remove('hidden');
+            document.getElementById('observaciones').disabled = false;
+        }
+    };
+
     async function initFirebase() {
         if (isCanvasEnv && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
         else await signInAnonymously(auth);
@@ -391,7 +446,10 @@
                     window.baseDeDatosVotos = [];
                     snapshot.forEach(doc => window.baseDeDatosVotos.push({ id: doc.id, ...doc.data() }));
                     if (window.sesionActual) {
-                        window.actualizarProgreso(); window.actualizarEquiposDisponibles();
+                        if (window.sesionActual.mision === "m6") window.actualizarFasesDisponibles();
+                        window.cargarCriterios();
+                        window.actualizarProgreso(); 
+                        window.actualizarEquiposDisponibles();
                         if (!document.getElementById('resultados-modal').classList.contains('hidden')) window.mostrarResultados();
                         if (window.sesionActual.mision !== "todas" && window.validarMisionCompletada()) window.mostrarAgradecimientoFinal();
                     }
@@ -421,7 +479,7 @@
     window.validarMisionCompletada = function() {
         if (!window.sesionActual || window.sesionActual.mision === "todas") return false;
         const misVotos = window.baseDeDatosVotos.filter(v => v.mision === window.sesionActual.mision && v.juez === window.sesionActual.juezId);
-        if (window.sesionActual.mision === "m6") return misVotos.length >= 24;
+        if (window.sesionActual.mision === "m6") return misVotos.length >= 27;
         const equiposCalificados = [...new Set(misVotos.map(v => v.equipo))];
         return equiposCalificados.length >= window.obtenerTotalEquiposMenu();
     };
@@ -485,7 +543,10 @@
                 document.getElementById('vista-testigo').classList.add('hidden');
                 document.getElementById('evaluacion-form').classList.remove('hidden');
                 document.getElementById('barra-progreso-cont').classList.remove('hidden');
-                if(window.sesionActual.mision === "m6") document.getElementById('contenedor-fase-drag').classList.remove('hidden');
+                if(window.sesionActual.mision === "m6") {
+                    document.getElementById('contenedor-fase-drag').classList.remove('hidden');
+                    window.actualizarFasesDisponibles();
+                }
                 window.cargarCriterios(); window.actualizarProgreso(); window.actualizarEquiposDisponibles();
             }
         } else { document.getElementById('error-login').classList.remove('hidden'); }
@@ -493,14 +554,23 @@
 
     window.abrirModalSalir = () => { document.getElementById('modal-confirm-exit').classList.remove('hidden'); };
     window.ejecutarCerrarSesion = async function() { document.getElementById('modal-confirm-exit').classList.add('hidden'); if (window.sesionActual && window.sesionActual.code) { try { const docRef = isCanvasEnv ? doc(db, 'artifacts', currentAppId, 'public', 'data', 'sesiones_jueces', window.sesionActual.code) : doc(db, 'sesiones_jueces', window.sesionActual.code); await setDoc(docRef, { activa: false, deviceId: null }); } catch (e) {} } localStorage.removeItem('uatyg_juez_sesion'); location.reload(); };
-    window.cambiarFaseDrag = function() { window.cargarCriterios(); window.actualizarEquiposDisponibles(); window.actualizarProgreso(); };
+    
+    window.cambiarFaseDrag = function() { 
+        if (window.sesionActual.mision === "m6") window.actualizarFasesDisponibles();
+        window.cargarCriterios(); 
+        window.actualizarEquiposDisponibles(); 
+        window.actualizarProgreso(); 
+    };
     
     window.cargarCriterios = function() { 
         const cont = document.getElementById('criterios-dinamicos'); 
-        cont.innerHTML = ''; 
         const mision = configuracionMisiones[window.sesionActual.mision]; 
         if(!mision) return; 
         const fase = window.sesionActual.mision === "m6" ? document.getElementById('categoria-select').value : null; 
+        
+        if (fase === "esperando") return; // Si está bloqueado esperando juezas, no pintar la rúbrica
+
+        cont.innerHTML = ''; 
         const criterios = fase ? mision.fases[fase] : mision.criterios; 
         criterios.forEach(crit => { 
             let rs = ''; const range = crit.customRange || [1,2,3,4,5,6,7,8,9,10]; 
@@ -534,7 +604,7 @@
 
     window.actualizarProgreso = function() { 
         if (!window.sesionActual || window.sesionActual.mision === "todas") return; 
-        const total = window.sesionActual.mision === "m6" ? 24 : window.obtenerTotalEquiposMenu(); 
+        const total = window.sesionActual.mision === "m6" ? 27 : window.obtenerTotalEquiposMenu(); 
         const misVotos = window.baseDeDatosVotos.filter(v => v.mision === window.sesionActual.mision && v.juez === window.sesionActual.juezId); 
         const calificados = window.sesionActual.mision === "m6" ? misVotos.length : [...new Set(misVotos.map(v => v.equipo))].length; 
         const porc = total > 0 ? Math.min((calificados / total) * 100, 100) : 0; 
@@ -553,11 +623,30 @@
         try { 
             await addDoc(coleccionVotos, { mision: window.sesionActual.mision, fase: fase, juez: window.sesionActual.juezId, juezNombre: window.sesionActual.nombre, equipo: equipo, puntos: total, notas: document.getElementById('observaciones').value, timestamp: new Date().toISOString() }); 
             playSound('powerup'); 
-            if(window.validarMisionCompletada()) window.mostrarAgradecimientoFinal(); else window.cerrarModalExito(); 
+            
+            // Mostrar la medalla de éxito antes de seguir
+            document.getElementById('success-modal').classList.remove('hidden');
         } catch (e) { alert("Error"); } 
     };
 
-    window.cerrarModalExito = function() { document.getElementById('success-modal').classList.add('hidden'); document.getElementById('evaluacion-form').reset(); window.actualizarEquiposDisponibles(); window.actualizarProgreso(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+    window.cerrarModalExito = function() { 
+        document.getElementById('success-modal').classList.add('hidden'); 
+        
+        document.getElementById('evaluacion-form').reset(); 
+        
+        if (window.sesionActual && window.sesionActual.mision === "m6") {
+            window.actualizarFasesDisponibles(); 
+        }
+        
+        window.cargarCriterios();
+        window.actualizarEquiposDisponibles(); 
+        window.actualizarProgreso(); 
+        window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        
+        if(window.validarMisionCompletada()) {
+            window.mostrarAgradecimientoFinal();
+        }
+    };
     
     window.mostrarResultados = function() { 
         if (!window.sesionActual) return; 
@@ -583,8 +672,9 @@
             window.sesionActual = JSON.parse(guardada);
             onSnapshot(coleccionVotos, (sn) => {
                 window.baseDeDatosVotos = []; sn.forEach(d => window.baseDeDatosVotos.push({id:d.id, ...d.data()}));
-                if (window.sesionActual.mision !== "todas" && window.validarMisionCompletada()) window.mostrarAgradecimientoFinal();
-                else { 
+                if (window.sesionActual.mision !== "todas" && window.validarMisionCompletada()) {
+                    window.mostrarAgradecimientoFinal();
+                } else { 
                     document.getElementById('login-screen').classList.add('hidden'); 
                     document.getElementById('main-app').classList.remove('hidden'); 
                     document.getElementById('display-nombre-juez').innerText = window.sesionActual.nombre; 
@@ -599,7 +689,10 @@
                         document.getElementById('selector-ranking-mision').classList.remove('hidden');
                         s.innerHTML = ''; Object.entries(configuracionMisiones).forEach(([k,v]) => s.innerHTML += `<option value="${k}">${v.titulo}</option>`);
                     } else {
-                        if(window.sesionActual.mision === "m6") document.getElementById('contenedor-fase-drag').classList.remove('hidden');
+                        if(window.sesionActual.mision === "m6") {
+                            document.getElementById('contenedor-fase-drag').classList.remove('hidden');
+                            window.actualizarFasesDisponibles();
+                        }
                         window.cargarCriterios(); window.actualizarProgreso(); window.actualizarEquiposDisponibles(); 
                     }
                 }
