@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -87,15 +87,10 @@
 
     <!-- Navbar -->
     <nav class="bg-red-600 border-b-4 border-black p-4 sticky top-0 z-50 shadow-lg">
-        <div class="container mx-auto flex justify-between items-center">
+        <div class="container mx-auto flex justify-center items-center">
             <div class="flex items-center gap-2">
                 <div class="w-8 h-8 bg-white border-2 border-black rounded-full flex items-center justify-center font-bold">M</div>
                 <span class="text-white font-pixel text-xs md:text-sm">SC UATyG 2026</span>
-            </div>
-            <div class="flex items-center gap-4">
-                <a href="cronograma.html" class="text-white font-pixel text-[10px] md:text-xs hover:text-yellow-300 transition-colors hidden md:inline-block">PROGRAMA</a>
-                <a href="score.html" class="text-white font-pixel text-[10px] md:text-xs hover:text-yellow-300 transition-colors hidden md:inline-block uppercase">PUNTOS</a>
-                <a href="actividades.html" class="text-white font-pixel text-[10px] md:text-xs blink cursor-pointer hover:text-yellow-300 transition-colors">ACTIVIDADES</a>
             </div>
         </div>
     </nav>
@@ -135,16 +130,10 @@ onerror="this.onerror=null; this.src='https://placehold.co/100x100?text=CETyG';"
 
             <p class="mb-6 max-w-2xl mx-auto relative z-10">El Reino Champiñón ha llegado. ¿Estás listo para el nivel más difícil, divertido y épico? Olvídate de las aulas por tres días: ¡Es hora de jugar!</p>
             
-            <!-- BOTONES DE NAVEGACIÓN PRINCIPAL IGUALADOS -->
-            <div class="flex flex-col md:flex-row justify-center items-stretch gap-4 relative z-10 max-w-5xl mx-auto">
-                <a href="#registro" class="nes-btn bg-red-500 text-white font-pixel py-4 px-2 hover:bg-red-600 no-underline text-[9px] md:text-[11px] w-full md:flex-1">
-                    INSERT COIN (Registro)
-                </a>
-                <a href="cronograma.html" class="nes-btn bg-blue-500 text-white font-pixel py-4 px-2 gap-2 hover:bg-blue-600 no-underline text-[9px] md:text-[11px] w-full md:flex-1">
-                    <i data-lucide="map" class="w-4 h-4"></i> WORLD MAP (Programa)
-                </a>
-                <a href="score.html" class="nes-btn bg-green-600 text-white font-pixel py-4 px-2 gap-2 hover:bg-green-700 no-underline text-[9px] md:text-[11px] w-full md:flex-1">
-                    <i data-lucide="award" class="w-4 h-4"></i> TABLA DE PUNTOS
+            <!-- BOTONES DE NAVEGACIÓN PRINCIPAL -->
+            <div class="flex justify-center items-stretch relative z-10 max-w-sm mx-auto">
+                <a href="actividades.html" class="nes-btn bg-red-500 text-white font-pixel py-4 px-2 gap-2 hover:bg-red-600 no-underline text-[9px] md:text-[11px] w-full">
+                    <i data-lucide="gamepad-2" class="w-5 h-5"></i> ACTIVIDADES
                 </a>
             </div>
         </div>
@@ -152,46 +141,12 @@ onerror="this.onerror=null; this.src='https://placehold.co/100x100?text=CETyG';"
 
     <main class="container mx-auto mt-12 px-4 grid grid-cols-1 md:grid-cols-2 gap-8">
         
-        <!-- Squad Section -->
-        <section class="nes-container">
-            <h3 class="font-pixel text-blue-600 text-sm mb-4 flex items-center gap-2">
-                <i data-lucide="users" class="w-5 h-5"></i> 1. CHOOSE YOUR SQUAD
-            </h3>
-            <ul class="space-y-3">
-                <li class="flex items-start gap-3">
-                    <div class="bg-green-100 p-2 rounded border-2 border-green-500 min-w-[40px] text-center font-bold">15 A 25</div>
-                    <p class="text-sm">Jugadores por equipo (Mínimo 15, Máximo 25).</p>
-                </li>
-                <li class="flex items-start gap-3">
-                    <div class="bg-blue-100 p-2 rounded border-2 border-blue-500 min-w-[40px] text-center"><i data-lucide="shuffle" class="w-4 h-4 mx-auto"></i></div>
-                    <p class="text-sm"><strong>Mix & Match:</strong> Se vale mezclar Gestión y Gastronomía.</p>
-                </li>
-                <li class="flex items-start gap-3">
-                    <div class="bg-yellow-100 p-2 rounded border-2 border-yellow-500 min-w-[40px] text-center"><i data-lucide="crown" class="w-4 h-4 mx-auto"></i></div>
-                    <p class="text-sm">Nombren a un <strong>Capitán(a)</strong> y <strong>Subcapitán(a)</strong>.</p>
-                </li>
-            </ul>
-        </section>
-
-        <!-- Power Ups Section -->
-        <section class="nes-container bg-red-50">
-            <h3 class="font-pixel text-red-600 text-sm mb-4 flex items-center gap-2">
-                <i data-lucide="zap" class="w-5 h-5"></i> 2. POWER-UPS (MENTORES)
-            </h3>
-            <div class="flex flex-col items-center text-center">
-                <div class="flex gap-4 mb-4">
-                    <div class="w-16 h-16 bg-white border-4 border-black rounded-full flex items-center justify-center text-3xl">🍄</div>
-                    <div class="w-16 h-16 bg-white border-4 border-black rounded-full flex items-center justify-center text-3xl">⭐</div>
-                </div>
-                <p class="font-bold text-lg mb-2">¡OBLIGATORIO!</p>
-                <p class="text-sm">Debes invitar a <strong>2 DOCENTES</strong> (Mentor y Mentora). ¡Tienen pase libre para competir y sumar puntos!</p>
-            </div>
-        </section>
-
         <!-- Character Select -->
         <section class="col-span-1 md:col-span-2 nes-container bg-gray-900 text-white">
-            <h3 class="font-pixel text-center text-yellow-400 text-sm mb-6">3. SELECT YOUR CHARACTER</h3>
-            <p class="text-center text-xs mb-6 text-gray-400">¡El primero que paga se queda el personaje!</p>
+            <h3 class="font-pixel text-center text-yellow-400 text-sm mb-6 flex items-center justify-center gap-2">
+                <i data-lucide="swords" class="w-5 h-5 text-yellow-400"></i> EQUIPOS REGISTRADOS
+            </h3>
+            <p class="text-center text-xs mb-6 text-gray-400">Estos son los equipos confirmados que competirán por la gloria.</p>
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4" id="character-grid"></div>
         </section>
 
@@ -225,7 +180,7 @@ onerror="this.onerror=null; this.src='https://placehold.co/100x100?text=CETyG';"
 
         <!-- Save Data (Registration) -->
         <section id="registro" class="col-span-1 md:col-span-2 nes-container bg-green-50 border-green-600">
-            <h3 class="font-pixel text-center text-green-700 text-sm mb-8">5. SAVE DATA (REGISTRO)</h3>
+            <h3 class="font-pixel text-center text-green-700 text-sm mb-8">SAVE DATA (REGISTRO)</h3>
             <div class="grid md:grid-cols-3 gap-6 text-center">
                 <div class="bg-white p-4 rounded border-2 border-green-200 shadow-sm hover:shadow-md transition">
                     <div class="w-10 h-10 bg-green-600 text-white font-bold rounded-full flex items-center justify-center mx-auto mb-3">1</div>
@@ -237,9 +192,8 @@ onerror="this.onerror=null; this.src='https://placehold.co/100x100?text=CETyG';"
                 <div class="bg-white p-4 rounded border-2 border-green-200 shadow-sm hover:shadow-md transition">
                     <div class="w-10 h-10 bg-green-600 text-white font-bold rounded-full flex items-center justify-center mx-auto mb-3">2</div>
                     <h4 class="font-bold mb-2">Realiza el Pago</h4>
-                    <p class="text-xs text-gray-600 mb-2"><strong> Por la Mañana (Aula UATyG 7 Y 9):</strong> Comité</p>
-                    <p class="text-xs text-gray-600 mb-2"><strong> Por la Tarde (Aula UATyG 4):</strong> Comité</p>
-                    <p class="text-xs text-gray-600"><strong>Dirección:</strong> Con Tania</p>
+                    <p class="text-xs text-gray-600 mb-2"><strong>Lugar:</strong> Dirección UATyG</p>
+                    <p class="text-sm text-red-600 font-bold mb-2">Con Tania</p>
                 </div>
 
                 <div class="bg-white p-4 rounded border-2 border-green-200 shadow-sm hover:shadow-md transition">
@@ -258,7 +212,7 @@ onerror="this.onerror=null; this.src='https://placehold.co/100x100?text=CETyG';"
         <!-- Rules -->
         <section class="col-span-1 md:col-span-2">
             <div class="bg-black text-white p-6 rounded border-4 border-gray-700">
-                <h3 class="font-pixel text-red-500 text-sm mb-4">🚫 6. FAIR PLAY (REGLAMENTO)</h3>
+                <h3 class="font-pixel text-red-500 text-sm mb-4">🚫 FAIR PLAY (REGLAMENTO)</h3>
                 <div class="grid md:grid-cols-3 gap-4 text-sm">
                     <div class="p-3 border border-gray-700 rounded">
                         <strong class="text-yellow-400 block mb-1">👕 Uniforme</strong>
@@ -279,10 +233,9 @@ onerror="this.onerror=null; this.src='https://placehold.co/100x100?text=CETyG';"
     </main>
 
     <footer class="mt-12 bg-gray-900 text-white p-8 border-t-4 border-black text-center">
-        <h4 class="font-pixel text-yellow-400 mb-6">FECHAS CLAVE PARA EL REGISTRO DE EQUIPOS</h4>
+        <h4 class="font-pixel text-yellow-400 mb-6">FECHAS CLAVE</h4>
         <div class="flex flex-wrap justify-center gap-4 text-sm mb-8">
-            <div class="bg-gray-800 px-4 py-2 rounded border border-gray-600"><span class="block text-gray-400 text-xs">INICIO</span> 9 de Marzo</div>
-            <div class="bg-red-900 px-4 py-2 rounded border border-red-600"><span class="block text-red-300 text-xs">DEADLINE</span> 15 de Abril</div>
+            <div class="bg-red-900 px-4 py-2 rounded border border-red-600"><span class="block text-red-300 text-xs">CIERRE DE CONVOCATORIA</span> 15 de Abril</div>
             <div class="bg-blue-900 px-4 py-2 rounded border border-blue-600"><span class="block text-blue-300 text-xs">REUNIÓN DE CAPITANES</span> 16 de Abril</div>
         </div>
         <p class="font-pixel text-xs text-gray-500">Atentamente: Comité Estudiantil (CETyG)</p>
@@ -434,46 +387,32 @@ onerror="this.onerror=null; this.src='https://placehold.co/100x100?text=CETyG';"
             observer.observe(hereWeGoText);
         }
 
-        // --- 3. PERSONAJES ---
-        // AÑADIDO: status: "registrado" a Peach
+        // --- 3. EQUIPOS REGISTRADOS ---
         const characters = [
-            { name: "Mario", color: "bg-red-600", border: "border-red-800", status: "registrado" },
-            { name: "Luigi", color: "bg-green-600", border: "border-green-800" },
-            { name: "Peach", color: "bg-pink-400", border: "border-pink-600", status: "registrado" },
-            { name: "Daisy", color: "bg-orange-400", border: "border-orange-600" },
-            { name: "Yoshi", color: "bg-lime-400", border: "border-lime-600", text: "text-black" },
-            { name: "Toad", color: "bg-gray-100", border: "border-gray-400", text: "text-black", status: "registrado" },
-            { name: "Wario", color: "bg-yellow-400", border: "border-yellow-600", text: "text-black" },
-            { name: "Waluigi", color: "bg-purple-600", border: "border-purple-800", status: "registrado" },
-            { name: "Bowser", color: "bg-red-900", border: "border-red-950", status: "registrado" },
-            { name: "DK", color: "bg-amber-800", border: "border-amber-950" },
-            { name: "Rosalina", color: "bg-teal-300", border: "border-teal-500", text: "text-black",status:"registrado" },
-            { name: "Koopa", color: "bg-gray-800", border: "border-black",status: "registrado" },
-            { name: "Birdo", color: "bg-pink-600", border: "border-pink-800" },
-            { name: "Boo", color: "bg-blue-100", border: "border-blue-300", text: "text-black", status:"registrado" },
-            { name: "Shy Guy", color: "bg-blue-900", border: "border-blue-950", status:"registrado" },
-            { name: "Huesitos", color: "bg-gray-400", border: "border-gray-600", text: "text-black", status: "registrado" },
+            { name: "Mario", color: "bg-red-600", border: "border-red-800" },
+            { name: "Peach", color: "bg-pink-400", border: "border-pink-600" },
+            { name: "Toad", color: "bg-blue-700", border: "border-blue-900", label: "COMITÉ CETyG", subLabel: "Eq. Organizador" },
+            { name: "Waluigi", color: "bg-purple-600", border: "border-purple-800" },
+            { name: "Bowser", color: "bg-red-900", border: "border-red-950" },
+            { name: "Rosalina", color: "bg-teal-300", border: "border-teal-500", text: "text-black" },
+            { name: "Koopa", color: "bg-gray-800", border: "border-black" },
+            { name: "Boo", color: "bg-blue-100", border: "border-blue-300", text: "text-black" },
+            { name: "Huesitos", color: "bg-gray-400", border: "border-gray-600", text: "text-black" }
         ];
 
         const charGrid = document.getElementById('character-grid');
         characters.forEach(char => {
-            const isRegistered = char.status === "registrado";
             const div = document.createElement('div');
             
-            // MODIFICADO: Se añade lógica para clases CSS dependiendo de si está registrado o no
-            div.className = `${char.color} ${char.border} ${char.text || 'text-white'} border-b-4 p-3 rounded flex flex-col items-center justify-center min-h-[80px] relative overflow-hidden ${isRegistered ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:scale-105 transition-transform'}`;
+            div.className = `${char.color} ${char.border} ${char.text || 'text-white'} border-b-4 p-3 rounded flex flex-col items-center justify-center min-h-[80px] relative overflow-hidden shadow-md hover:scale-105 transition-transform cursor-pointer text-center`;
             
-            // MODIFICADO: Se añade el HTML del sello rojo "ELEGIDO" si está registrado
             div.innerHTML = `
-                ${isRegistered ? '<div class="absolute inset-0 bg-black/40 flex items-center justify-center z-10"><span class="bg-red-600 text-white font-pixel text-[8px] py-1 px-2 rotate-12 border-2 border-white shadow-lg">ELEGIDO</span></div>' : ''}
-                <span class="font-pixel text-[10px] mb-1">${isRegistered ? 'SOLD OUT' : 'SELECT'}</span>
-                <span class="font-bold uppercase tracking-wider text-sm">${char.name}</span>
+                <span class="font-pixel ${char.label ? 'text-[7px] text-yellow-300' : 'text-[8px] opacity-80'} mb-1">${char.label || 'TEAM'}</span>
+                <span class="font-bold uppercase tracking-wider text-sm relative z-0">${char.name}</span>
+                ${char.subLabel ? `<span class="text-[9px] font-bold mt-1 opacity-90 leading-tight uppercase">${char.subLabel}</span>` : ''}
             `;
 
-            // MODIFICADO: Solo añade sonido de hover si NO está registrado
-            if (!isRegistered) {
-                div.addEventListener('mouseenter', playBloopSound);
-            }
+            div.addEventListener('mouseenter', playBloopSound);
             
             charGrid.appendChild(div);
         });
