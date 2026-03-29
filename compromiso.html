@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartas Compromiso - UATyG 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Fredoka:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- ESTILOS DE INTERFAZ WEB --- */
+        body { 
+            font-family: 'Fredoka', sans-serif; 
+            background-color: #5c94fc; 
+            background-image: 
+                linear-gradient(transparent 95%, rgba(255, 255, 255, 0.2) 95%),
+                linear-gradient(90deg, transparent 95%, rgba(255, 255, 255, 0.2) 95%);
+            background-size: 20px 20px;
+        }
+        .font-pixel { font-family: 'Press Start 2P', cursive; }
+        
+        .nes-container { 
+            border: 4px solid black; 
+            padding: 1rem; 
+            border-radius: 4px; 
+            background: white;
+        }
+
+        /* --- ESTILO DE LA HOJA TAMAÑO CARTA --- */
+        .hoja-oficio {
+            width: 21.59cm;
+            height: 27.94cm;
+            background: white;
+            margin: 20px auto;
+            padding: 1.5cm 2cm;
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.5);
+            position: relative;
+            box-sizing: border-box;
+            border: 2px solid #ccc;
+        }
+
+        /* --- REGLAS MÁGICAS PARA IMPRESIÓN/PDF --- */
+        @media print {
+            @page {
+                size: letter;
+                margin: 0; 
+            }
+            body { 
+                background: white; 
+                margin: 0; 
+                padding: 0; 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+            }
+            .no-print { display: none !important; } 
+            
+            .hoja-oficio {
+                box-shadow: none;
+                border: none;
+                margin: 0;
+                width: 21.59cm;
+                height: 27.94cm;
+                padding: 1.5cm 2cm;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- ==========================================
+         PANEL DE CONTROL DEL COMITÉ (No se imprime)
+         ========================================== -->
+    <div class="no-print bg-gray-900 text-white p-6 rounded-lg border-4 border-black max-w-4xl mx-auto mb-8 shadow-[8px_8px_0px_#000]">
+        <div class="flex items-center justify-between border-b-4 border-gray-700 pb-4 mb-4">
+            <div>
+                <h2 class="font-pixel text-yellow-400 text-sm md:text-base">🖨️ GENERADOR DE CARTAS COMPROMISO</h2>
+                <p class="text-xs text-gray-400 mt-2">Herramienta exclusiva del Comité UATyG 2026</p>
+            </div>
+        </div>
+        
+        <p class="text-sm mb-4 font-medium text-blue-200">
+            1. Selecciona a un Equipo de la lista.<br>
+            2. Revisa que los nombres de los capitanes se llenen correctamente.<br>
+            3. Presiona "IMPRIMIR / PDF" para la firma física en la reunión de capitanes.
+        </p>
+        
+        <div class="flex flex-col md:flex-row gap-4 items-center">
+            <select id="selector-equipo" class="flex-1 w-full p-4 text-black font-bold text-sm md:text-base border-4 border-blue-500 rounded focus:outline-none cursor-pointer uppercase">
+                <option value="">-- SELECCIONA UN EQUIPO AQUÍ --</option>
+                <!-- Opciones cargadas por JS -->
+            </select>
+            
+            <button onclick="window.print()" class="w-full md:w-auto bg-red-600 hover:bg-red-700 border-4 border-black shadow-[4px_4px_0px_#000] text-white font-pixel py-4 px-6 text-[10px] md:text-xs transition-transform active:translate-y-1 active:translate-x-1 active:shadow-none cursor-pointer">
+                IMPRIMIR / PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         DOCUMENTO OFICIAL (Esto es lo que se exporta)
+         ========================================== -->
+    <div class="hoja-oficio text-gray-900 flex flex-col justify-between" id="documento-oficial">
+        
+        <!-- ENCABEZADO -->
+        <div>
+            <!-- Logos -->
+            <div class="flex justify-between items-center mb-4 pb-2 border-b-2 border-gray-300">
+                <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/logo%20uan%20azul%20transparente%20unidad.png" alt="UAN" class="h-14 object-contain">
+                <div class="text-center">
+                    <h1 class="font-pixel text-[10px] text-blue-900">SÚPER SEMANA CULTURAL</h1>
+                    <h2 class="font-pixel text-xs text-red-600 mt-1">UATyG 2026</h2>
+                </div>
+                <img src="https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/logo%20cetyg%20azul%20transparente.png" alt="CETyG" class="h-14 object-contain">
+            </div>
+
+            <!-- Lugar, Fecha y Asunto -->
+            <div class="text-right font-medium text-xs mb-4 text-gray-800">
+                <p>Tepic, Nayarit a 16 de abril de 2026</p>
+                <p class="mt-1"><strong>Asunto:</strong> Carta Compromiso y Adhesión a Reglamento</p>
+            </div>
+
+            <!-- Equipo -->
+            <div class="mb-4 text-center bg-gray-100 py-3 border-y-2 border-black">
+                <p class="font-bold text-gray-600 text-xs tracking-wide">EQUIPO REPRESENTADO</p>
+                <p class="font-pixel text-base text-black mt-2 uppercase" id="oficio-equipo">[TEAM NAME]</p>
+                <p class="font-bold text-red-600 uppercase text-xs mt-1" id="oficio-color">COLOR: [COLOR]</p>
+            </div>
+
+            <!-- Cuerpo del texto -->
+            <div class="text-justify text-[12px] leading-relaxed text-gray-800 space-y-2">
+                <p>Por medio de la presente, los suscritos, en nuestra calidad de Capitán y Subcapitán del equipo mencionado, y en representación de todos sus integrantes, declaramos y aceptamos lo siguiente:</p>
+                
+                <p><strong>PRIMERO.</strong> Aceptamos que hemos leído íntegramente las reglas de la convocatoria para la <em>Súper Semana Cultural UATyG 2026</em>. Entendemos cada uno de los detalles y acuerdos a los que se han llegado de manera previa, avalándolos al estampar nuestra firma en este documento.</p>
+                
+                <p><strong>SEGUNDO.</strong> Nos comprometemos, junto con todos los integrantes de nuestro equipo, a cumplir a cabalidad cada una de las reglas establecidas. De manera estricta y específica, nos comprometemos a que durante todas las actividades que se desarrollen dentro de las instalaciones de la Universidad Autónoma de Nayarit (UAN), <strong>nuestro equipo NO consumirá alcohol ni portará o consumirá sustancias nocivas para la salud</strong>.</p>
+                
+                <p><strong>TERCERO.</strong> Estamos de acuerdo y nos comprometemos a que nuestro equipo se conducirá en todo momento con <strong>absoluto respeto</strong> ante los demás equipos competidores, el panel de jueces, el staff y el comité organizador (CETyG).</p>
+
+                <p><strong>CUARTO.</strong> Comprendemos y aceptamos que la omisión o negativa a firmar este documento se entenderá como la no aceptación de las condiciones de participación. En consecuencia, el equipo no podrá participar en la Semana Cultural, <strong>perdiendo el derecho a cualquier reintegro o devolución del pago</strong> por concepto de inscripción.</p>
+
+                <div class="bg-red-50 border-l-4 border-red-600 p-3 my-3">
+                    <p class="text-[11px] font-bold text-red-800 uppercase mb-1">Consecuencias por faltas al reglamento:</p>
+                    <p class="text-[11px] text-red-900 leading-tight">
+                        Estamos plenamente sabedores y de acuerdo en que cualquier conducta que genere o incite a la <strong>violencia física o verbal</strong>, tendrá como consecuencia la <u>expulsión inmediata</u> del integrante que la haya realizado. 
+                        <br><br>
+                        Asimismo, entendemos que si la falta es de carácter grave o existen violaciones directas al consumo de sustancias, procederá la <strong>expulsión de todo el equipo</strong> de la Semana Cultural, evitando así que podamos continuar en la actividad general y <strong>perdiendo el derecho a obtener la acreditación del Rubro 3</strong>.
+                        <br><br>
+                        <strong class="text-black">Adicional a lo anterior, entendemos que faltar a cualquiera de las reglas establecidas puede ser motivo de sanción disciplinaria por parte de las autoridades de la Unidad Académica y/o de la propia Universidad, quedando dicho acto registrado en el expediente académico de quien o quienes cometan la falta.</strong>
+                    </p>
+                </div>
+
+                <p>Firmamos la presente carta compromiso de total conformidad, asumiendo la responsabilidad directa de la gestión, organización y comportamiento de nuestro equipo ante el Comité Estudiantil y la Dirección de la Unidad Académica.</p>
+            </div>
+        </div>
+
+        <!-- FIRMAS (Pie de página doble) -->
+        <div class="mt-6 mb-4">
+            <div class="grid grid-cols-2 gap-8 text-center">
+                <!-- Firma Capitan -->
+                <div>
+                    <div class="h-14"></div> <!-- Espacio para la firma física -->
+                    <div class="border-b-2 border-black w-full mx-auto mb-2"></div>
+                    <p class="font-black text-black text-[10px] uppercase h-6 flex items-center justify-center" id="firma-capitan-nombre">[NOMBRE CAPITÁN]</p>
+                    <p class="text-[9px] font-bold text-gray-600 mt-1 uppercase tracking-wide">Capitán del Equipo</p>
+                    <p class="text-[9px] text-gray-500 mt-1" id="firma-capitan-tel">Tel: [TEL]</p>
+                </div>
+                <!-- Firma Subcapitan -->
+                <div>
+                    <div class="h-14"></div> <!-- Espacio para la firma física -->
+                    <div class="border-b-2 border-black w-full mx-auto mb-2"></div>
+                    <p class="font-black text-black text-[10px] uppercase h-6 flex items-center justify-center" id="firma-subcapitan-nombre">[NOMBRE SUBCAPITÁN]</p>
+                    <p class="text-[9px] font-bold text-gray-600 mt-1 uppercase tracking-wide">Subcapitán del Equipo</p>
+                    <p class="text-[9px] text-gray-500 mt-1" id="firma-subcapitan-tel">Tel: [TEL]</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-2 border-t border-gray-300 pt-2">
+             <p class="text-[8px] font-bold text-gray-400 uppercase">Documento Oficial • Comité Estudiantil de Turismo y Gastronomía CETyG • UATyG 2026</p>
+        </div>
+
+    </div>
+
+    <!-- ==========================================
+         SCRIPT DE LÓGICA
+         ========================================== -->
+    <script>
+        // Base de datos de Equipos y Capitanes
+        const listaEquipos = [
+            { 
+                id: "e1", 
+                equipo: "Peach", 
+                color: "Rosa", 
+                capitan: "Alexa Nahomy Aleman Guitierrez", 
+                tel1: "323-176-2691", 
+                subcapitan: "Maria Casandra Arjona Crespo", 
+                tel2: "311-111-0803" 
+            },
+            { 
+                id: "e2", 
+                equipo: "Bowser", 
+                color: "Tinto", 
+                capitan: "Jocelyn Montserrat Becerra Sandoval", 
+                tel1: "324-170-1465", 
+                subcapitan: "Ana Paola Flores Garcia", 
+                tel2: "311-186-5522" 
+            },
+            { 
+                id: "e3", 
+                equipo: "Dry Bones / Huesitos", 
+                color: "Gris", 
+                capitan: "Eliseo Natanael Peña Uribe", 
+                tel1: "311-139-5884", 
+                subcapitan: "Karla Juamary Ponce Perez", 
+                tel2: "311-341-9056" 
+            },
+            { 
+                id: "e4", 
+                equipo: "Boo", 
+                color: "Azul", 
+                capitan: "Iris Jazibeth Cebreros Gonzalez", 
+                tel1: "311-339-5873", 
+                subcapitan: "Cristopher Rafael Martinez Ruiz", 
+                tel2: "311-340-1279" 
+            },
+            { 
+                id: "e5", 
+                equipo: "Mario", 
+                color: "Rojo", 
+                capitan: "Omar Alejandro Méndez Escobedo", 
+                tel1: "324-126-2036", 
+                subcapitan: "Luis Eduardo Gonzales Cárdenas", 
+                tel2: "311-191-5431" 
+            },
+            { 
+                id: "e6", 
+                equipo: "Koopa Troopa", 
+                color: "Negro", 
+                capitan: "Oscar Yanik Hernández Simón", 
+                tel1: "311-132-1809", 
+                subcapitan: "Estrella Jetzibel Ávila López", 
+                tel2: "311-179-5898" 
+            },
+            { 
+                id: "e7", 
+                equipo: "Waluigi", 
+                color: "Morado", 
+                capitan: "Anayarel Nuño Torres", 
+                tel1: "389-105-0592", 
+                subcapitan: "Alejandria Sanchez Rivera", 
+                tel2: "323-100-2286" 
+            },
+            { 
+                id: "e8", 
+                equipo: "Rosalina", 
+                color: "Turquesa", 
+                capitan: "Valeria Monserrath Jaramillo Tapia", 
+                tel1: "311-353-9778", 
+                subcapitan: "Angel Emmanuel Sotelo Ulloa", 
+                tel2: "323-112-8579" 
+            }
+        ];
+
+        const selector = document.getElementById('selector-equipo');
+
+        // Llenar el <select> con los equipos
+        listaEquipos.forEach(eq => {
+            let option = document.createElement('option');
+            option.value = eq.id;
+            option.textContent = "Equipo " + eq.equipo + " (" + eq.color + ")";
+            selector.appendChild(option);
+        });
+
+        // Evento al cambiar de Equipo
+        selector.addEventListener('change', function() {
+            const id = this.value;
+            if (!id) return; 
+            
+            const eqElegido = listaEquipos.find(e => e.id === id);
+            if (eqElegido) {
+                // Actualizar encabezado del equipo
+                document.getElementById('oficio-equipo').textContent = "TEAM " + eqElegido.equipo;
+                document.getElementById('oficio-color').textContent = "COLOR: " + eqElegido.color;
+                
+                // Actualizar firmas de Capitán
+                document.getElementById('firma-capitan-nombre').textContent = eqElegido.capitan;
+                document.getElementById('firma-capitan-tel').textContent = "Tel: " + eqElegido.tel1;
+
+                // Actualizar firmas de Subcapitán
+                document.getElementById('firma-subcapitan-nombre').textContent = eqElegido.subcapitan;
+                document.getElementById('firma-subcapitan-tel').textContent = "Tel: " + eqElegido.tel2;
+            }
+        });
+    </script>
+</body>
+</html>
