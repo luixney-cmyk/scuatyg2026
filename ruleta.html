@@ -18,6 +18,9 @@
             color: white;
             overflow-x: hidden;
             min-height: 100vh;
+            /* Evitar selección de texto casual */
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .font-pixel { font-family: 'Press Start 2P', cursive; }
@@ -166,29 +169,66 @@
             from { transform: scale(1); box-shadow: 0 0 20px #eab308; }
             to { transform: scale(1.05); box-shadow: 0 0 40px #fbbf24; }
         }
+        
+        /* Indicador Cloud */
+        .cloud-sync-icon {
+            animation: pulseCloud 2s infinite;
+        }
+        @keyframes pulseCloud {
+            0% { opacity: 0.5; transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1.1); }
+            100% { opacity: 0.5; transform: scale(0.9); }
+        }
     </style>
 </head>
 <body class="flex flex-col items-center py-6 relative">
 
+    <!-- ==========================================
+         PANTALLA DE BLOQUEO DE SEGURIDAD
+         ========================================== -->
+    <div id="login-overlay" class="fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center">
+        <div class="bg-gray-900 border-4 border-yellow-400 p-8 rounded-lg text-center shadow-[8px_8px_0_#ca8a04] max-w-sm w-11/12">
+            <i data-lucide="lock" class="w-12 h-12 text-yellow-400 mx-auto mb-4 animate-pulse"></i>
+            <h2 class="font-pixel text-yellow-400 text-xl mb-4">SYSTEM LOCKED</h2>
+            <p class="text-gray-300 font-medium mb-6 text-sm">Ingrese el código de autorización para acceder al panel de la Ruleta.</p>
+            <input type="password" id="access-code-input" class="w-full bg-black text-green-400 font-pixel text-center p-4 border-2 border-gray-600 mb-4 focus:outline-none focus:border-green-400 rounded transition-colors" placeholder="****" autocomplete="off">
+            <button onclick="checkAccessCode()" class="btn-mario font-pixel text-xs w-full py-4 mt-2">
+                DESBLOQUEAR
+            </button>
+            <p id="cloud-status" class="text-[10px] text-gray-500 mt-4 uppercase flex items-center justify-center gap-1">
+                <i data-lucide="cloud" class="w-3 h-3"></i> Conectando a la Nube...
+            </p>
+        </div>
+    </div>
+
+    <!-- Botón Reset para Borrar la Memoria -->
     <button id="btn-reset-game" class="fixed bottom-4 right-4 bg-red-600 text-white font-pixel text-[8px] p-3 rounded border-2 border-black opacity-50 hover:opacity-100 z-50 flex items-center gap-1 shadow-lg transition-opacity cursor-pointer">
-        <i data-lucide="trash-2" class="w-3 h-3"></i> RESET GAME
+        <i data-lucide="trash-2" class="w-3 h-3"></i> RESET CLOUD
     </button>
 
+    <!-- Header -->
     <div class="text-center mb-6 bg-gray-900 border-4 border-black p-6 rounded-lg shadow-[8px_8px_0px_rgba(0,0,0,1)] max-w-4xl w-11/12 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div class="text-left">
-            <h1 class="font-pixel text-yellow-400 text-xl md:text-3xl mb-2">LUCKY ? BLOCK</h1>
-            <p class="text-gray-300 text-sm">El primer equipo en alcanzar <strong class="text-yellow-400">4 ESTRELLAS</strong> gana la partida.</p>
+        <div class="text-left flex items-center gap-3">
+            <div>
+                <div class="flex items-center gap-2 mb-2">
+                    <h1 class="font-pixel text-yellow-400 text-xl md:text-3xl">LUCKY ? BLOCK</h1>
+                    <i data-lucide="cloud-check" class="w-6 h-6 text-green-400 cloud-sync-icon" title="Cloud Sync Activo"></i>
+                </div>
+                <p class="text-gray-300 text-sm">El primer equipo en alcanzar <strong class="text-yellow-400">4 ESTRELLAS</strong> gana la partida.</p>
+            </div>
         </div>
         <button id="btn-show-podium" class="btn-mario btn-podio font-pixel text-sm flex items-center gap-2 shrink-0">
             <i data-lucide="bar-chart-2"></i> VER PODIO
         </button>
     </div>
 
+    <!-- Ruleta -->
     <div class="roulette-container mb-8">
         <div class="pointer"></div>
         <canvas id="wheel" width="600" height="600"></canvas>
     </div>
 
+    <!-- Botón de Girar -->
     <button id="spin-btn" class="btn-mario font-pixel text-xl mb-6 flex items-center gap-3">
         <i data-lucide="dices"></i> GIRA LA RULETA
     </button>
@@ -202,6 +242,9 @@
         </div>
     </div>
 
+    <!-- ==========================================
+         MODAL DEL JUEGO (MAESTRO)
+         ========================================== -->
     <div id="challenge-modal" class="modal-overlay">
         <div class="modal-content" id="modal-bg">
             
@@ -229,13 +272,13 @@
                 <div class="bg-gray-800 p-4 rounded-lg border-2 border-gray-600 mb-6 text-left">
                     <p class="font-pixel text-yellow-400 text-xs mb-2">REGLAS DEL JUEGO:</p>
                     <p id="modal-desc" class="text-base md:text-xl text-gray-200 leading-relaxed">
-                        </p>
+                    </p>
                 </div>
 
                 <div class="mb-6">
                     <p class="font-pixel text-white text-xs mb-3">¿QUÉ EQUIPOS PARTICIPARÁN EN ESTE RETO?</p>
                     <div id="team-selector-grid" class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                        </div>
+                    </div>
                 </div>
                 
                 <button id="btn-start-timer" class="btn-mario font-pixel text-sm bg-green-500 text-white border-white w-full flex items-center justify-center gap-2">
@@ -243,6 +286,7 @@
                 </button>
             </div>
 
+            <!-- PASO 2: EL CRONÓMETRO -->
             <div id="step-timer" class="hidden py-10">
                 <h2 id="modal-title-timer" class="font-pixel text-yellow-400 text-2xl mb-2 uppercase">Título</h2>
                 <p class="font-pixel text-gray-400 text-xs mb-8">TIEMPO CORRIENDO...</p>
@@ -256,6 +300,7 @@
                 </button>
             </div>
 
+            <!-- PASO 3: RESULTADOS Y GANADORES -->
             <div id="step-winners" class="hidden">
                 <h2 id="times-up-title" class="font-pixel text-red-500 text-3xl md:text-5xl mb-4 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]">¡TIEMPO AGOTADO!</h2>
                 <div class="w-full h-1 bg-red-500/30 mb-6"></div>
@@ -264,7 +309,7 @@
                 <p class="text-gray-400 text-xs mb-6 italic">(Marca a los ganadores para darles 1 Estrella. Puedes elegir varios en caso de empate, o ninguno si todos fallaron).</p>
                 
                 <div id="winner-selector-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8 justify-center">
-                    </div>
+                </div>
                 
                 <button id="btn-award-stars" class="btn-mario font-pixel text-sm w-full flex items-center justify-center gap-2">
                     <i data-lucide="star"></i> OTORGAR ESTRELLAS Y CERRAR
@@ -274,6 +319,9 @@
         </div>
     </div>
 
+    <!-- ==========================================
+         MODAL DEL PODIO
+         ========================================== -->
     <div id="podium-modal" class="modal-overlay">
         <div class="modal-content bg-gray-900 border-blue-500" id="podium-content">
             <h2 id="podium-title" class="font-pixel text-yellow-400 text-2xl md:text-3xl mb-6 flex items-center justify-center gap-3">
@@ -281,7 +329,7 @@
             </h2>
             
             <div id="podium-list" class="flex flex-col gap-3 mb-8">
-                </div>
+            </div>
             
             <button id="btn-close-podium" class="btn-mario font-pixel text-sm w-full max-w-xs mx-auto block cursor-pointer">
                 CERRAR PODIO
@@ -289,80 +337,23 @@
         </div>
     </div>
 
-    <script>
+    <!-- ==========================================
+         JAVASCRIPT Y FIREBASE CLOUD SYNC
+         ========================================== -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
         // Inicializar iconos
         lucide.createIcons();
 
-        // --- SISTEMA DE AUDIO (Web Audio API) ---
-        let audioCtx;
-        function initAudio() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-        }
-        document.addEventListener('click', initAudio, { once: true });
+        // Variables Globales
+        let teams = [];
+        let challenges = [];
+        let isUnlocked = false;
 
-        function playBuzzer() {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(150, audioCtx.currentTime); 
-            osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 1.5);
-            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 1.5);
-        }
-
-        function playCoinSound() {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'square'; 
-            osc.frequency.setValueAtTime(987.77, audioCtx.currentTime); 
-            osc.frequency.setValueAtTime(1318.51, audioCtx.currentTime + 0.1);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime); 
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3); 
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.4);
-        }
-
-        // Nuevo sonido de Tick (para los ultimos segundos del conteo)
-        function playTickSound() {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'triangle'; 
-            osc.frequency.setValueAtTime(800, audioCtx.currentTime); 
-            osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.1); 
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime); 
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-        }
-
-        function playVictorySound() {
-            if (!audioCtx) return;
-            // Arpegio de victoria
-            const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50]; 
-            let time = audioCtx.currentTime;
-            notes.forEach((freq, index) => {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'square';
-                osc.frequency.value = freq;
-                gain.gain.setValueAtTime(0.1, time);
-                
-                let duration = index === notes.length - 1 ? 0.8 : 0.15;
-                gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
-                
-                osc.connect(gain); gain.connect(audioCtx.destination);
-                osc.start(time); osc.stop(time + duration);
-                time += duration;
-            });
-        }
-
-        // --- BASE DE DATOS INICIAL ---
+        // Base de Datos Estática (Por defecto)
         const baseUrl = "https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/";
         
         let defaultTeams = [
@@ -393,39 +384,210 @@
             { title: "Marcha de los Goombas", desc: "1 participante por equipo. Se les vendan los ojos y se paran dentro de un cuadro de cinta en el piso. Al sonar la música deben marchar en su lugar. Si dejas de marchar o pisas fuera del cuadro ¡quedas eliminado! Gana el último en pie.", players: 1 }
         ];
 
-        // --- SISTEMA DE GUARDADO (LOCALSTORAGE) ---
-        let teams = [];
-        let challenges = [];
+        // --- SISTEMA DE PROTECCIÓN Y BLOQUEO ---
+        const secretCode = "VEVRVUlMQTIwMjY="; 
+        
+        // --- INTEGRACIÓN FIREBASE CLOUD ---
+        let app, auth, db, appId, user;
+        let unsubscribeSnapshot = null;
 
-        function loadProgress() {
-            const savedData = localStorage.getItem('LuckyBlock_Data');
-            if (savedData) {
-                const parsed = JSON.parse(savedData);
-                teams = parsed.teams;
-                challenges = parsed.challenges;
+        try {
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+            if (firebaseConfig) {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+                const initAuth = async () => {
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch(err) {
+                        console.error("Auth error:", err);
+                    }
+                };
+                initAuth();
+
+                onAuthStateChanged(auth, (u) => {
+                    user = u;
+                    document.getElementById('cloud-status').innerHTML = `<i data-lucide="cloud-lightning" class="w-3 h-3 text-green-400"></i> Servidor Listo`;
+                    lucide.createIcons();
+                    if (user && isUnlocked) {
+                        setupCloudSync();
+                    }
+                });
+            }
+        } catch (error) {
+            console.error("Firebase setup failed:", error);
+            document.getElementById('cloud-status').innerHTML = `<i data-lucide="cloud-off" class="w-3 h-3 text-red-500"></i> Modo Offline`;
+        }
+
+        async function setupCloudSync() {
+            if (!user || !db) return;
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameState', 'luckyblock');
+
+            try {
+                const docSnap = await getDoc(docRef);
+                if (!docSnap.exists()) {
+                    await setDoc(docRef, { teams: defaultTeams, challenges: defaultChallenges });
+                }
+
+                unsubscribeSnapshot = onSnapshot(docRef, (snapshot) => {
+                    if (snapshot.exists()) {
+                        const data = snapshot.data();
+                        teams = data.teams || JSON.parse(JSON.stringify(defaultTeams));
+                        challenges = data.challenges || JSON.parse(JSON.stringify(defaultChallenges));
+                        updateCounter();
+                        drawWheel();
+                    }
+                }, (error) => {
+                    console.error("Sync error:", error);
+                });
+            } catch (err) {
+                console.error("Cloud sync setup failed:", err);
+            }
+        }
+
+        async function saveProgress() {
+            if (db && user) {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameState', 'luckyblock');
+                try {
+                    await setDoc(docRef, { teams, challenges });
+                } catch (err) {
+                    console.error("Save error:", err);
+                }
             } else {
+                // Fallback offline en memoria
+                updateCounter();
+                drawWheel();
+            }
+        }
+
+        window.checkAccessCode = function() {
+            const inputEl = document.getElementById('access-code-input');
+            const input = inputEl.value.trim().toUpperCase();
+            
+            if (btoa(input) === secretCode) {
+                document.getElementById('login-overlay').style.display = 'none';
+                initAudio();
+                isUnlocked = true;
+                
+                if (user && db) {
+                    setupCloudSync();
+                } else if (!db) {
+                    // Fallback Offline
+                    teams = JSON.parse(JSON.stringify(defaultTeams));
+                    challenges = JSON.parse(JSON.stringify(defaultChallenges));
+                    updateCounter();
+                    drawWheel();
+                }
+            } else {
+                inputEl.classList.remove('border-gray-600');
+                inputEl.classList.add('border-red-600', 'bg-red-950', 'text-red-400');
+                inputEl.value = '';
+                inputEl.placeholder = "ERROR";
+                setTimeout(() => {
+                    inputEl.classList.remove('border-red-600', 'bg-red-950', 'text-red-400');
+                    inputEl.classList.add('border-gray-600');
+                    inputEl.placeholder = "****";
+                }, 1000);
+            }
+        }
+
+        document.getElementById('access-code-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') window.checkAccessCode();
+        });
+
+        // 🛡️ BLOQUEAR TECLAS Y CLIC DERECHO
+        document.addEventListener('contextmenu', event => event.preventDefault()); 
+        document.addEventListener('keydown', event => {
+            if (event.key === 'F12' || event.key === 'F5') event.preventDefault();
+            if (event.ctrlKey && (event.key === 'r' || event.key === 'R' || event.key === 'U' || event.key === 'u')) event.preventDefault();
+            if (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'i' || event.key === 'J' || event.key === 'j')) event.preventDefault();
+        });
+
+        // --- SISTEMA DE AUDIO (Web Audio API) ---
+        let audioCtx;
+        window.initAudio = function() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playBuzzer() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, audioCtx.currentTime); 
+            osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 1.5);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 1.5);
+        }
+
+        function playCoinSound() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square'; 
+            osc.frequency.setValueAtTime(987.77, audioCtx.currentTime); 
+            osc.frequency.setValueAtTime(1318.51, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime); 
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3); 
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+        }
+
+        function playTickSound() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle'; 
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime); 
+            osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.1); 
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime); 
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        function playVictorySound() {
+            if (!audioCtx) return;
+            const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50]; 
+            let time = audioCtx.currentTime;
+            notes.forEach((freq, index) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.1, time);
+                
+                let duration = index === notes.length - 1 ? 0.8 : 0.15;
+                gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+                
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(time); osc.stop(time + duration);
+                time += duration;
+            });
+        }
+
+        // Botón para resetear la memoria en la nube
+        document.getElementById('btn-reset-game').addEventListener('click', async () => {
+            if(confirm("¿ESTÁS SEGURO? Se borrarán todos los puntos y retos eliminados EN TODOS LOS DISPOSITIVOS. Esta acción no se puede deshacer.")){
                 teams = JSON.parse(JSON.stringify(defaultTeams));
                 challenges = JSON.parse(JSON.stringify(defaultChallenges));
-            }
-            updateCounter();
-        }
-
-        function saveProgress() {
-            const dataToSave = { teams: teams, challenges: challenges };
-            localStorage.setItem('LuckyBlock_Data', JSON.stringify(dataToSave));
-        }
-
-        // Botón para resetear la memoria
-        document.getElementById('btn-reset-game').addEventListener('click', () => {
-            if(confirm("¿ESTÁS SEGURO? Se borrarán todos los puntos y retos eliminados. Esta acción no se puede deshacer.")){
-                localStorage.removeItem('LuckyBlock_Data');
-                loadProgress();
-                drawWheel();
+                await saveProgress();
+                
                 document.getElementById('podium-content').classList.remove('victory-pulse', 'border-yellow-400');
                 document.getElementById('podium-content').classList.add('border-blue-500');
                 document.getElementById('podium-title').innerHTML = '<i data-lucide="trophy" class="w-8 h-8 text-yellow-400"></i> LEADERBOARD';
                 lucide.createIcons();
-                alert("Memoria borrada. ¡Nuevo juego listo!");
+                alert("Memoria en la nube borrada. ¡Nuevo juego listo!");
             }
         });
 
@@ -451,19 +613,18 @@
         let selectedChallengeIndex = -1;
         let timerInterval;
         let timeLeft = 60;
-        let selectionTimerInterval; // Nuevo timer de 10s
+        let selectionTimerInterval; 
         const wheelColors = ['#e52521', '#43b047', '#009ee3', '#fbbf24', '#f8a5c2', '#a55eea', '#fdcb6e', '#e17055'];
 
         function updateCounter() {
             counterSpan.textContent = challenges.length;
             
-            // Revisa si alguien ya ganó (Llegó a 4)
             const hasWinner = teams.some(t => t.score >= 4);
             
             if(challenges.length === 0 || hasWinner){
                 spinBtn.disabled = true;
                 spinBtn.innerHTML = hasWinner ? "¡TENEMOS CAMPEÓN!" : "¡JUEGO TERMINADO!";
-                drawWheel(); // redibuja para mostrar el mensaje de fin
+                drawWheel(); 
             } else {
                 spinBtn.disabled = false;
                 spinBtn.innerHTML = `<i data-lucide="dices"></i> GIRA LA RULETA`;
@@ -472,7 +633,7 @@
         }
 
         // --- FUNCIONES DE LA RULETA ---
-        function drawWheel() {
+        window.drawWheel = function() {
             const numSlices = challenges.length;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const centerX = canvas.width / 2, centerY = canvas.height / 2, radius = canvas.width / 2;
@@ -505,7 +666,7 @@
 
         spinBtn.addEventListener('click', () => {
             if (isSpinning || challenges.length === 0) return;
-            initAudio(); 
+            window.initAudio(); 
             isSpinning = true;
             spinBtn.disabled = true;
 
@@ -527,7 +688,6 @@
             }, 4000); 
         });
 
-        // --- LÓGICA DEL JUEGO (MODAL) ---
         function renderTeamCheckboxes(container, prefix, onlyCheckedFromStep1 = false) {
             container.innerHTML = '';
             teams.forEach(team => {
@@ -554,7 +714,6 @@
             
             renderTeamCheckboxes(teamSelectorGrid, 'part');
             
-            // --- INICIO LÓGICA DE 10 SEGUNDOS ---
             const playerMapping = {
                 "Galleta Resbaladiza": 1, "El Aro de Poder": 10, "Torre de Vasos": 1,
                 "El Huevo de Yoshi": 1, "La Caja del Destino": 1, "La Momia de Papel": 3,
@@ -584,7 +743,6 @@
             timerCount.textContent = prepTime;
             timerContainer.classList.remove('hidden');
             
-            // Bloqueamos la UI mientras corren
             btnStart.disabled = true;
             btnStart.classList.add('opacity-50', 'cursor-not-allowed');
             
@@ -601,15 +759,14 @@
                 timerCount.textContent = prepTime;
                 
                 if (prepTime <= 3 && prepTime > 0) {
-                    playTickSound(); // Sonido de tensión final
+                    playTickSound();
                 }
                 
                 if (prepTime <= 0) {
                     clearInterval(selectionTimerInterval);
-                    timerContainer.classList.add('hidden'); // Ocultar el contador
-                    playCoinSound(); // Sonido de que ya pueden seleccionar/empezar
+                    timerContainer.classList.add('hidden');
+                    playCoinSound();
                     
-                    // Desbloqueamos la UI para descalificar a los lentos
                     btnStart.disabled = false;
                     btnStart.classList.remove('opacity-50', 'cursor-not-allowed');
                     checkboxes.forEach(cb => cb.disabled = false);
@@ -619,7 +776,6 @@
                     });
                 }
             }, 1000);
-            // --- FIN LÓGICA DE 10 SEGUNDOS ---
 
             stepRules.classList.remove('hidden');
             stepTimer.classList.add('hidden');
@@ -677,8 +833,7 @@
             renderTeamCheckboxes(winnerSelectorGrid, 'win', true);
         }
 
-        // Otorgar Estrellas y Verificar Victoria
-        document.getElementById('btn-award-stars').addEventListener('click', () => {
+        document.getElementById('btn-award-stars').addEventListener('click', async () => {
             let awarded = false;
             let gameFinished = false;
 
@@ -688,7 +843,6 @@
                     team.score += 1;
                     awarded = true;
                 }
-                // Check win condition (4 Stars)
                 if (team.score >= 4) {
                     gameFinished = true;
                 }
@@ -699,8 +853,8 @@
             challenges.splice(selectedChallengeIndex, 1);
             selectedChallengeIndex = -1;
             
-            updateCounter();
-            saveProgress();
+            // Guardado automático en la NUBE
+            await saveProgress();
             
             canvas.style.transition = 'none';
             currentRotation = 0;
@@ -708,10 +862,8 @@
             canvas.offsetHeight; 
             canvas.style.transition = 'transform 4s cubic-bezier(0.175, 0.885, 0.32, 1.05)';
             
-            drawWheel();
             modal.classList.remove('active');
 
-            // Dispara el podio de victoria
             if (gameFinished) {
                 setTimeout(() => {
                     playVictorySound();
@@ -723,7 +875,6 @@
             }
         });
 
-        // --- SISTEMA DE PODIO ---
         const podiumModal = document.getElementById('podium-modal');
         const podiumList = document.getElementById('podium-list');
 
@@ -765,10 +916,6 @@
         document.getElementById('btn-close-podium').addEventListener('click', () => {
             podiumModal.classList.remove('active');
         });
-
-        // INICIO
-        loadProgress();
-        drawWheel();
 
     </script>
 </body>
