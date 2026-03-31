@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucky Block - Ruleta UATyG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #5c94fc; 
+            background-image: 
+                linear-gradient(transparent 95%, rgba(255, 255, 255, 0.2) 95%),
+                linear-gradient(90deg, transparent 95%, rgba(255, 255, 255, 0.2) 95%);
+            background-size: 20px 20px;
+            color: white;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .font-pixel { font-family: 'Press Start 2P', cursive; }
+
+        /* Contenedor de la Ruleta */
+        .roulette-container {
+            position: relative;
+            width: 90vw;
+            max-width: 500px;
+            aspect-ratio: 1;
+            margin: 0 auto;
+        }
+
+        #wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 8px solid #111827;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,0,0,0.5);
+            transition: transform 4s cubic-bezier(0.175, 0.885, 0.32, 1.05);
+            background-color: white;
+        }
+
+        .pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0; 
+            height: 0; 
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid #e52521;
+            z-index: 10;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
+        }
+
+        /* Botones estilo Mario */
+        .btn-mario {
+            background: #fbbf24;
+            color: #111827;
+            border: 4px solid #111827;
+            box-shadow: 6px 6px 0px #111827;
+            padding: 15px 30px;
+            text-transform: uppercase;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+
+        .btn-mario:active {
+            transform: translate(4px, 4px);
+            box-shadow: 2px 2px 0px #111827;
+        }
+
+        .btn-mario:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: translate(4px, 4px);
+            box-shadow: 2px 2px 0px #111827;
+        }
+        
+        .btn-podio {
+            background: #2563eb;
+            color: white;
+        }
+
+        /* Checkboxes Personalizados */
+        .team-checkbox-label {
+            display: block;
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .team-checkbox-label input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+        .team-checkbox-label:has(input:checked) {
+            border-color: #fbbf24; 
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+        }
+        .team-checkbox-label:has(input:not(:checked)) {
+            opacity: 0.5;
+            filter: grayscale(100%);
+        }
+
+        /* Modales */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: #111827;
+            border: 6px solid #fbbf24;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            text-align: center;
+            transform: scale(0.8);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        /* Pantallazo Rojo (Alarma) */
+        .flash-red {
+            animation: flashRed 0.5s infinite alternate;
+        }
+        @keyframes flashRed {
+            from { background-color: #111827; }
+            to { background-color: #7f1d1d; }
+        }
+        
+        /* Animación Victoria */
+        .victory-pulse {
+            animation: victoryPulse 1s infinite alternate;
+        }
+        @keyframes victoryPulse {
+            from { transform: scale(1); box-shadow: 0 0 20px #eab308; }
+            to { transform: scale(1.05); box-shadow: 0 0 40px #fbbf24; }
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center py-6 relative">
+
+    <button id="btn-reset-game" class="fixed bottom-4 right-4 bg-red-600 text-white font-pixel text-[8px] p-3 rounded border-2 border-black opacity-50 hover:opacity-100 z-50 flex items-center gap-1 shadow-lg transition-opacity cursor-pointer">
+        <i data-lucide="trash-2" class="w-3 h-3"></i> RESET GAME
+    </button>
+
+    <div class="text-center mb-6 bg-gray-900 border-4 border-black p-6 rounded-lg shadow-[8px_8px_0px_rgba(0,0,0,1)] max-w-4xl w-11/12 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="text-left">
+            <h1 class="font-pixel text-yellow-400 text-xl md:text-3xl mb-2">LUCKY ? BLOCK</h1>
+            <p class="text-gray-300 text-sm">El primer equipo en alcanzar <strong class="text-yellow-400">4 ESTRELLAS</strong> gana la partida.</p>
+        </div>
+        <button id="btn-show-podium" class="btn-mario btn-podio font-pixel text-sm flex items-center gap-2 shrink-0">
+            <i data-lucide="bar-chart-2"></i> VER PODIO
+        </button>
+    </div>
+
+    <div class="roulette-container mb-8">
+        <div class="pointer"></div>
+        <canvas id="wheel" width="600" height="600"></canvas>
+    </div>
+
+    <button id="spin-btn" class="btn-mario font-pixel text-xl mb-6 flex items-center gap-3">
+        <i data-lucide="dices"></i> GIRA LA RULETA
+    </button>
+
+    <div class="flex gap-4">
+        <div class="bg-black/50 px-6 py-2 rounded-full font-pixel text-xs text-white border-2 border-white/20">
+            Retos: <span id="counter" class="text-yellow-400">13</span>
+        </div>
+        <div class="bg-black/50 px-6 py-2 rounded-full font-pixel text-xs text-white border-2 border-white/20">
+            Meta: <span class="text-yellow-400">4 ⭐</span>
+        </div>
+    </div>
+
+    <div id="challenge-modal" class="modal-overlay">
+        <div class="modal-content" id="modal-bg">
+            
+            <!-- PASO 1: REGLAS Y SELECCIÓN DE EQUIPOS -->
+            <div id="step-rules">
+                <h2 class="font-pixel text-yellow-400 text-xl mb-2">¡RETO SELECCIONADO!</h2>
+                <div class="w-full h-1 bg-yellow-400/30 mb-4"></div>
+                
+                <!-- NUEVO BANNER TIMER DE SELECCIÓN -->
+                <div id="selection-timer-container" class="hidden w-full bg-red-600 text-white border-2 border-black p-3 rounded mb-6 flex items-center justify-between shadow-[4px_4px_0_#000]">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="timer" class="w-6 h-6 animate-pulse text-yellow-300"></i>
+                        <div class="text-left">
+                            <span class="block text-xs md:text-sm font-bold uppercase" id="selection-timer-text">Elijan a su mejor jugador</span>
+                            <span class="block text-[10px] text-red-200 uppercase mt-0.5">Corran al centro. El juez descartará ausentes al terminar el tiempo.</span>
+                        </div>
+                    </div>
+                    <span id="selection-timer-count" class="font-pixel text-2xl md:text-3xl text-yellow-300">10</span>
+                </div>
+                
+                <h3 id="modal-title" class="text-2xl md:text-4xl font-bold text-white mb-4 leading-tight uppercase">
+                    <!-- Título -->
+                </h3>
+                
+                <div class="bg-gray-800 p-4 rounded-lg border-2 border-gray-600 mb-6 text-left">
+                    <p class="font-pixel text-yellow-400 text-xs mb-2">REGLAS DEL JUEGO:</p>
+                    <p id="modal-desc" class="text-base md:text-xl text-gray-200 leading-relaxed">
+                        </p>
+                </div>
+
+                <div class="mb-6">
+                    <p class="font-pixel text-white text-xs mb-3">¿QUÉ EQUIPOS PARTICIPARÁN EN ESTE RETO?</p>
+                    <div id="team-selector-grid" class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        </div>
+                </div>
+                
+                <button id="btn-start-timer" class="btn-mario font-pixel text-sm bg-green-500 text-white border-white w-full flex items-center justify-center gap-2">
+                    <i data-lucide="play"></i> ¡A JUGAR! (INICIAR CRONÓMETRO)
+                </button>
+            </div>
+
+            <div id="step-timer" class="hidden py-10">
+                <h2 id="modal-title-timer" class="font-pixel text-yellow-400 text-2xl mb-2 uppercase">Título</h2>
+                <p class="font-pixel text-gray-400 text-xs mb-8">TIEMPO CORRIENDO...</p>
+                
+                <div id="timer-display" class="text-7xl md:text-9xl font-pixel text-white mb-10 drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">
+                    01:00
+                </div>
+                
+                <button id="btn-stop-early" class="bg-red-600 hover:bg-red-700 text-white font-pixel p-4 rounded border-4 border-red-900 shadow-md transition-transform active:scale-95 text-xs w-full max-w-xs mx-auto block cursor-pointer">
+                    ⏹️ DETENER Y EVALUAR
+                </button>
+            </div>
+
+            <div id="step-winners" class="hidden">
+                <h2 id="times-up-title" class="font-pixel text-red-500 text-3xl md:text-5xl mb-4 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]">¡TIEMPO AGOTADO!</h2>
+                <div class="w-full h-1 bg-red-500/30 mb-6"></div>
+                
+                <p class="font-pixel text-white text-sm mb-4">¿QUIÉN LOGRÓ SUPERAR EL RETO?</p>
+                <p class="text-gray-400 text-xs mb-6 italic">(Marca a los ganadores para darles 1 Estrella. Puedes elegir varios en caso de empate, o ninguno si todos fallaron).</p>
+                
+                <div id="winner-selector-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8 justify-center">
+                    </div>
+                
+                <button id="btn-award-stars" class="btn-mario font-pixel text-sm w-full flex items-center justify-center gap-2">
+                    <i data-lucide="star"></i> OTORGAR ESTRELLAS Y CERRAR
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="podium-modal" class="modal-overlay">
+        <div class="modal-content bg-gray-900 border-blue-500" id="podium-content">
+            <h2 id="podium-title" class="font-pixel text-yellow-400 text-2xl md:text-3xl mb-6 flex items-center justify-center gap-3">
+                <i data-lucide="trophy" class="w-8 h-8 text-yellow-400"></i> LEADERBOARD
+            </h2>
+            
+            <div id="podium-list" class="flex flex-col gap-3 mb-8">
+                </div>
+            
+            <button id="btn-close-podium" class="btn-mario font-pixel text-sm w-full max-w-xs mx-auto block cursor-pointer">
+                CERRAR PODIO
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Inicializar iconos
+        lucide.createIcons();
+
+        // --- SISTEMA DE AUDIO (Web Audio API) ---
+        let audioCtx;
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+        document.addEventListener('click', initAudio, { once: true });
+
+        function playBuzzer() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, audioCtx.currentTime); 
+            osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 1.5);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 1.5);
+        }
+
+        function playCoinSound() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square'; 
+            osc.frequency.setValueAtTime(987.77, audioCtx.currentTime); 
+            osc.frequency.setValueAtTime(1318.51, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime); 
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3); 
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+        }
+
+        // Nuevo sonido de Tick (para los ultimos segundos del conteo)
+        function playTickSound() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle'; 
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime); 
+            osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.1); 
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime); 
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        function playVictorySound() {
+            if (!audioCtx) return;
+            // Arpegio de victoria
+            const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50]; 
+            let time = audioCtx.currentTime;
+            notes.forEach((freq, index) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.1, time);
+                
+                let duration = index === notes.length - 1 ? 0.8 : 0.15;
+                gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+                
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(time); osc.stop(time + duration);
+                time += duration;
+            });
+        }
+
+        // --- BASE DE DATOS INICIAL ---
+        const baseUrl = "https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/";
+        
+        let defaultTeams = [
+            { id: 'mario', name: 'Mario', color: 'bg-red-600', text: 'text-white', border: 'border-red-800', score: 0, img: 'mario.png' },
+            { id: 'peach', name: 'Peach', color: 'bg-pink-400', text: 'text-white', border: 'border-pink-600', score: 0, img: 'peach.png' },
+            { id: 'bowser', name: 'Bowser', color: 'bg-red-900', text: 'text-white', border: 'border-red-950', score: 0, img: 'bowser.png' },
+            { id: 'huesitos', name: 'Huesitos', color: 'bg-gray-400', text: 'text-black', border: 'border-gray-600', score: 0, img: 'huesitos.png' },
+            { id: 'boo', name: 'Boo', color: 'bg-blue-100', text: 'text-black', border: 'border-blue-300', score: 0, img: 'boo.png' },
+            { id: 'koopa', name: 'Koopa', color: 'bg-gray-800', text: 'text-white', border: 'border-black', score: 0, img: 'koopa.png' },
+            { id: 'waluigi', name: 'Waluigi', color: 'bg-purple-600', text: 'text-white', border: 'border-purple-800', score: 0, img: 'raluigi.png' },
+            { id: 'rosalina', name: 'Rosalina', color: 'bg-teal-300', text: 'text-black', border: 'border-teal-500', score: 0, img: 'Rosalina.png' }
+        ];
+
+        let defaultChallenges = [
+            { title: "Galleta Resbaladiza", desc: "Sentados y con las manos atrás, se coloca una galleta en la frente. Usando SOLO gestos faciales, deben hacerla llegar a su boca y comerla. ¡El primero gana!", players: 1 },
+            { title: "El Aro de Poder", desc: "10 integrantes forman una fila tomados de las manos. El primero recibe un ula-ula en el brazo y deben pasarlo hasta el final SIN soltarse. ¡Si se sueltan quedan descalificados! Gana el primero en terminar.", players: 10 },
+            { title: "Torre de Vasos", desc: "Cada jugador tiene 8 vasos y 1 globo. Deben inflar el globo dentro del vaso para levantarlo y apilar los 8. ¡Tocar un vaso con la mano es descalificación inmediata! Gana el primero en terminar su torre.", players: 1 },
+            { title: "El Huevo de Yoshi", desc: "Traslada 8 pelotas desde la mesa de tu equipo hasta la mesa de los jueces usando SOLO una cuchara en la boca. Si la pelota se cae en el camino, debes regresar a tu mesa e iniciar ese viaje de nuevo. ¡El primero en llevar las 8 gana!", players: 1 },
+            { title: "La Caja del Destino", desc: "Hay 3 globos por equipo en la mesa. Por turnos, sacan una bola de la caja y revientan el globo de ese color. ¡Si sale la BOLA DORADA, eliges a tu víctima! El último equipo con globos intactos gana.", players: 1 },
+            { title: "La Momia de Papel", desc: "Pasan 3 integrantes. Dos de ellos deben envolver completamente al tercero (desde los pies hasta la cabeza) usando un rollo de papel higiénico. ¡Gana el primero que se termine el rollo y deje a su compañero mejor envuelto!", players: 3 },
+            { title: "La Oruga de Globos", desc: "6 integrantes. El #1 corre, toma un globo y se lo pone en la espalda. El #2 se pega a él y corren juntos por el siguiente. Así hasta formar un tren de 6 personas con 5 globos. Si un globo cae o revienta, ¡descalificados! Gana el primer tren en llegar.", players: 6 },
+            { title: "El Sorteo Dorado", desc: "En la caja hay 5 pelotas de cada equipo. Por turnos sacan una y se acumula al equipo de ese color. ¡El primero en juntar sus 5 GANA! Si sacas la BOLA DORADA, decides qué pelota acumulada de cualquier rival regresa a la caja.", players: 1 },
+            { title: "Pinzas Piraña", desc: "Tienes 10 pinzas en el cuerpo. Debes lanzar un globo al aire, quitarte una pinza y ponerla en tu vaso SIN sostener el globo en ese instante. ¡Si el globo cae al suelo quedas descalificado! Gana el primero en quitarse las 10.", players: 1 },
+            { title: "Bob-omb de Confeti", desc: "Fila india. Te sientas y el juez te da una categoría (ej. 'Animales con P'). Mientras piensas, un Toad infla un globo con confeti sobre tu cabeza. Responde rápido para ceder el lugar al rival. ¡Si te explota el globo, quedas eliminado!", players: 1 },
+            { title: "La Tubería Verde", desc: "5 integrantes. Cada uno hace una canaleta con su cartulina. La pelota debe rodar por ellas hasta la meta; en cuanto pase tu tramo, ¡corre al frente para alargar la tubería! Si la pelota cae al piso, inician desde cero. ¡El primero en llegar gana!", players: 5 },
+            { title: "Torre de Tuercas", desc: "Cada equipo recibe 8 tuercas y una brocheta de madera. Usando SOLO la brocheta, deben apilar las 8 tuercas una sobre otra. ¡El primero en lograr una torre perfectamente equilibrada sin que se caiga, gana!", players: 1 },
+            { title: "Caos Champiñón", desc: "10 por equipo al centro. Corren, y cuando la música pare, el animador gritará un número (ej. ¡Grupos de 4!). Deben agruparse abrazados con aliados o enemigos. Los que sobren quedan fuera. ¡Sobrevivan hasta que solo queden 2 ganadores (ambos ganan estrella)!", players: 10 },
+            { title: "Marcha de los Goombas", desc: "1 participante por equipo. Se les vendan los ojos y se paran dentro de un cuadro de cinta en el piso. Al sonar la música deben marchar en su lugar. Si dejas de marchar o pisas fuera del cuadro ¡quedas eliminado! Gana el último en pie.", players: 1 }
+        ];
+
+        // --- SISTEMA DE GUARDADO (LOCALSTORAGE) ---
+        let teams = [];
+        let challenges = [];
+
+        function loadProgress() {
+            const savedData = localStorage.getItem('LuckyBlock_Data');
+            if (savedData) {
+                const parsed = JSON.parse(savedData);
+                teams = parsed.teams;
+                challenges = parsed.challenges;
+            } else {
+                teams = JSON.parse(JSON.stringify(defaultTeams));
+                challenges = JSON.parse(JSON.stringify(defaultChallenges));
+            }
+            updateCounter();
+        }
+
+        function saveProgress() {
+            const dataToSave = { teams: teams, challenges: challenges };
+            localStorage.setItem('LuckyBlock_Data', JSON.stringify(dataToSave));
+        }
+
+        // Botón para resetear la memoria
+        document.getElementById('btn-reset-game').addEventListener('click', () => {
+            if(confirm("¿ESTÁS SEGURO? Se borrarán todos los puntos y retos eliminados. Esta acción no se puede deshacer.")){
+                localStorage.removeItem('LuckyBlock_Data');
+                loadProgress();
+                drawWheel();
+                document.getElementById('podium-content').classList.remove('victory-pulse', 'border-yellow-400');
+                document.getElementById('podium-content').classList.add('border-blue-500');
+                document.getElementById('podium-title').innerHTML = '<i data-lucide="trophy" class="w-8 h-8 text-yellow-400"></i> LEADERBOARD';
+                lucide.createIcons();
+                alert("Memoria borrada. ¡Nuevo juego listo!");
+            }
+        });
+
+        // Elementos DOM
+        const canvas = document.getElementById('wheel');
+        const ctx = canvas.getContext('2d');
+        const spinBtn = document.getElementById('spin-btn');
+        const counterSpan = document.getElementById('counter');
+        
+        const modal = document.getElementById('challenge-modal');
+        const modalBg = document.getElementById('modal-bg');
+        const stepRules = document.getElementById('step-rules');
+        const stepTimer = document.getElementById('step-timer');
+        const stepWinners = document.getElementById('step-winners');
+        
+        const teamSelectorGrid = document.getElementById('team-selector-grid');
+        const winnerSelectorGrid = document.getElementById('winner-selector-grid');
+        const timerDisplay = document.getElementById('timer-display');
+        const timesUpTitle = document.getElementById('times-up-title');
+
+        let currentRotation = 0;
+        let isSpinning = false;
+        let selectedChallengeIndex = -1;
+        let timerInterval;
+        let timeLeft = 60;
+        let selectionTimerInterval; // Nuevo timer de 10s
+        const wheelColors = ['#e52521', '#43b047', '#009ee3', '#fbbf24', '#f8a5c2', '#a55eea', '#fdcb6e', '#e17055'];
+
+        function updateCounter() {
+            counterSpan.textContent = challenges.length;
+            
+            // Revisa si alguien ya ganó (Llegó a 4)
+            const hasWinner = teams.some(t => t.score >= 4);
+            
+            if(challenges.length === 0 || hasWinner){
+                spinBtn.disabled = true;
+                spinBtn.innerHTML = hasWinner ? "¡TENEMOS CAMPEÓN!" : "¡JUEGO TERMINADO!";
+                drawWheel(); // redibuja para mostrar el mensaje de fin
+            } else {
+                spinBtn.disabled = false;
+                spinBtn.innerHTML = `<i data-lucide="dices"></i> GIRA LA RULETA`;
+                lucide.createIcons();
+            }
+        }
+
+        // --- FUNCIONES DE LA RULETA ---
+        function drawWheel() {
+            const numSlices = challenges.length;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const centerX = canvas.width / 2, centerY = canvas.height / 2, radius = canvas.width / 2;
+            
+            const hasWinner = teams.some(t => t.score >= 4);
+            
+            if (numSlices === 0 || hasWinner) {
+                ctx.beginPath(); ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = '#111827'; ctx.fill(); ctx.fillStyle = 'white';
+                ctx.font = 'bold 30px "Press Start 2P"'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(hasWinner ? '¡CAMPEÓN!' : '¡TERMINADO!', centerX, centerY);
+                return;
+            }
+
+            const arcSize = (2 * Math.PI) / numSlices;
+            for (let i = 0; i < numSlices; i++) {
+                const startAngle = i * arcSize, endAngle = startAngle + arcSize;
+                ctx.beginPath(); ctx.moveTo(centerX, centerY); ctx.arc(centerX, centerY, radius, startAngle, endAngle); ctx.closePath();
+                ctx.fillStyle = wheelColors[i % wheelColors.length]; ctx.fill(); ctx.stroke();
+                
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(startAngle + arcSize / 2);
+                ctx.textAlign = 'right'; ctx.fillStyle = 'white'; ctx.font = 'bold 18px Fredoka';
+                ctx.shadowColor = 'black'; ctx.shadowBlur = 4;
+                ctx.fillText(challenges[i].title, radius - 20, 6);
+                ctx.restore();
+            }
+        }
+
+        spinBtn.addEventListener('click', () => {
+            if (isSpinning || challenges.length === 0) return;
+            initAudio(); 
+            isSpinning = true;
+            spinBtn.disabled = true;
+
+            const extraDegrees = Math.floor(Math.random() * 360);
+            const totalRotation = currentRotation + (360 * 8) + extraDegrees;
+            canvas.style.transform = `rotate(${totalRotation}deg)`;
+            
+            setTimeout(() => {
+                isSpinning = false;
+                spinBtn.disabled = false;
+                currentRotation = totalRotation;
+                
+                const normalizedRotation = totalRotation % 360;
+                const sliceAngle = 360 / challenges.length;
+                let pointingAngle = (360 - normalizedRotation + 270) % 360; 
+                selectedChallengeIndex = Math.floor(pointingAngle / sliceAngle);
+
+                openChallengeModal(challenges[selectedChallengeIndex]);
+            }, 4000); 
+        });
+
+        // --- LÓGICA DEL JUEGO (MODAL) ---
+        function renderTeamCheckboxes(container, prefix, onlyCheckedFromStep1 = false) {
+            container.innerHTML = '';
+            teams.forEach(team => {
+                if (onlyCheckedFromStep1) {
+                    const participationCb = document.getElementById(`part-${team.id}`);
+                    if (!participationCb || !participationCb.checked) return;
+                }
+
+                const label = document.createElement('label');
+                label.className = `team-checkbox-label flex flex-col items-center justify-center gap-1 ${team.color} ${team.border} p-2 md:p-3 rounded text-center shadow-sm`;
+                label.innerHTML = `
+                    <input type="checkbox" id="${prefix}-${team.id}" value="${team.id}" ${!onlyCheckedFromStep1 ? 'checked' : ''}>
+                    <img src="${baseUrl}${team.img}" alt="${team.name}" class="w-8 h-8 md:w-10 md:h-10 object-contain drop-shadow-md">
+                    <span class="font-bold uppercase ${team.text} text-[10px] md:text-xs block leading-tight mt-1">${team.name}</span>
+                `;
+                container.appendChild(label);
+            });
+        }
+
+        function openChallengeModal(challenge) {
+            document.getElementById('modal-title').textContent = challenge.title;
+            document.getElementById('modal-title-timer').textContent = challenge.title;
+            document.getElementById('modal-desc').textContent = challenge.desc;
+            
+            renderTeamCheckboxes(teamSelectorGrid, 'part');
+            
+            // --- INICIO LÓGICA DE 10 SEGUNDOS ---
+            const playerMapping = {
+                "Galleta Resbaladiza": 1, "El Aro de Poder": 10, "Torre de Vasos": 1,
+                "El Huevo de Yoshi": 1, "La Caja del Destino": 1, "La Momia de Papel": 3,
+                "La Oruga de Globos": 6, "El Sorteo Dorado": 1, "Pinzas Piraña": 1,
+                "Bob-omb de Confeti": 1, "La Tubería Verde": 5, "Torre de Tuercas": 1,
+                "Caos Champiñón": 10, "Marcha de los Goombas": 1
+            };
+            
+            let numPlayers = challenge.players || playerMapping[challenge.title] || 1;
+            let textStr = "";
+            
+            if (numPlayers === 1) {
+                textStr = "Elijan a su mejor jugador";
+            } else if (numPlayers >= 10) {
+                textStr = "¡TODO EL EQUIPO AL CENTRO!";
+            } else {
+                textStr = `Elijan a sus mejores ${numPlayers} jugadores`;
+            }
+            
+            document.getElementById('selection-timer-text').textContent = textStr;
+            const timerContainer = document.getElementById('selection-timer-container');
+            const timerCount = document.getElementById('selection-timer-count');
+            const btnStart = document.getElementById('btn-start-timer');
+            
+            clearInterval(selectionTimerInterval);
+            let prepTime = 10;
+            timerCount.textContent = prepTime;
+            timerContainer.classList.remove('hidden');
+            
+            // Bloqueamos la UI mientras corren
+            btnStart.disabled = true;
+            btnStart.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            const checkboxes = teamSelectorGrid.querySelectorAll('input[type="checkbox"]');
+            const labels = teamSelectorGrid.querySelectorAll('.team-checkbox-label');
+            checkboxes.forEach(cb => cb.disabled = true);
+            labels.forEach(l => {
+                l.classList.add('opacity-50', 'cursor-not-allowed');
+                l.style.pointerEvents = 'none';
+            });
+            
+            selectionTimerInterval = setInterval(() => {
+                prepTime--;
+                timerCount.textContent = prepTime;
+                
+                if (prepTime <= 3 && prepTime > 0) {
+                    playTickSound(); // Sonido de tensión final
+                }
+                
+                if (prepTime <= 0) {
+                    clearInterval(selectionTimerInterval);
+                    timerContainer.classList.add('hidden'); // Ocultar el contador
+                    playCoinSound(); // Sonido de que ya pueden seleccionar/empezar
+                    
+                    // Desbloqueamos la UI para descalificar a los lentos
+                    btnStart.disabled = false;
+                    btnStart.classList.remove('opacity-50', 'cursor-not-allowed');
+                    checkboxes.forEach(cb => cb.disabled = false);
+                    labels.forEach(l => {
+                        l.classList.remove('opacity-50', 'cursor-not-allowed');
+                        l.style.pointerEvents = 'auto';
+                    });
+                }
+            }, 1000);
+            // --- FIN LÓGICA DE 10 SEGUNDOS ---
+
+            stepRules.classList.remove('hidden');
+            stepTimer.classList.add('hidden');
+            stepWinners.classList.add('hidden');
+            modalBg.classList.remove('flash-red');
+            modalBg.style.borderColor = '#fbbf24';
+
+            modal.classList.add('active');
+        }
+
+        document.getElementById('btn-start-timer').addEventListener('click', () => {
+            stepRules.classList.add('hidden');
+            stepTimer.classList.remove('hidden');
+            
+            timeLeft = 60;
+            updateTimerUI();
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerUI();
+                if (timeLeft <= 0) triggerTimesUp(true);
+            }, 1000);
+        });
+
+        document.getElementById('btn-stop-early').addEventListener('click', () => {
+            triggerTimesUp(false);
+        });
+
+        function updateTimerUI() {
+            let m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            let s = (timeLeft % 60).toString().padStart(2, '0');
+            timerDisplay.textContent = `${m}:${s}`;
+            
+            if (timeLeft <= 10 && timeLeft > 0) timerDisplay.classList.add('text-red-500');
+            else timerDisplay.classList.remove('text-red-500');
+        }
+
+        function triggerTimesUp(isTimeout) {
+            clearInterval(timerInterval);
+            stepTimer.classList.add('hidden');
+            stepWinners.classList.remove('hidden');
+            
+            if (isTimeout) {
+                playBuzzer();
+                modalBg.classList.add('flash-red');
+                timesUpTitle.textContent = "¡TIEMPO AGOTADO!";
+                timesUpTitle.classList.remove('text-green-500');
+                timesUpTitle.classList.add('text-red-500');
+            } else {
+                modalBg.style.borderColor = '#22c55e';
+                timesUpTitle.textContent = "¡RETO DETENIDO!";
+                timesUpTitle.classList.remove('text-red-500');
+                timesUpTitle.classList.add('text-green-500');
+            }
+            renderTeamCheckboxes(winnerSelectorGrid, 'win', true);
+        }
+
+        // Otorgar Estrellas y Verificar Victoria
+        document.getElementById('btn-award-stars').addEventListener('click', () => {
+            let awarded = false;
+            let gameFinished = false;
+
+            teams.forEach(team => {
+                const cb = document.getElementById(`win-${team.id}`);
+                if (cb && cb.checked) {
+                    team.score += 1;
+                    awarded = true;
+                }
+                // Check win condition (4 Stars)
+                if (team.score >= 4) {
+                    gameFinished = true;
+                }
+            });
+
+            if (awarded && !gameFinished) playCoinSound();
+
+            challenges.splice(selectedChallengeIndex, 1);
+            selectedChallengeIndex = -1;
+            
+            updateCounter();
+            saveProgress();
+            
+            canvas.style.transition = 'none';
+            currentRotation = 0;
+            canvas.style.transform = `rotate(0deg)`;
+            canvas.offsetHeight; 
+            canvas.style.transition = 'transform 4s cubic-bezier(0.175, 0.885, 0.32, 1.05)';
+            
+            drawWheel();
+            modal.classList.remove('active');
+
+            // Dispara el podio de victoria
+            if (gameFinished) {
+                setTimeout(() => {
+                    playVictorySound();
+                    document.getElementById('podium-title').innerHTML = '<i data-lucide="crown" class="w-8 h-8 text-yellow-400"></i> ¡TENEMOS CAMPEÓN!';
+                    document.getElementById('podium-content').classList.remove('border-blue-500');
+                    document.getElementById('podium-content').classList.add('border-yellow-400', 'victory-pulse');
+                    document.getElementById('btn-show-podium').click();
+                }, 500);
+            }
+        });
+
+        // --- SISTEMA DE PODIO ---
+        const podiumModal = document.getElementById('podium-modal');
+        const podiumList = document.getElementById('podium-list');
+
+        document.getElementById('btn-show-podium').addEventListener('click', () => {
+            const sortedTeams = [...teams].sort((a, b) => b.score - a.score);
+            
+            podiumList.innerHTML = '';
+            sortedTeams.forEach((team, index) => {
+                let rankIcon = `${index + 1}º`;
+                let highlightClass = "";
+                
+                if (team.score >= 4) {
+                    rankIcon = '👑';
+                    highlightClass = "animate-pulse bg-yellow-900/50 border-yellow-400";
+                } else if (index === 0) rankIcon = '🥇';
+                else if (index === 1) rankIcon = '🥈';
+                else if (index === 2) rankIcon = '🥉';
+
+                const row = document.createElement('div');
+                row.className = `flex items-center justify-between p-3 md:p-4 rounded border-2 ${highlightClass || team.border} ${team.color} ${team.text}`;
+                row.innerHTML = `
+                    <div class="flex items-center gap-2 md:gap-4">
+                        <span class="text-xl md:text-2xl w-6 md:w-8 text-center font-bold">${rankIcon}</span>
+                        <img src="${baseUrl}${team.img}" alt="${team.name}" class="w-8 h-8 md:w-10 md:h-10 object-contain drop-shadow-md">
+                        <span class="font-pixel text-[10px] md:text-sm uppercase tracking-widest">${team.name}</span>
+                    </div>
+                    <div class="flex items-center gap-2 bg-black/20 px-3 py-1 rounded-full border border-black/20">
+                        <span class="font-pixel text-yellow-300 text-base md:text-lg">${team.score}/4</span>
+                        <i data-lucide="star" class="w-4 h-4 md:w-5 md:h-5 text-yellow-300 fill-yellow-300"></i>
+                    </div>
+                `;
+                podiumList.appendChild(row);
+            });
+            
+            lucide.createIcons();
+            podiumModal.classList.add('active');
+        });
+
+        document.getElementById('btn-close-podium').addEventListener('click', () => {
+            podiumModal.classList.remove('active');
+        });
+
+        // INICIO
+        loadProgress();
+        drawWheel();
+
+    </script>
+</body>
+</html>
