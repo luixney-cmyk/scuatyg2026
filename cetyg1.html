@@ -96,15 +96,10 @@
 
         // Bloquear atajos de teclado de herramientas de desarrollador
         document.onkeydown = function(e) {
-            // Prevenir F12
             if(e.keyCode == 123) return false;
-            // Prevenir Ctrl+Shift+I (Inspector)
             if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false;
-            // Prevenir Ctrl+Shift+C (Inspector de elementos)
             if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false;
-            // Prevenir Ctrl+Shift+J (Consola)
             if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false;
-            // Prevenir Ctrl+U (Ver código fuente)
             if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
         }
     </script>
@@ -174,7 +169,7 @@
             </div>
 
             <!-- PODIO (1er, 2do y 3er Lugar) -->
-            <div id="podium-container" class="flex items-end justify-center gap-2 md:gap-4 h-72 md:h-80 mt-10 md:mt-12 mb-8 px-2 hidden opacity-0 transition-opacity duration-500">
+            <div id="podium-container" class="flex items-end justify-center gap-2 md:gap-4 h-80 md:h-96 mt-10 md:mt-12 mb-8 px-2 hidden opacity-0 transition-opacity duration-500">
                 <!-- Se llena con JavaScript -->
             </div>
             
@@ -248,36 +243,39 @@
 
     const isCanvasEnv = typeof __firebase_config !== 'undefined';
     const currentAppId = typeof __app_id !== 'undefined' ? __app_id : 'scuatyg2026-app';
+    const baseUrl = "https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/";
 
-    // --- BASE DE DATOS DE EQUIPOS (Aspecto visual) ---
+    // --- BASE DE DATOS DE EQUIPOS (Ahora con imágenes incluidas) ---
+    // Toad fue omitido intencionalmente ya que no compite en el podio.
     const baseTeamsInfo = [
-        { name: "Mario", color: "bg-red-600", border: "border-red-800", text: "text-white" },
-        { name: "Peach", color: "bg-pink-400", border: "border-pink-600", text: "text-white" },
-        { name: "Waluigi", color: "bg-purple-600", border: "border-purple-800", text: "text-white" },
-        { name: "Bowser", color: "bg-red-900", border: "border-red-950", text: "text-white" },
-        { name: "Rosalina", color: "bg-teal-300", border: "border-teal-500", text: "text-black" },
-        { name: "Koopa", color: "bg-gray-800", border: "border-black", text: "text-white" },
-        { name: "Boo", color: "bg-blue-100", border: "border-blue-300", text: "text-black" },
-        { name: "Huesitos", color: "bg-gray-500", border: "border-gray-700", text: "text-white" }
+        { name: "Mario", color: "bg-red-600", border: "border-red-800", text: "text-white", img: "mario.png" },
+        { name: "Peach", color: "bg-pink-400", border: "border-pink-600", text: "text-white", img: "peach.png" },
+        { name: "Waluigi", color: "bg-purple-600", border: "border-purple-800", text: "text-white", img: "raluigi.png" },
+        { name: "Bowser", color: "bg-red-900", border: "border-red-950", text: "text-white", img: "bowser.png" },
+        { name: "Rosalina", color: "bg-teal-300", border: "border-teal-500", text: "text-black", img: "Rosalina.png" },
+        { name: "Koopa", color: "bg-gray-800", border: "border-black", text: "text-white", img: "koopa.png" },
+        { name: "Boo", color: "bg-blue-100", border: "border-blue-300", text: "text-black", img: "boo.png" },
+        { name: "Huesitos", color: "bg-gray-500", border: "border-gray-700", text: "text-white", img: "huesitos.png" }
     ];
 
     let db = null, auth = null;
     let globalTeamsData = []; 
 
-    // Función auxiliar para dibujar los avatares apilados si hay empates
+    // Función auxiliar para dibujar los avatares apilados con imágenes reales
     function getAvatarsHTML(teamsArr, sizeClass) {
         if(!teamsArr || teamsArr.length === 0) return '';
         
-        let avatarClass = teamsArr.length > 1 ? 'w-8 h-8 md:w-10 md:h-10 text-[8px] md:text-[10px]' : 'w-10 h-10 md:w-14 md:h-14 text-xs md:text-sm';
+        let avatarClass = teamsArr.length > 1 ? 'w-10 h-10 md:w-12 md:h-12' : 'w-14 h-14 md:w-16 md:h-16';
         if(sizeClass === 'large') {
-             avatarClass = teamsArr.length > 1 ? 'w-10 h-10 md:w-12 md:h-12 text-[10px] md:text-[11px]' : 'w-14 h-14 md:w-16 md:h-16 text-sm md:text-base';
+             avatarClass = teamsArr.length > 1 ? 'w-12 h-12 md:w-14 md:h-14' : 'w-16 h-16 md:w-20 md:h-20';
         }
         
-        let html = '<div class="flex flex-wrap justify-center gap-1 z-10 mb-1">';
+        let html = '<div class="flex flex-wrap justify-center gap-2 z-10 mb-2">';
         teamsArr.forEach(t => {
+            const cacheBuster = "?v=" + new Date().getTime(); // Evitar problemas de caché con github
             html += `
-            <div class="${t.color} ${t.border} border-[3px] rounded-full ${avatarClass} flex items-center justify-center shadow-[0_0_10px_rgba(255,255,255,0.3)]" title="${t.name}">
-                <span class="font-bold ${t.text}">${t.name.substring(0,3).toUpperCase()}</span>
+            <div class="${t.color} ${t.border} border-[3px] rounded-full ${avatarClass} flex items-center justify-center shadow-[0_0_10px_rgba(255,255,255,0.4)] overflow-hidden relative" title="${t.name}">
+                <img src="${baseUrl}${t.img}${cacheBuster}" alt="${t.name}" class="w-full h-full object-contain p-1 drop-shadow-[2px_2px_2px_rgba(0,0,0,0.8)] scale-110" onerror="this.onerror=null; this.src='https://placehold.co/50x50?text=${t.name.substring(0,3)}';">
             </div>`;
         });
         html += '</div>';
@@ -286,6 +284,7 @@
 
     // --- FUNCIÓN PARA PROCESAR DATOS Y DIBUJAR ---
     const renderizarPodioIndex = (registrosNube) => {
+        // Inicializar puntos de todos los equipos en 0, incluyendo sus imágenes
         let equiposProcesados = baseTeamsInfo.map(t => ({ ...t, points: 0 }));
 
         // Sumar puntos
@@ -399,12 +398,21 @@
             horizList.innerHTML = '<p class="text-xs text-gray-500 italic p-2">Los demás equipos aún no suman puntos.</p>';
         } else {
             restoEquipos.forEach((team) => {
+                const cacheBuster = "?v=" + new Date().getTime();
+                // Extracción de la clase bg- para inyectarla como fondo del círculo de la imagen pequeña
+                const bgClass = team.color; 
+                
                 horizList.innerHTML += `
-                    <div class="flex-shrink-0 flex items-center bg-gray-900 border-2 border-gray-600 p-2 rounded snap-start min-w-[140px] shadow-sm">
-                        <div class="font-pixel text-gray-400 text-xs mr-3">#${team.rank}</div>
+                    <div class="flex-shrink-0 flex items-center bg-gray-900 border-2 border-gray-600 p-2 rounded snap-start min-w-[160px] shadow-sm hover:border-gray-400 transition-colors">
+                        <div class="font-pixel text-gray-400 text-xs mx-2">#${team.rank}</div>
+                        
+                        <div class="${bgClass} ${team.border} border-2 rounded-full w-8 h-8 flex items-center justify-center mr-2 shadow-inner overflow-hidden">
+                            <img src="${baseUrl}${team.img}${cacheBuster}" class="w-full h-full object-contain p-[2px] drop-shadow-md scale-110" alt="${team.name}" onerror="this.onerror=null; this.src='https://placehold.co/30x30?text=${team.name.substring(0,1)}';">
+                        </div>
+
                         <div>
                             <div class="font-bold text-xs text-gray-200 uppercase">${team.name}</div>
-                            <div class="text-[10px] text-gray-400 font-pixel mt-1">${team.points} pts</div>
+                            <div class="text-[10px] text-yellow-400 font-pixel mt-1">${team.points} pts</div>
                         </div>
                     </div>
                 `;
