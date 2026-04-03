@@ -147,11 +147,14 @@
         <div class="modal-zoom bg-white border-4 border-black w-full max-w-md rounded-lg shadow-[8px_8px_0_rgba(0,0,0,1)] flex flex-col max-h-[90vh]">
             <!-- Header del modal -->
             <div id="modal-header" class="p-4 border-b-4 border-black flex items-center gap-4 relative">
-                <button onclick="closeTeamDetails()" class="absolute top-2 right-2 w-8 h-8 bg-red-600 text-white border-2 border-black rounded flex items-center justify-center font-bold hover:bg-red-700 transition-colors">X</button>
-                <div id="modal-avatar" class="w-12 h-12 border-2 border-black rounded flex items-center justify-center shadow-[2px_2px_0_rgba(0,0,0,1)] bg-white text-black">
-                    <span id="modal-initials" class="font-pixel text-[10px]"></span>
+                <button onclick="closeTeamDetails()" class="absolute top-2 right-2 w-8 h-8 bg-red-600 text-white border-2 border-black rounded flex items-center justify-center font-bold hover:bg-red-700 transition-colors z-20">X</button>
+                
+                <!-- Avatar ahora con imagen -->
+                <div id="modal-avatar" class="w-16 h-16 border-4 border-black rounded flex items-center justify-center shadow-[2px_2px_0_rgba(0,0,0,1)] bg-white text-black overflow-hidden relative z-10">
+                    <img id="modal-img" src="" alt="Team Avatar" class="w-full h-full object-contain p-1 scale-110 drop-shadow-md">
                 </div>
-                <div>
+
+                <div class="z-10">
                     <h3 id="modal-team-name" class="font-bold text-2xl uppercase tracking-wider"></h3>
                     <p id="modal-team-points" class="font-pixel text-[10px]"></p>
                 </div>
@@ -192,7 +195,7 @@
     };
 
     // ==========================================
-    // CONFIGURACIÓN DE FIREBASE (La misma del Comité)
+    // CONFIGURACIÓN DE FIREBASE
     // ==========================================
     const firebaseConfig = {
         apiKey: "AIzaSyAWvlKYMuFlxL88OrSOzGPzXk0w_HUTGQ8",
@@ -206,35 +209,32 @@
 
     const isCanvasEnv = typeof __firebase_config !== 'undefined';
     const currentAppId = typeof __app_id !== 'undefined' ? __app_id : 'scuatyg2026-app';
+    const baseUrl = "https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/";
 
-    // --- BASE DE DATOS DE EQUIPOS (Aspecto visual) ---
-    // Aquí definimos los colores y nombres, pero los puntos y misiones inician vacíos.
+    // --- BASE DE DATOS DE EQUIPOS (Ahora con imágenes incluidas) ---
     const baseTeamsInfo = [
-        { name: "Mario", color: "bg-red-600", border: "border-red-800", text: "text-white" },
-        { name: "Peach", color: "bg-pink-400", border: "border-pink-600", text: "text-white" },
-        { name: "Waluigi", color: "bg-purple-600", border: "border-purple-800", text: "text-white" },
-        { name: "Bowser", color: "bg-red-900", border: "border-red-950", text: "text-white" },
-        { name: "Rosalina", color: "bg-teal-300", border: "border-teal-500", text: "text-black" },
-        { name: "Koopa", color: "bg-gray-800", border: "border-black", text: "text-white" },
-        { name: "Boo", color: "bg-blue-100", border: "border-blue-300", text: "text-black" },
-        { name: "Huesitos", color: "bg-gray-500", border: "border-gray-700", text: "text-white" }
+        { name: "Mario", color: "bg-red-600", border: "border-red-800", text: "text-white", img: "mario.png" },
+        { name: "Peach", color: "bg-pink-400", border: "border-pink-600", text: "text-white", img: "peach.png" },
+        { name: "Waluigi", color: "bg-purple-600", border: "border-purple-800", text: "text-white", img: "raluigi.png" },
+        { name: "Bowser", color: "bg-red-900", border: "border-red-950", text: "text-white", img: "bowser.png" },
+        { name: "Rosalina", color: "bg-teal-300", border: "border-teal-500", text: "text-black", img: "Rosalina.png" },
+        { name: "Koopa", color: "bg-gray-800", border: "border-black", text: "text-white", img: "koopa.png" },
+        { name: "Boo", color: "bg-blue-100", border: "border-blue-300", text: "text-black", img: "boo.png" },
+        { name: "Huesitos", color: "bg-gray-500", border: "border-gray-700", text: "text-white", img: "huesitos.png" }
     ];
 
     let db = null, auth = null;
-    let globalTeamsData = []; // Aquí se guardará la data ya procesada
+    let globalTeamsData = []; 
 
     // --- FUNCIÓN PRINCIPAL PARA PROCESAR DATOS ---
     const procesarDatosDeNube = (registrosNube) => {
-        // 1. Crear copia fresca de la estructura visual base
         let equiposProcesados = baseTeamsInfo.map(t => ({
             ...t, 
             points: 0, 
             missions: [] 
         }));
 
-        // 2. Llenar los datos recorriendo lo que mandó el comité
         registrosNube.forEach(registro => {
-            // Oro
             if (registro.oro) {
                 let eq = equiposProcesados.find(t => t.name === registro.oro);
                 if (eq) {
@@ -242,7 +242,6 @@
                     eq.missions.push({ title: registro.titulo, place: 1, pts: registro.ptsOro });
                 }
             }
-            // Plata
             if (registro.plata) {
                 let eq = equiposProcesados.find(t => t.name === registro.plata);
                 if (eq) {
@@ -250,7 +249,6 @@
                     eq.missions.push({ title: registro.titulo, place: 2, pts: registro.ptsPlata });
                 }
             }
-            // Bronce
             if (registro.bronce) {
                 let eq = equiposProcesados.find(t => t.name === registro.bronce);
                 if (eq) {
@@ -258,32 +256,29 @@
                     eq.missions.push({ title: registro.titulo, place: 3, pts: registro.ptsBronce });
                 }
             }
-            // Participaciones
             if (registro.participantes && Array.isArray(registro.participantes)) {
                 registro.participantes.forEach(participante => {
                     let eq = equiposProcesados.find(t => t.name === participante);
                     if (eq && registro.ptsParticipacion > 0) {
                         eq.points += registro.ptsParticipacion;
-                        eq.missions.push({ title: registro.titulo, place: 4, pts: registro.ptsParticipacion }); // place 4 = participación
+                        eq.missions.push({ title: registro.titulo, place: 4, pts: registro.ptsParticipacion }); 
                     }
                 });
             }
         });
 
-        // 3. Ordenar de mayor a menor y guardar globalmente
         equiposProcesados.sort((a, b) => b.points - a.points);
         globalTeamsData = equiposProcesados;
         
-        // 4. Dibujar en pantalla
         renderizarTabla();
     };
 
-    // --- FUNCIÓN PARA DIBUJAR LA TABLA ---
+    // --- FUNCIÓN PARA DIBUJAR LA TABLA CON IMÁGENES ---
     const renderizarTabla = () => {
         const container = document.getElementById('leaderboard-container');
         document.getElementById('loading-state').classList.add('hidden');
         container.classList.remove('hidden');
-        container.innerHTML = ''; // Limpiar anterior
+        container.innerHTML = ''; 
 
         if (globalTeamsData.length === 0) return;
 
@@ -296,6 +291,8 @@
             else if (rank === 2) { rankColor = "text-gray-300"; suffix = "nd"; }
             else if (rank === 3) { rankColor = "text-amber-600"; suffix = "rd"; }
 
+            const cacheBuster = "?v=" + new Date().getTime(); // Evitar problemas de caché
+            
             const row = document.createElement('div');
             row.className = "flex items-center p-2 rounded row-hover border-b border-gray-700/50 cursor-pointer";
             row.innerHTML = `
@@ -303,9 +300,12 @@
                     ${rank}<span class="text-sm md:text-lg">${suffix}</span>
                 </div>
                 <div class="flex-1 flex items-center gap-3 md:gap-4 pl-2 md:pl-4">
-                    <div class="w-12 h-12 md:w-16 md:h-16 ${team.color} ${team.border} border-4 rounded-lg flex items-center justify-center shadow-[4px_4px_0_rgba(0,0,0,1)] transform -rotate-3">
-                        <span class="font-pixel text-[8px] md:text-[10px] ${team.text}">${team.name.substring(0,3).toUpperCase()}</span>
+                    
+                    <!-- Avatar con la Imagen del Personaje -->
+                    <div class="w-12 h-12 md:w-16 md:h-16 ${team.color} ${team.border} border-4 rounded-lg flex items-center justify-center shadow-[4px_4px_0_rgba(0,0,0,1)] transform -rotate-3 overflow-hidden relative">
+                        <img src="${baseUrl}${team.img}${cacheBuster}" alt="${team.name}" class="w-full h-full object-contain p-1 drop-shadow-[2px_2px_2px_rgba(0,0,0,0.8)] scale-110" onerror="this.onerror=null; this.src='https://placehold.co/50x50?text=${team.name.substring(0,3)}';">
                     </div>
+                    
                     <span class="font-bold text-white text-lg md:text-2xl uppercase tracking-wider drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">${team.name}</span>
                 </div>
                 <div class="w-20 md:w-32 text-right">
@@ -316,37 +316,38 @@
 
             row.addEventListener('click', () => {
                 window.playCoinSound();
-                window.showTeamDetails(team.name); // Pasamos el nombre para buscarlo en la data global
+                window.showTeamDetails(team.name); 
             });
 
             container.appendChild(row);
         });
     };
 
-    // --- MODAL DE DETALLES ---
+    // --- MODAL DE DETALLES CON IMAGEN ---
     window.showTeamDetails = function(teamName) {
-        // Buscar los datos actualizados del equipo
         const team = globalTeamsData.find(t => t.name === teamName);
         if (!team) return;
 
         const header = document.getElementById('modal-header');
-        const initials = document.getElementById('modal-initials');
+        const modalImg = document.getElementById('modal-img');
+        const cacheBuster = "?v=" + new Date().getTime();
         
+        // Configurar Colores del Header y la Imagen
         header.className = `p-4 border-b-4 border-black flex items-center gap-4 relative ${team.color}`;
-        document.getElementById('modal-team-name').innerText = team.name;
-        document.getElementById('modal-team-name').className = `font-bold text-2xl uppercase tracking-wider ${team.text || 'text-white'}`;
-        document.getElementById('modal-team-points').innerText = `${team.points} PTS GLOBALES`;
-        document.getElementById('modal-team-points').className = `font-pixel text-[10px] ${team.text === 'text-black' ? 'text-gray-800' : 'text-gray-200'}`;
-        
-        initials.innerText = team.name.substring(0,3).toUpperCase();
+        modalImg.src = `${baseUrl}${team.img}${cacheBuster}`;
+        modalImg.onerror = function() { this.src = `https://placehold.co/50x50?text=${team.name.substring(0,3)}`; };
 
+        document.getElementById('modal-team-name').innerText = team.name;
+        document.getElementById('modal-team-name').className = `font-bold text-2xl uppercase tracking-wider ${team.text || 'text-white'} drop-shadow-md`;
+        document.getElementById('modal-team-points').innerText = `${team.points} PTS GLOBALES`;
+        document.getElementById('modal-team-points').className = `font-pixel text-[10px] drop-shadow-md ${team.text === 'text-black' ? 'text-gray-800' : 'text-gray-100'}`;
+        
         const list = document.getElementById('modal-missions-list');
         list.innerHTML = ''; 
 
         if (!team.missions || team.missions.length === 0) {
             list.innerHTML = '<p class="text-sm text-gray-500 text-center py-4 italic font-bold">Aún no tienen puntos registrados. ¡A jugar!</p>';
         } else {
-            // Mostrar misiones ordenadas por puntos (las más altas primero)
             team.missions.sort((a,b) => b.pts - a.pts).forEach(mission => {
                 let medalIcon = '🏅';
                 let medalColor = 'bg-gray-200 text-gray-600 border-gray-300';
@@ -391,7 +392,6 @@
         if (!finalConfig || !finalConfig.apiKey || finalConfig.apiKey.includes("TU_API_KEY")) {
             console.warn("Firebase no configurado. Mostrando datos estáticos de prueba.");
             document.getElementById('offline-indicator').classList.remove('hidden');
-            // Cargar datos locales de prueba si no hay nube
             const localData = JSON.parse(localStorage.getItem('uatyg_comite_votos')) || [];
             procesarDatosDeNube(localData);
             return;
@@ -402,7 +402,6 @@
             auth = getAuth(app);
             db = getFirestore(app);
 
-            // Intentar login anónimo silencioso
             try {
                 if (isCanvasEnv && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
@@ -421,7 +420,6 @@
                 if (currentUser) {
                     const comiteCollectionRef = collection(db, isCanvasEnv ? `artifacts/${currentAppId}/public/data/votos_comite` : 'votos_comite');
                     
-                    // Escuchar cambios en la base de datos en tiempo real
                     onSnapshot(comiteCollectionRef, (snapshot) => {
                         const registrosNube = [];
                         snapshot.forEach((doc) => {
@@ -431,16 +429,12 @@
                         document.getElementById('live-indicator').classList.remove('hidden');
                         document.getElementById('offline-indicator').classList.add('hidden');
                         
-                        // Guardar un respaldo local por si se va el internet
                         localStorage.setItem('uatyg_comite_votos_backup', JSON.stringify(registrosNube));
-                        
-                        // Enviar a la fábrica de tablas
                         procesarDatosDeNube(registrosNube);
                         
                     }, (error) => {
                         console.error("Error leyendo Firebase en vivo:", error);
                         document.getElementById('offline-indicator').classList.remove('hidden');
-                        // Usar el respaldo si la nube falla
                         const backup = JSON.parse(localStorage.getItem('uatyg_comite_votos_backup')) || [];
                         procesarDatosDeNube(backup);
                     });
@@ -454,7 +448,6 @@
         }
     };
 
-    // Arrancar la magia
     initLeaderboardCloud();
 
 </script>
