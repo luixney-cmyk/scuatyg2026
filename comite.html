@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -433,12 +433,33 @@
         s5:  { oro: 50,  plata: 30,  bronce: 15, participacion: 0 }
     };
 
+    // --- NUEVA FUNCIÓN: OCULTAR MISIONES CALIFICADAS ---
+    window.actualizarMisionesDisponibles = function() {
+        const selectElement = document.getElementById('mision-select');
+        const misionesCalificadas = window.baseDeDatosComite.map(r => r.misionId);
+
+        Array.from(selectElement.options).forEach(opt => {
+            if (opt.value && misionesCalificadas.includes(opt.value)) {
+                opt.style.display = 'none'; // Se oculta visualmente
+                opt.disabled = true;        // Evita seleccionarse si el navegador lo fuerza
+                if (!opt.text.includes("✓")) {
+                    opt.text = opt.text + " ✓ (Lista)";
+                }
+            } else if (opt.value) {
+                opt.style.display = 'block';
+                opt.disabled = false;
+                opt.text = opt.text.replace(" ✓ (Lista)", "");
+            }
+        });
+    };
+
     // --- 1. INICIALIZAR LA NUBE ---
     const initCloud = async () => {
         let finalConfig = isCanvasEnv ? JSON.parse(__firebase_config) : firebaseConfig;
 
         if (!finalConfig || !finalConfig.apiKey || finalConfig.apiKey.includes("TU_API_KEY")) {
             modoOffline = true;
+            window.actualizarMisionesDisponibles(); // Offline
             return;
         }
 
@@ -457,6 +478,7 @@
                 console.warn("⚠️ Fallo en autenticación. Activando Modo Offline.");
                 modoOffline = true;
                 if (!isCanvasEnv) document.getElementById('aviso-offline').classList.remove('hidden');
+                window.actualizarMisionesDisponibles(); // Offline
                 return;
             }
 
@@ -473,18 +495,23 @@
                             });
                             localStorage.setItem('uatyg_comite_votos', JSON.stringify(window.baseDeDatosComite));
                             
+                            window.actualizarMisionesDisponibles(); // Actualiza el Select en vivo
+
                             const misionId = document.getElementById('mision-select').value;
                             if (misionId) window.verificarEstadoRegistro(misionId);
                         }, (error) => {
                             modoOffline = true;
+                            window.actualizarMisionesDisponibles();
                         });
                     } catch (dbError) {
                          modoOffline = true;
+                         window.actualizarMisionesDisponibles();
                     }
                 }
             });
         } catch (e) {
             modoOffline = true;
+            window.actualizarMisionesDisponibles();
         }
     };
     initCloud();
@@ -526,6 +553,7 @@
 
     // --- 2. LÓGICA DE INTERFAZ Y BLOQUEO DINÁMICO ---
     window.onload = function() {
+        window.actualizarMisionesDisponibles(); // Configura el select de inicio
         if (localStorage.getItem('uatyg_comite_sesion') === "ACTIVA") {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
@@ -535,18 +563,16 @@
     window.iniciarSesionComite = function() {
         const codigoInput = document.getElementById('codigo-comite');
         const rawCodigo = codigoInput.value.trim().toUpperCase();
-        // Convertimos a base64 para evitar contraseñas a simple vista
         const codigoCifrado = btoa(rawCodigo);
         
         const errorMsg = document.getElementById('error-login');
 
-        // Comparar contraseñas cifradas
-        if (codigoCifrado === CODIGO_RESET) { // "RESET2026"
+        if (codigoCifrado === CODIGO_RESET) { 
             document.getElementById('custom-reset-modal').classList.remove('hidden');
             return; 
         }
 
-        if (codigoCifrado === CODIGO_MAESTRO) { // "CETYG2227"
+        if (codigoCifrado === CODIGO_MAESTRO) { 
             if (modoOffline) document.getElementById('aviso-offline').classList.remove('hidden');
             localStorage.setItem('uatyg_comite_sesion', "ACTIVA");
             document.getElementById('login-screen').classList.add('hidden');
@@ -703,19 +729,25 @@
                 console.error("Error guardando podio en nube:", e);
                 window.baseDeDatosComite.push(registroComite);
                 localStorage.setItem('uatyg_comite_votos', JSON.stringify(window.baseDeDatosComite));
+                window.actualizarMisionesDisponibles(); // Offline update
                 document.getElementById('success-modal').classList.remove('hidden');
             }
         } else {
             window.baseDeDatosComite.push(registroComite);
             localStorage.setItem('uatyg_comite_votos', JSON.stringify(window.baseDeDatosComite));
+            window.actualizarMisionesDisponibles(); // Offline update
             document.getElementById('success-modal').classList.remove('hidden');
         }
     };
 
     window.cerrarModalExito = function() {
         document.getElementById('success-modal').classList.add('hidden');
-        const misionId = document.getElementById('mision-select').value;
-        window.verificarEstadoRegistro(misionId);
+        
+        // Reseteamos el selector al default para obligarlos a elegir otra
+        document.getElementById('mision-select').value = "";
+        window.cambiarMision(); 
+        window.actualizarMisionesDisponibles(); 
+        
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
