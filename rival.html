@@ -316,7 +316,17 @@
           };
 
           // --- FUNCIONES DEL HOST (PANTALLA ÚNICA) ---
-          const handleHostLogin = () => {
+          const handleHostLogin = async () => {
+            // CÓDIGO DE RESCATE: RESET2026
+            if (pinInput.toUpperCase() === 'RESET2026') {
+                if(window.confirm('🚨 ¿ESTÁS SEGURO DE RESETEAR TODO EL TABLERO A CERO? Esto borrará el avance de todos los Karts.')) {
+                    await window.FirebaseAPI.setDoc(getDocRef(), INITIAL_STATE);
+                    setPinInput('');
+                    alert('Tablero reseteado exitosamente.');
+                }
+                return;
+            }
+
             if (pinInput.toUpperCase() === PINS.host) {
               setRole('host');
               if(!gameState) window.FirebaseAPI.setDoc(getDocRef(), INITIAL_STATE);
@@ -342,6 +352,7 @@
               setHostJudgments({ ...hostJudgments, [teamId]: !current });
           };
 
+          // --- CORRECCIÓN BUG 1: ASIGNAR CORRECTAMENTE EL TURNO DE RULETA ---
           const executeEvaluations = async () => {
             const { teams } = gameState;
             let newTeams = { ...teams };
@@ -350,7 +361,6 @@
 
             Object.keys(newTeams).forEach(id => {
               const t = newTeams[id];
-              // El que no es verdadero (seleccionado), cuenta como falso
               const isCorrect = hostJudgments[id] === true;
 
               if (t.frozen) {
@@ -363,20 +373,23 @@
                 if (ITEM_POSITIONS[id].includes(t.pos)) newQueue.push(id);
                 if (t.pos === 15 && !winner) winner = id;
               } else {
-                // Incorrecto (no lo seleccionó el juez)
-                if (t.star) t.star = false; // Pierde la estrella si falló
+                if (t.star) t.star = false;
               }
             });
+
+            // Asignamos inmediatamente al primer jugador de la fila para que no se quede vacío
+            const nextInRoulette = newQueue.length > 0 ? { teamId: newQueue[0], spinning: false, item: null } : { teamId: null, spinning: false, item: null };
 
             await window.FirebaseAPI.updateDoc(getDocRef(), {
               status: winner ? 'finished' : (newQueue.length > 0 ? 'roulette_active' : 'lobby'),
               teams: newTeams,
               rouletteQueue: newQueue,
+              activeRoulette: nextInRoulette,
               winner: winner
             });
           };
 
-          // Resolver Ítem de la Ruleta
+          // Resolver Ítem de la Ruleta y pasar al siguiente
           const resolveItemEffect = async (teamId, item) => {
             let newTeams = { ...gameState.teams };
             const activeRivals = Object.keys(newTeams).filter(id => id !== teamId && newTeams[id].pos > 0);
@@ -406,11 +419,15 @@
             }
 
             const newQueue = [...gameState.rouletteQueue];
-            newQueue.shift();
+            newQueue.shift(); // Sacamos al que ya giró
+
+            // Preparamos el turno del siguiente (si es que hubo un empate en los bloques de ítem)
+            const nextInRoulette = newQueue.length > 0 ? { teamId: newQueue[0], spinning: false, item: null } : { teamId: null, spinning: false, item: null };
+
             await window.FirebaseAPI.updateDoc(getDocRef(), {
               teams: newTeams,
               rouletteQueue: newQueue,
-              activeRoulette: { teamId: null, spinning: false, item: null },
+              activeRoulette: nextInRoulette,
               status: newQueue.length > 0 ? 'roulette_active' : 'lobby'
             });
           };
@@ -434,11 +451,11 @@
                   {/* Tarjeta de Pantalla Principal (Admin) */}
                   <div className="bg-gray-900 p-10 rounded-3xl border-2 border-yellow-700 shadow-[0_0_40px_rgba(161,98,7,0.3)]">
                     <h2 className="text-2xl font-bold text-yellow-400 mb-6 flex items-center justify-center gap-3"><IconSettings className="w-8 h-8"/> Pantalla Principal (Admin)</h2>
-                    <p className="text-gray-400 text-center mb-6">Esta es la pantalla que se conectará al proyector de la explanada.</p>
+                    <p className="text-gray-400 text-center mb-6">Esta pantalla se conectará al proyector. Para resetear el juego a cero, escribe <strong className="text-white">RESET2026</strong>.</p>
                     
                     <div className="border-t border-gray-800 pt-6">
-                      <input type="password" placeholder="PIN Secreto" value={pinInput} onChange={e=>setPinInput(e.target.value)} className="w-full p-4 bg-gray-950 border border-gray-700 rounded-xl mb-4 text-center tracking-widest text-xl focus:border-yellow-500 focus:outline-none" />
-                      <button onClick={handleHostLogin} className="w-full py-4 bg-yellow-600 hover:bg-yellow-500 rounded-xl text-black font-black uppercase text-xl transition-all shadow-lg hover:scale-105 active:scale-95">Abrir Tablero Maestro</button>
+                      <input type="password" placeholder="PIN Secreto o RESET2026" value={pinInput} onChange={e=>setPinInput(e.target.value)} className="w-full p-4 bg-gray-950 border border-gray-700 rounded-xl mb-4 text-center tracking-widest text-xl focus:border-yellow-500 focus:outline-none" />
+                      <button onClick={handleHostLogin} className="w-full py-4 bg-yellow-600 hover:bg-yellow-500 rounded-xl text-black font-black uppercase text-xl transition-all shadow-lg hover:scale-105 active:scale-95">Ingresar al Tablero</button>
                       {errorMsg && <p className="text-red-400 text-sm mt-3 text-center font-bold">{errorMsg}</p>}
                     </div>
                   </div>
@@ -580,7 +597,6 @@
                                     isSelected ? 'selected-answer' : 
                                     'bg-gray-900 border-gray-700 hover:border-gray-500'}`}
                              >
-                               {/* Fondo de color sutil para identificar el equipo */}
                                <div className="absolute inset-0 opacity-10 pointer-events-none" style={{backgroundColor: info.hex}}></div>
                                
                                <h3 style={{color: info.hex}} className="text-3xl font-black uppercase mb-4 relative z-10">{info.name}</h3>
@@ -640,8 +656,8 @@
 
                       {/* Botones de Emergencia Admin (Invisibles para el público general pero clickeables para ti) */}
                       <div className="mt-12 flex justify-center gap-4 opacity-10 hover:opacity-100 transition-opacity">
-                         {!gameState.activeRoulette.spinning && !gameState.activeRoulette.item && <button onClick={()=>window.FirebaseAPI.updateDoc(getDocRef(), {'activeRoulette.spinning': true})} className="px-4 py-2 bg-gray-800 text-sm rounded">Forzar Giro</button>}
-                         {gameState.activeRoulette.item && <button onClick={()=>resolveItemEffect(gameState.activeRoulette.teamId, gameState.activeRoulette.item)} className="px-4 py-2 bg-yellow-600 text-black text-sm font-bold rounded">Forzar Aplicar</button>}
+                         {!gameState.activeRoulette.spinning && !gameState.activeRoulette.item && <button onClick={()=>window.FirebaseAPI.updateDoc(getDocRef(), {'activeRoulette.spinning': true})} className="px-4 py-2 bg-gray-800 text-sm rounded cursor-pointer">Forzar Giro</button>}
+                         {gameState.activeRoulette.item && <button onClick={()=>resolveItemEffect(gameState.activeRoulette.teamId, gameState.activeRoulette.item)} className="px-4 py-2 bg-yellow-600 text-black text-sm font-bold rounded cursor-pointer">Forzar Aplicar</button>}
                       </div>
                     </div>
                   </div>
@@ -656,7 +672,7 @@
                       <div className="text-[6rem] font-black uppercase tracking-widest px-20 py-10 rounded-[4rem] border-8 inline-block" style={{ backgroundColor: `${TEAMS_INFO[gameState.winner].hex}40`, borderColor: TEAMS_INFO[gameState.winner].hex, color: TEAMS_INFO[gameState.winner].hex }}>
                         {TEAMS_INFO[gameState.winner].name}
                       </div>
-                      <div className="mt-20"><button onClick={() => window.FirebaseAPI.setDoc(getDocRef(), INITIAL_STATE)} className="text-gray-600 hover:text-white underline">Reiniciar Carrera</button></div>
+                      <div className="mt-20"><button onClick={() => window.FirebaseAPI.setDoc(getDocRef(), INITIAL_STATE)} className="text-gray-600 hover:text-white underline text-2xl font-bold cursor-pointer">Reiniciar Carrera</button></div>
                     </div>
                   </div>
                 )}
@@ -665,7 +681,7 @@
           }
 
           // ==========================================
-          // VISTA 2: JUGADOR (CELULAR) - NO CAMBIA MUCHO, SOLO EL TEMPORIZADOR A 15S
+          // VISTA 2: JUGADOR (CELULAR)
           // ==========================================
           if (role === 'player') {
             const myTeam = gameState.teams[myTeamId];
@@ -761,7 +777,7 @@
                                  <span className="text-8xl">{gameState.activeRoulette.item.icon}</span>
                                </div>
                                <h3 className="text-4xl font-black text-white mb-8 uppercase">{gameState.activeRoulette.item.name}</h3>
-                               <button onClick={resolveItemEffect} className="w-full py-6 bg-green-600 active:bg-green-800 text-white font-black text-3xl uppercase rounded-2xl shadow-[0_10px_0_rgba(21,128,61,1)] active:translate-y-2 active:shadow-none transition-all">
+                               <button onClick={() => resolveItemEffect(gameState.activeRoulette.teamId, gameState.activeRoulette.item)} className="w-full py-6 bg-green-600 active:bg-green-800 text-white font-black text-3xl uppercase rounded-2xl shadow-[0_10px_0_rgba(21,128,61,1)] active:translate-y-2 active:shadow-none transition-all">
                                  ¡Usar Ítem!
                                </button>
                              </div>
