@@ -8,16 +8,23 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- React & ReactDOM (Versión de Producción) -->
+    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
-    <!-- Babel (Para compilar JSX en el navegador) -->
+    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #030712; color: white; touch-action: manipulation; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
+        /* Efecto de selección brillante */
+        .selected-answer {
+            background-color: rgba(22, 163, 74, 0.2) !important;
+            border-color: #22c55e !important;
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -29,7 +36,6 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Exponemos Firebase globalmente para que React pueda usarlo
         window.FirebaseAPI = {
             initializeApp, getAuth, signInAnonymously, onAuthStateChanged,
             getFirestore, doc, onSnapshot, setDoc, updateDoc
@@ -42,7 +48,7 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // --- ÍCONOS SVG NATIVOS (Reemplazo de Lucide-React) ---
+        // --- ÍCONOS SVG NATIVOS ---
         const IconTrophy = ({className, style}) => <svg className={className} style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2Z"/></svg>;
         const IconStar = ({className}) => <svg className={className} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
         const IconShield = ({className}) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
@@ -50,7 +56,6 @@
         const IconUsers = ({className}) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
         const IconSettings = ({className}) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>;
         const IconCheck = ({className}) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
-        const IconX = ({className}) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
         const IconTimer = ({className}) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="14" r="8"/><path d="M12 2v4"/><path d="M12 14 10 12"/><path d="M18 2h-4"/></svg>;
         const IconPlay = ({className}) => <svg className={className} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>;
 
@@ -164,7 +169,7 @@
           ...Array(8).fill({ id: 'turbo', name: 'Turbo', icon: '🍄', color: 'bg-red-500', desc: 'Próximo acierto = +2 casillas.' }),
           ...Array(5).fill({ id: 'banana', name: 'Plátano', icon: '🍌', color: 'bg-yellow-500', desc: 'Congela a un rival al azar.' }),
           ...Array(4).fill({ id: 'shell', name: 'Caparazón', icon: '🐢', color: 'bg-red-600', desc: 'Ataca al 1er lugar (-1 casilla).' }),
-          ...Array(2).fill({ id: 'star', name: 'Estrella', icon: '⭐', color: 'bg-yellow-300', desc: 'Inmunidad a caparazones y plátanos.' }),
+          ...Array(2).fill({ id: 'star', name: 'Estrella', icon: '⭐', color: 'bg-yellow-300', desc: 'Inmunidad a ataques.' }),
           ...Array(1).fill({ id: 'lightning', name: 'Rayo', icon: '⚡', color: 'bg-blue-500', desc: '¡Todos retroceden una casilla!' }),
         ];
 
@@ -198,26 +203,24 @@
           const [selectedTeam, setSelectedTeam] = useState(1);
           const [errorMsg, setErrorMsg] = useState('');
           const [timeLeft, setTimeLeft] = useState(0); 
+          
+          // ESTADO CENTRAL DEL ADMIN PARA MARCAR CORRECTAS
           const [hostJudgments, setHostJudgments] = useState({}); 
+
           const [playerAnswerInput, setPlayerAnswerInput] = useState('');
           const [hasSubmitted, setHasSubmitted] = useState(false);
 
-          // 1. Escuchar la carga del módulo de Firebase
+          // 1. Iniciar Firebase
           useEffect(() => {
-              if (window.FirebaseAPI) {
-                  setFirebaseLoaded(true);
-              } else {
-                  window.addEventListener('firebase-loaded', () => setFirebaseLoaded(true));
-              }
+              if (window.FirebaseAPI) setFirebaseLoaded(true);
+              else window.addEventListener('firebase-loaded', () => setFirebaseLoaded(true));
           }, []);
 
-          // 2. Inicializar Firebase con TUS CREDENCIALES
           useEffect(() => {
             if (!firebaseLoaded) return;
             try {
               const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore } = window.FirebaseAPI;
               
-              // TU CONFIGURACIÓN DE FIREBASE
               const firebaseConfig = {
                   apiKey: "AIzaSyAWvlKYMuFlxL88OrSOzGPzXk0w_HUTGQ8",
                   authDomain: "scuatyg2026.firebaseapp.com",
@@ -237,14 +240,12 @@
             } catch (e) { console.error("Firebase init error:", e); }
           }, [firebaseLoaded]);
 
-          // Función central para obtener la referencia del documento
           const getDocRef = () => {
             const { doc } = window.FirebaseAPI;
-            // Guardamos en tu base de datos en la colección "mariokart" documento "partida_activa"
             return doc(db, 'mariokart', 'partida_activa'); 
           };
 
-          // 3. Escuchar la Partida
+          // 2. Escuchar la Partida
           useEffect(() => {
             if (!user || !db) return;
             const { onSnapshot, setDoc } = window.FirebaseAPI;
@@ -267,7 +268,7 @@
             return () => unsub();
           }, [user, db, role]);
 
-          // 4. Lógica del Reloj
+          // 3. Lógica del Reloj (15 SEGUNDOS)
           useEffect(() => {
             if (!gameState || gameState.status !== 'question_active') {
               setTimeLeft(0);
@@ -284,14 +285,8 @@
 
           const forceCloseQuestion = async () => {
             const { updateDoc } = window.FirebaseAPI;
-            let updates = { status: 'host_evaluating' };
-            Object.keys(gameState.teams).forEach(id => {
-              if (!gameState.teams[id].frozen && !gameState.teams[id].ansText) {
-                updates[`teams.${id}.ansText`] = 'No contestó';
-              }
-            });
-            setHostJudgments({}); 
-            await updateDoc(getDocRef(), updates);
+            setHostJudgments({}); // Limpiamos la selección del admin
+            await updateDoc(getDocRef(), { status: 'host_evaluating' });
           };
 
           // --- FUNCIONES DEL JUGADOR ---
@@ -304,7 +299,7 @@
           };
 
           const submitTextAnswer = async () => {
-            if (!playerAnswerInput.trim() || hasSubmitted) return;
+            if (gameState.status !== 'question_active' || !playerAnswerInput.trim() || hasSubmitted) return;
             setHasSubmitted(true);
             await window.FirebaseAPI.updateDoc(getDocRef(), { [`teams.${myTeamId}.ansText`]: playerAnswerInput.trim() });
           };
@@ -320,24 +315,31 @@
             }, 2500);
           };
 
-          // --- FUNCIONES DEL HOST ---
+          // --- FUNCIONES DEL HOST (PANTALLA ÚNICA) ---
           const handleHostLogin = () => {
             if (pinInput.toUpperCase() === PINS.host) {
               setRole('host');
               if(!gameState) window.FirebaseAPI.setDoc(getDocRef(), INITIAL_STATE);
-            } else { setErrorMsg('PIN Incorrecto.'); }
+            } else { setErrorMsg('PIN de Administrador Incorrecto.'); }
           };
 
+          // TIEMPO AHORA: 15 SEGUNDOS (15000 ms)
           const launchRandomQuestion = async () => {
             const randomQ = QUESTIONS_POOL[Math.floor(Math.random() * QUESTIONS_POOL.length)];
             let updates = { 
               status: 'question_active', 
               currentQuestion: randomQ.q,
               hostAnswerHint: randomQ.a,
-              deadline: Date.now() + 10000 
+              deadline: Date.now() + 15000 
             };
             Object.keys(gameState.teams).forEach(id => { updates[`teams.${id}.ansText`] = ''; });
             await window.FirebaseAPI.updateDoc(getDocRef(), updates);
+          };
+
+          // Seleccionar tarjeta para marcarla como correcta
+          const toggleJudgment = (teamId) => {
+              const current = hostJudgments[teamId];
+              setHostJudgments({ ...hostJudgments, [teamId]: !current });
           };
 
           const executeEvaluations = async () => {
@@ -348,17 +350,21 @@
 
             Object.keys(newTeams).forEach(id => {
               const t = newTeams[id];
+              // El que no es verdadero (seleccionado), cuenta como falso
+              const isCorrect = hostJudgments[id] === true;
+
               if (t.frozen) {
                 t.frozen = false;
                 t.ansText = '';
-              } else if (hostJudgments[id] === true) {
+              } else if (isCorrect) {
                 let steps = t.mushroom ? 2 : 1;
                 t.pos = Math.min(15, t.pos + steps);
                 if (t.mushroom) t.mushroom = false;
                 if (ITEM_POSITIONS[id].includes(t.pos)) newQueue.push(id);
                 if (t.pos === 15 && !winner) winner = id;
-              } else if (hostJudgments[id] === false) {
-                if (t.star) t.star = false;
+              } else {
+                // Incorrecto (no lo seleccionó el juez)
+                if (t.star) t.star = false; // Pierde la estrella si falló
               }
             });
 
@@ -370,6 +376,7 @@
             });
           };
 
+          // Resolver Ítem de la Ruleta
           const resolveItemEffect = async (teamId, item) => {
             let newTeams = { ...gameState.teams };
             const activeRivals = Object.keys(newTeams).filter(id => id !== teamId && newTeams[id].pos > 0);
@@ -408,44 +415,44 @@
             });
           };
 
-          const resetGame = async () => {
-            if(window.confirm('¿Reiniciar tablero a cero?')) {
-              await window.FirebaseAPI.setDoc(getDocRef(), INITIAL_STATE);
-            }
-          };
 
           // ==========================================
           // VISTAS CONDICIONALES
           // ==========================================
           if (!firebaseLoaded || (role && !gameState)) {
-            return <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center animate-pulse">Conectando a Firebase...</div>;
+            return <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center animate-pulse text-2xl font-bold">Conectando a UATyG Cloud...</div>;
           }
 
           if (!role) {
             return (
               <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center p-4">
-                <h1 className="text-4xl md:text-6xl font-black mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-yellow-400 uppercase tracking-widest">
+                <h1 className="text-4xl md:text-6xl font-black mb-12 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-yellow-400 uppercase tracking-widest drop-shadow-xl">
                   Dr. Mario's Brain Challenge
                 </h1>
                 
-                <div className="grid md:grid-cols-2 gap-8 w-full max-w-4xl">
-                  <div className="bg-gray-900 p-8 rounded-2xl border-2 border-gray-800 shadow-2xl">
-                    <h2 className="text-xl font-bold text-yellow-400 mb-4 flex items-center justify-center gap-2"><IconSettings className="w-5 h-5"/> Admin / Proyector</h2>
-                    <button onClick={() => setRole('projector')} className="w-full py-4 bg-gray-800 hover:bg-gray-700 text-white rounded-xl mb-4 border border-gray-600 font-bold">🖥️ Abrir Proyector Público</button>
-                    <div className="border-t border-gray-800 pt-4">
-                      <input type="password" placeholder="PIN Host" value={pinInput} onChange={e=>setPinInput(e.target.value)} className="w-full p-3 bg-gray-950 border border-gray-700 rounded mb-2 text-center tracking-widest" />
-                      <button onClick={handleHostLogin} className="w-full py-3 bg-red-600 hover:bg-red-500 rounded text-white font-bold">🎮 Entrar como Juez</button>
-                      {errorMsg && <p className="text-red-400 text-sm mt-2 text-center">{errorMsg}</p>}
+                <div className="grid md:grid-cols-2 gap-10 w-full max-w-5xl">
+                  {/* Tarjeta de Pantalla Principal (Admin) */}
+                  <div className="bg-gray-900 p-10 rounded-3xl border-2 border-yellow-700 shadow-[0_0_40px_rgba(161,98,7,0.3)]">
+                    <h2 className="text-2xl font-bold text-yellow-400 mb-6 flex items-center justify-center gap-3"><IconSettings className="w-8 h-8"/> Pantalla Principal (Admin)</h2>
+                    <p className="text-gray-400 text-center mb-6">Esta es la pantalla que se conectará al proyector de la explanada.</p>
+                    
+                    <div className="border-t border-gray-800 pt-6">
+                      <input type="password" placeholder="PIN Secreto" value={pinInput} onChange={e=>setPinInput(e.target.value)} className="w-full p-4 bg-gray-950 border border-gray-700 rounded-xl mb-4 text-center tracking-widest text-xl focus:border-yellow-500 focus:outline-none" />
+                      <button onClick={handleHostLogin} className="w-full py-4 bg-yellow-600 hover:bg-yellow-500 rounded-xl text-black font-black uppercase text-xl transition-all shadow-lg hover:scale-105 active:scale-95">Abrir Tablero Maestro</button>
+                      {errorMsg && <p className="text-red-400 text-sm mt-3 text-center font-bold">{errorMsg}</p>}
                     </div>
                   </div>
 
-                  <div className="bg-gray-900 p-8 rounded-2xl border-2 border-blue-900 shadow-2xl">
-                    <h2 className="text-xl font-bold text-blue-400 mb-4 flex items-center justify-center gap-2"><IconUsers className="w-5 h-5"/> Modo Equipo (Karts)</h2>
-                    <select value={selectedTeam} onChange={e=>setSelectedTeam(parseInt(e.target.value))} className="w-full p-4 bg-gray-950 border border-blue-800 rounded-xl mb-3 text-center text-lg font-bold">
+                  {/* Tarjeta Jugadores (Celulares) */}
+                  <div className="bg-gray-900 p-10 rounded-3xl border-2 border-blue-900 shadow-[0_0_40px_rgba(30,58,138,0.3)]">
+                    <h2 className="text-2xl font-bold text-blue-400 mb-6 flex items-center justify-center gap-3"><IconUsers className="w-8 h-8"/> Control de Karts</h2>
+                    <p className="text-gray-400 text-center mb-6">Selecciona el equipo al que representas para responder desde tu celular.</p>
+
+                    <select value={selectedTeam} onChange={e=>setSelectedTeam(parseInt(e.target.value))} className="w-full p-4 bg-gray-950 border border-blue-800 rounded-xl mb-4 text-center text-xl font-bold focus:border-blue-500 focus:outline-none">
                       {Object.values(TEAMS_INFO).map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                     </select>
-                    <input type="password" placeholder="PIN Equipo" value={pinInput} onChange={e=>setPinInput(e.target.value)} className="w-full p-4 bg-gray-950 border border-gray-700 rounded-xl text-center mb-4 uppercase tracking-widest" />
-                    <button onClick={handlePlayerJoin} className="w-full py-4 bg-blue-600 hover:bg-blue-500 rounded-xl text-white font-bold text-lg">🚀 Conectar Celular</button>
+                    <input type="password" placeholder="PIN de Equipo" value={pinInput} onChange={e=>setPinInput(e.target.value)} className="w-full p-4 bg-gray-950 border border-gray-700 rounded-xl text-center mb-6 uppercase tracking-widest text-xl focus:border-blue-500 focus:outline-none" />
+                    <button onClick={handlePlayerJoin} className="w-full py-4 bg-blue-600 hover:bg-blue-500 rounded-xl text-white font-black uppercase text-xl transition-all shadow-lg hover:scale-105 active:scale-95">Conectar Celular</button>
                   </div>
                 </div>
               </div>
@@ -454,37 +461,41 @@
 
           // --- COMPONENTE COMPARTIDO: LA PISTA VISUAL ---
           const RaceTrack = () => (
-            <div className="w-full bg-gray-900 border border-gray-800 rounded-2xl p-4 shadow-2xl relative overflow-hidden flex flex-col justify-around h-full">
-              <div className="absolute right-[2%] top-0 bottom-0 w-8 flex flex-col opacity-20">
+            <div className="w-full bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden flex flex-col justify-around h-full min-h-[400px]">
+              <div className="absolute right-[2%] top-0 bottom-0 w-12 flex flex-col opacity-20">
                 {Array.from({length: 20}).map((_, i) => <div key={i} className={`flex-1 ${i % 2 === 0 ? 'bg-white' : 'bg-black'}`}></div>)}
               </div>
 
               {Object.values(TEAMS_INFO).map((info) => {
                 const team = gameState.teams[info.id];
                 return (
-                <div key={info.id} className="flex items-center gap-2 relative z-10">
-                  <div className={`w-24 md:w-32 text-[10px] md:text-sm font-bold uppercase truncate px-2 py-2 rounded-lg flex flex-col justify-center border-l-4 ${team.frozen ? 'opacity-50' : ''} ${team.connected ? 'bg-gray-800' : 'bg-gray-950/50'}`} style={{ borderColor: info.hex }}>
+                <div key={info.id} className="flex items-center gap-3 relative z-10 my-1">
+                  {/* Etiqueta del corredor */}
+                  <div className={`w-32 md:w-40 text-xs md:text-sm font-black uppercase truncate px-3 py-3 rounded-xl flex justify-between items-center border-l-8 ${team.frozen ? 'opacity-50' : ''} ${team.connected ? 'bg-gray-800' : 'bg-gray-950/50'}`} style={{ borderColor: info.hex }}>
                     <span style={{color: info.hex}}>{info.name}</span>
-                    <div className="flex gap-1 h-4 mt-1 text-xs">
+                    <div className="flex gap-1">
                       {team.mushroom && <span>🍄</span>}{team.star && <span>⭐</span>}{team.frozen && <span>🧊</span>}
                     </div>
                   </div>
 
-                  <div className="flex-1 flex h-10 md:h-14 bg-gray-950 rounded-full border border-gray-800 overflow-hidden relative shadow-inner">
-                    <div className="absolute top-0 left-0 bottom-0 opacity-20 transition-all duration-700 ease-out" style={{ width: `${(team.pos / 15) * 100}%`, backgroundColor: info.hex }}/>
+                  {/* Barra de Pista */}
+                  <div className="flex-1 flex h-12 md:h-16 bg-gray-950 rounded-full border border-gray-800 overflow-hidden relative shadow-inner">
+                    <div className="absolute top-0 left-0 bottom-0 opacity-20 transition-all duration-1000 ease-in-out" style={{ width: `${(team.pos / 15) * 100}%`, backgroundColor: info.hex }}/>
+                    
                     {Array.from({ length: 15 }).map((_, stepIdx) => {
                       const stepNum = stepIdx + 1;
                       const isItem = ITEM_POSITIONS[info.id].includes(stepNum);
                       const isOccupied = team.pos === stepNum;
                       return (
                         <div key={stepNum} className={`flex-1 border-r border-gray-800/50 flex items-center justify-center relative ${isOccupied ? 'z-20' : 'z-10'}`}>
-                          {isItem && !isOccupied && <div className="w-5 h-5 md:w-7 md:h-7 rounded bg-yellow-500 border-2 border-yellow-700 flex items-center justify-center animate-pulse opacity-80"><span className="text-black font-black text-[10px] md:text-xs">?</span></div>}
-                          {isOccupied && <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.8)] border-2 border-white transform scale-110 transition-transform ${team.frozen ? 'grayscale' : ''}`} style={{ backgroundColor: info.hex }}>🚗</div>}
+                          {isItem && !isOccupied && <div className="w-6 h-6 md:w-8 md:h-8 rounded-lg bg-yellow-500 border-2 border-yellow-700 flex items-center justify-center animate-pulse opacity-80"><span className="text-black font-black text-xs md:text-sm">?</span></div>}
+                          {isOccupied && <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.9)] border-4 border-white transform scale-125 transition-transform ${team.frozen ? 'grayscale opacity-50' : ''}`} style={{ backgroundColor: info.hex, fontSize: '1.5rem' }}>🚗</div>}
                         </div>
                       );
                     })}
-                    <div className="w-10 md:w-12 bg-yellow-400/10 flex items-center justify-center border-l border-yellow-500/30">
-                      <IconStar className={`w-5 h-5 md:w-6 md:h-6 ${team.pos === 15 ? 'text-yellow-400 animate-spin' : 'text-gray-700'}`} />
+                    {/* Meta */}
+                    <div className="w-12 md:w-16 bg-yellow-400/10 flex items-center justify-center border-l-2 border-yellow-500/30">
+                      <IconStar className={`w-6 h-6 md:w-8 md:h-8 ${team.pos === 15 ? 'text-yellow-400 animate-spin' : 'text-gray-700'}`} />
                     </div>
                   </div>
                 </div>
@@ -493,199 +504,159 @@
           );
 
           // ==========================================
-          // VISTA 1: PROYECTOR (PANTALLA GRANDE)
+          // VISTA 1: LA PANTALLA UNIFICADA (HOST + PROYECTOR)
           // ==========================================
-          if (role === 'projector') {
+          if (role === 'host') {
             return (
-              <div className="min-h-screen bg-gray-950 text-white p-4 font-sans flex flex-col relative overflow-hidden">
-                <header className="text-center mb-6 mt-4">
-                  <h1 className="text-4xl md:text-6xl font-black uppercase text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-yellow-400 drop-shadow-lg">Dr. Mario's Brain Challenge</h1>
+              <div className="min-h-screen bg-gray-950 text-white p-6 font-sans flex flex-col relative overflow-hidden">
+                
+                {/* Header Público */}
+                <header className="text-center mb-6">
+                  <h1 className="text-4xl md:text-6xl font-black uppercase text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-yellow-400 drop-shadow-lg tracking-widest">
+                    Dr. Mario's Brain Challenge
+                  </h1>
                 </header>
 
-                <div className="flex-1 flex flex-col w-full max-w-7xl mx-auto z-10 gap-6">
+                <div className="flex-1 flex flex-col w-full max-w-[1400px] mx-auto z-10 gap-6">
                   
+                  {/* ESTADO 1: LOBBY (Pista + Botón Abajo) */}
                   {gameState.status === 'lobby' && (
-                    <>
-                      <div className="text-center mb-4 animate-pulse"><p className="text-3xl text-gray-500 font-bold tracking-widest uppercase">Esperando siguiente pregunta...</p></div>
-                      <RaceTrack />
-                    </>
+                    <div className="flex-1 flex flex-col h-full">
+                      <div className="flex-1 mb-8"><RaceTrack /></div>
+                      
+                      {/* Área de Control Discreta Abajo */}
+                      <div className="bg-gray-900 border border-gray-800 p-6 rounded-3xl shadow-2xl flex justify-between items-center">
+                         <div>
+                            <p className="text-gray-400 text-sm font-bold uppercase tracking-widest">Panel de Control Admin</p>
+                            <p className="text-white text-xl">¿Listos para la carrera?</p>
+                         </div>
+                         <button onClick={launchRandomQuestion} className="px-10 py-5 bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all text-white font-black text-2xl uppercase rounded-2xl shadow-[0_5px_0_rgba(30,58,138,1)] flex gap-3 items-center">
+                            <IconPlay className="w-8 h-8"/> Lanzar Siguiente Pregunta
+                         </button>
+                      </div>
+                    </div>
                   )}
 
+                  {/* ESTADO 2: PREGUNTA ACTIVA (Pregunta Gigante + Reloj de 15s) */}
                   {gameState.status === 'question_active' && (
                     <div className="flex-1 flex flex-col items-center justify-center">
-                      <div className="bg-blue-900/30 border-4 border-blue-500 rounded-3xl p-16 text-center shadow-[0_0_100px_rgba(59,130,246,0.2)] w-full max-w-5xl relative">
-                        <h2 className="text-5xl md:text-7xl font-black text-white mb-12 leading-tight">"{gameState.currentQuestion}"</h2>
-                        <div className="flex justify-center items-center gap-6">
-                          <IconTimer className="w-24 h-24 text-yellow-400 animate-pulse" />
-                          <span className={`text-9xl font-black tabular-nums ${timeLeft <= 3 ? 'text-red-500 animate-bounce' : 'text-yellow-400'}`}>
-                            00:{timeLeft.toString().padStart(2, '0')}
+                      <div className="bg-blue-900/20 border-4 border-blue-500 rounded-[3rem] p-16 text-center shadow-[0_0_150px_rgba(59,130,246,0.3)] w-full max-w-5xl relative">
+                        <h2 className="text-5xl md:text-7xl font-black text-white mb-16 leading-tight">"{gameState.currentQuestion}"</h2>
+                        <div className="flex justify-center items-center gap-8">
+                          <IconTimer className="w-32 h-32 text-yellow-400 animate-pulse" />
+                          <span className={`text-[10rem] font-black tabular-nums leading-none ${timeLeft <= 5 ? 'text-red-500 animate-bounce drop-shadow-[0_0_30px_rgba(239,68,68,0.8)]' : 'text-yellow-400 drop-shadow-[0_0_30px_rgba(250,204,21,0.5)]'}`}>
+                            {timeLeft}s
                           </span>
                         </div>
                       </div>
                     </div>
                   )}
 
+                  {/* ESTADO 3: EVALUACIÓN (Tarjetas Clickables para el Admin a la vista de todos) */}
                   {gameState.status === 'host_evaluating' && (
-                    <div className="flex-1 flex flex-col h-full w-full max-w-6xl mx-auto">
+                    <div className="flex-1 flex flex-col h-full w-full">
                        <div className="text-center mb-8">
-                         <h2 className="text-4xl font-black text-yellow-400 uppercase">¡TIEMPO AGOTADO!</h2>
-                         <p className="text-xl text-gray-400 mt-2">El Juez está revisando las respuestas...</p>
+                         <h2 className="text-4xl font-black text-yellow-400 uppercase tracking-widest">Respuestas Recibidas</h2>
+                         <p className="text-xl text-gray-400 mt-2">Respuestas en verde avanzarán una casilla.</p>
                        </div>
                        
-                       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                       {/* Tarjetas Clickables */}
+                       <div className="grid grid-cols-2 md:grid-cols-4 gap-6 flex-1">
                          {Object.values(TEAMS_INFO).map(info => {
                            const t = gameState.teams[info.id];
+                           const isSelected = hostJudgments[info.id];
+                           const noContesto = !t.ansText || t.ansText === 'No contestó';
+                           
                            return (
-                             <div key={info.id} className="bg-gray-900 border-2 border-gray-700 rounded-2xl p-6 text-center shadow-xl">
-                               <h3 style={{color: info.hex}} className="text-2xl font-black uppercase mb-4">{info.name}</h3>
+                             <div 
+                               key={info.id} 
+                               onClick={() => {
+                                  // Solo se pueden seleccionar los que sí contestaron y no están congelados
+                                  if(!t.frozen && !noContesto) toggleJudgment(info.id);
+                               }}
+                               className={`cursor-pointer transition-all duration-300 rounded-3xl p-6 text-center border-4 flex flex-col justify-center items-center relative overflow-hidden
+                                  ${t.frozen ? 'bg-blue-900/20 border-blue-900 opacity-60 cursor-not-allowed' : 
+                                    noContesto ? 'bg-red-950/30 border-red-900 cursor-not-allowed' :
+                                    isSelected ? 'selected-answer' : 
+                                    'bg-gray-900 border-gray-700 hover:border-gray-500'}`}
+                             >
+                               {/* Fondo de color sutil para identificar el equipo */}
+                               <div className="absolute inset-0 opacity-10 pointer-events-none" style={{backgroundColor: info.hex}}></div>
+                               
+                               <h3 style={{color: info.hex}} className="text-3xl font-black uppercase mb-4 relative z-10">{info.name}</h3>
+                               
                                {t.frozen ? (
-                                 <div className="text-3xl text-blue-400 animate-pulse">🧊 Congelado</div>
+                                 <div className="text-4xl text-blue-400 font-black tracking-widest animate-pulse relative z-10">CONGELADO</div>
                                ) : (
-                                 <div className={`text-3xl font-mono font-bold break-words px-2 py-4 rounded-xl ${t.ansText === 'No contestó' ? 'text-red-400 bg-red-950/50 border border-red-900' : 'text-white bg-black border border-gray-800'}`}>
-                                   {t.ansText || '...'}
+                                 <div className={`text-4xl font-mono font-bold break-words px-4 py-4 rounded-2xl w-full relative z-10 ${noContesto ? 'text-red-400' : isSelected ? 'text-green-100 bg-green-800/50' : 'text-white'}`}>
+                                   {t.ansText || 'No contestó'}
                                  </div>
                                )}
+                               
+                               {isSelected && <IconCheck className="w-16 h-16 text-green-400 absolute top-2 right-2 opacity-30 pointer-events-none" />}
                              </div>
                            )
                          })}
                        </div>
+
+                       {/* Botón de Confirmación del Admin */}
+                       <div className="mt-8 text-center">
+                          <button onClick={executeEvaluations} className="px-16 py-6 bg-purple-600 hover:bg-purple-500 active:scale-95 transition-all text-white font-black text-3xl uppercase tracking-widest rounded-[2rem] shadow-[0_8px_0_rgba(88,28,135,1)]">
+                             ¡Aplicar y Avanzar!
+                          </button>
+                       </div>
                     </div>
                   )}
 
-                  {gameState.status === 'roulette_active' && <RaceTrack />}
+                  {/* ESTADO 4: RULETA ACTIVA */}
+                  {gameState.status === 'roulette_active' && <div className="flex-1"><RaceTrack /></div>}
                 </div>
 
-                {/* RULETA MODAL PROYECTOR */}
+                {/* MODAL GIGANTE DE RULETA */}
                 {gameState.status === 'roulette_active' && gameState.activeRoulette.teamId && (
                   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm">
-                    <div className="bg-gray-900 border-4 border-yellow-500 rounded-3xl p-16 text-center transform scale-110 shadow-[0_0_150px_rgba(234,179,8,0.4)] w-full max-w-2xl">
-                      <h2 className="text-5xl font-black uppercase text-yellow-400 mb-4 drop-shadow-md">CAJA MISTERIOSA</h2>
-                      <p className="text-3xl text-white mb-10">Turno de: <span className="font-bold" style={{color: TEAMS_INFO[gameState.activeRoulette.teamId].hex}}>{TEAMS_INFO[gameState.activeRoulette.teamId].name}</span></p>
+                    <div className="bg-gray-900 border-4 border-yellow-500 rounded-[3rem] p-20 text-center shadow-[0_0_150px_rgba(234,179,8,0.4)] w-full max-w-3xl">
+                      <h2 className="text-6xl font-black uppercase text-yellow-400 mb-6 drop-shadow-md tracking-widest">CAJA MISTERIOSA</h2>
+                      <p className="text-4xl text-white mb-12">Turno de: <span className="font-bold uppercase" style={{color: TEAMS_INFO[gameState.activeRoulette.teamId].hex}}>{TEAMS_INFO[gameState.activeRoulette.teamId].name}</span></p>
 
                       {gameState.activeRoulette.spinning ? (
-                        <div className="w-56 h-56 mx-auto bg-gradient-to-br from-yellow-300 to-yellow-600 rounded-3xl flex items-center justify-center animate-spin shadow-2xl border-4 border-white">
-                          <span className="text-9xl text-black font-black">?</span>
+                        <div className="w-64 h-64 mx-auto bg-gradient-to-br from-yellow-300 to-yellow-600 rounded-[3rem] flex items-center justify-center animate-spin shadow-2xl border-8 border-white">
+                          <span className="text-[10rem] text-black font-black leading-none pb-4">?</span>
                         </div>
                       ) : gameState.activeRoulette.item ? (
                         <div className="animate-bounce">
-                          <div className={`w-56 h-56 mx-auto ${gameState.activeRoulette.item.color} rounded-3xl flex items-center justify-center mb-8 shadow-2xl border-4 border-white/20`}>
-                            <span className="text-9xl">{gameState.activeRoulette.item.icon}</span>
+                          <div className={`w-64 h-64 mx-auto ${gameState.activeRoulette.item.color} rounded-[3rem] flex items-center justify-center mb-10 shadow-2xl border-8 border-white/20`}>
+                            <span className="text-[9rem]">{gameState.activeRoulette.item.icon}</span>
                           </div>
-                          <h3 className="text-5xl font-black text-white uppercase">{gameState.activeRoulette.item.name}</h3>
-                          <p className="text-2xl text-gray-300 mt-4">{gameState.activeRoulette.item.desc}</p>
+                          <h3 className="text-6xl font-black text-white uppercase">{gameState.activeRoulette.item.name}</h3>
+                          <p className="text-3xl text-gray-300 mt-6 font-bold">{gameState.activeRoulette.item.desc}</p>
                         </div>
                       ) : (
-                        <div className="w-56 h-56 mx-auto bg-gray-800 rounded-3xl flex flex-col items-center justify-center border-4 border-dashed border-gray-600 animate-pulse p-4">
-                          <IconAlert className="w-16 h-16 text-gray-500 mb-2"/>
-                          <span className="text-lg text-gray-400 font-bold">Esperando que el jugador gire la ruleta en su celular...</span>
+                        <div className="w-64 h-64 mx-auto bg-gray-800 rounded-[3rem] flex flex-col items-center justify-center border-8 border-dashed border-gray-600 animate-pulse p-6">
+                          <IconAlert className="w-20 h-20 text-gray-500 mb-4"/>
+                          <span className="text-xl text-gray-400 font-bold">Esperando a que el jugador gire la ruleta en su celular...</span>
                         </div>
                       )}
-                    </div>
-                  </div>
-                )}
 
-                {/* MODAL GANADOR */}
-                {gameState.status === 'finished' && gameState.winner && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-xl">
-                    <div className="text-center">
-                      <IconTrophy className="w-64 h-64 mx-auto mb-10 animate-pulse" style={{ color: TEAMS_INFO[gameState.winner].hex }} />
-                      <h2 className="text-8xl font-black uppercase mb-6 text-white drop-shadow-[0_5px_5px_rgba(0,0,0,1)]">¡GANADOR ABSOLUTO!</h2>
-                      <div className="text-7xl font-black uppercase tracking-widest px-16 py-8 rounded-full border-8" style={{ backgroundColor: `${TEAMS_INFO[gameState.winner].hex}40`, borderColor: TEAMS_INFO[gameState.winner].hex, color: TEAMS_INFO[gameState.winner].hex }}>
-                        {TEAMS_INFO[gameState.winner].name}
+                      {/* Botones de Emergencia Admin (Invisibles para el público general pero clickeables para ti) */}
+                      <div className="mt-12 flex justify-center gap-4 opacity-10 hover:opacity-100 transition-opacity">
+                         {!gameState.activeRoulette.spinning && !gameState.activeRoulette.item && <button onClick={()=>window.FirebaseAPI.updateDoc(getDocRef(), {'activeRoulette.spinning': true})} className="px-4 py-2 bg-gray-800 text-sm rounded">Forzar Giro</button>}
+                         {gameState.activeRoulette.item && <button onClick={()=>resolveItemEffect(gameState.activeRoulette.teamId, gameState.activeRoulette.item)} className="px-4 py-2 bg-yellow-600 text-black text-sm font-bold rounded">Forzar Aplicar</button>}
                       </div>
                     </div>
                   </div>
                 )}
-              </div>
-            );
-          }
 
-          // ==========================================
-          // VISTA 2: PANEL DEL HOST (JUEZ)
-          // ==========================================
-          if (role === 'host') {
-            return (
-              <div className="min-h-screen bg-gray-950 text-white p-4 max-w-3xl mx-auto flex flex-col gap-4">
-                <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex justify-between items-center shadow-lg">
-                  <div>
-                    <h1 className="text-xl font-black text-pink-500 uppercase">Panel de Juez</h1>
-                    <p className="text-xs text-gray-400">Control maestro de la carrera</p>
-                  </div>
-                  <button onClick={resetGame} className="text-xs bg-red-900/50 border border-red-800 text-red-400 px-4 py-2 rounded-lg hover:bg-red-800">Reset Tablero</button>
-                </div>
-
-                {gameState.status === 'lobby' && (
-                  <div className="flex-1 flex flex-col items-center justify-center p-8 bg-gray-900 border border-gray-800 rounded-xl shadow-xl">
-                    <IconPlay className="w-20 h-20 text-blue-500 mb-6 opacity-50"/>
-                    <h2 className="text-2xl font-bold mb-8 text-center text-gray-300">¿Listos para la siguiente ronda?</h2>
-                    <button onClick={launchRandomQuestion} className="w-full py-6 bg-gradient-to-r from-blue-600 to-blue-400 hover:scale-105 active:scale-95 transition-transform text-white font-black text-2xl rounded-2xl shadow-[0_10px_20px_rgba(37,99,235,0.4)] uppercase tracking-wider">
-                      Lanzar Pregunta Aleatoria
-                    </button>
-                    <p className="text-sm text-gray-500 mt-6">Los jugadores tendrán 10 segundos exactos para responder.</p>
-                  </div>
-                )}
-
-                {gameState.status === 'question_active' && (
-                  <div className="bg-gray-900 border-2 border-yellow-600 rounded-xl p-8 text-center shadow-[0_0_30px_rgba(202,138,4,0.15)] flex-1 flex flex-col justify-center">
-                    <h2 className="text-2xl font-bold text-yellow-500 mb-4 uppercase tracking-widest">Tiempo Corriendo</h2>
-                    <div className="text-8xl font-black tabular-nums text-white mb-8">{timeLeft}s</div>
-                    <p className="text-lg text-gray-400 mb-2">Pregunta actual:</p>
-                    <p className="text-2xl text-blue-300 font-bold bg-blue-900/30 p-4 rounded-xl border border-blue-800">"{gameState.currentQuestion}"</p>
-                  </div>
-                )}
-
-                {gameState.status === 'host_evaluating' && (
-                  <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-2xl flex-1 flex flex-col">
-                     <div className="mb-6 border-b border-gray-800 pb-4">
-                        <h2 className="text-2xl font-black text-blue-400 uppercase mb-2">Validar Respuestas</h2>
-                        <p className="text-gray-400 text-sm">Pregunta: "{gameState.currentQuestion}"</p>
-                        <p className="text-green-400 text-sm font-bold mt-1">Respuesta Oficial (Guía): {gameState.hostAnswerHint}</p>
-                     </div>
-
-                     <div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-3 mb-6">
-                       {Object.values(TEAMS_INFO).map(info => {
-                         const t = gameState.teams[info.id];
-                         const isCorrect = hostJudgments[info.id] === true;
-                         const isWrong = hostJudgments[info.id] === false;
-                         
-                         if (t.frozen) {
-                           return <div key={info.id} className="p-4 bg-gray-950 rounded-xl flex justify-between items-center text-gray-600 border border-gray-800"><span className="font-bold text-lg">{info.name}</span><span>Congelado (Pierde turno)</span></div>
-                         }
-                         
-                         return (
-                           <div key={info.id} className={`p-4 rounded-xl border-2 transition-all ${isCorrect ? 'bg-green-900/20 border-green-600 shadow-[0_0_15px_rgba(22,163,74,0.2)]' : isWrong ? 'bg-red-900/20 border-red-700' : 'bg-gray-950 border-gray-800'}`}>
-                             <div className="flex justify-between items-center mb-3">
-                               <span style={{color: info.hex}} className="font-black text-lg uppercase">{info.name}</span>
-                               <span className={`text-xl font-mono px-3 py-1 rounded-lg ${t.ansText === 'No contestó' ? 'text-red-400 bg-red-950 border border-red-900' : 'text-white bg-black border border-gray-700'}`}>"{t.ansText}"</span>
-                             </div>
-                             <div className="flex gap-3">
-                               <button onClick={()=>setHostJudgments({...hostJudgments, [info.id]: true})} className={`flex-1 py-3 rounded-lg font-bold text-sm flex justify-center items-center gap-2 transition-all ${isCorrect ? 'bg-green-600 text-white shadow-lg' : 'bg-gray-800 text-gray-400 hover:bg-gray-700 border border-gray-700'}`}><IconCheck className="w-5 h-5"/> Correcto (+1)</button>
-                               <button onClick={()=>setHostJudgments({...hostJudgments, [info.id]: false})} className={`flex-1 py-3 rounded-lg font-bold text-sm flex justify-center items-center gap-2 transition-all ${isWrong ? 'bg-red-600 text-white shadow-lg' : 'bg-gray-800 text-gray-400 hover:bg-gray-700 border border-gray-700'}`}><IconX className="w-5 h-5"/> Incorrecto</button>
-                             </div>
-                           </div>
-                         )
-                       })}
-                     </div>
-                     
-                     <button onClick={executeEvaluations} className="w-full py-5 bg-purple-600 hover:bg-purple-500 text-white font-black text-xl uppercase tracking-widest rounded-xl shadow-lg shadow-purple-900/50">
-                       Aplicar Avances
-                     </button>
-                  </div>
-                )}
-
-                {gameState.status === 'roulette_active' && (
-                  <div className="bg-gray-900 border-2 border-yellow-500 rounded-xl p-8 text-center flex-1 flex flex-col justify-center">
-                    <h2 className="text-3xl text-yellow-400 font-black uppercase mb-4">Turno de Ruleta</h2>
-                    <p className="text-xl text-white mb-8"><strong style={{color: TEAMS_INFO[gameState.activeRoulette.teamId].hex}} className="uppercase text-2xl">{TEAMS_INFO[gameState.activeRoulette.teamId].name}</strong> debe accionar la caja en su celular.</p>
-                    
-                    <div className="mt-8 pt-8 border-t border-gray-800">
-                       <p className="text-xs text-gray-500 mb-4 uppercase">Controles de Emergencia</p>
-                       {!gameState.activeRoulette.spinning && !gameState.activeRoulette.item && (
-                         <button onClick={()=>window.FirebaseAPI.updateDoc(getDocRef(), {'activeRoulette.spinning': true})} className="w-full py-4 bg-gray-800 text-gray-300 font-bold rounded-xl border border-gray-700">Forzar Giro (Si el alumno no lo hace)</button>
-                       )}
-                       {gameState.activeRoulette.item && (
-                         <button onClick={()=>resolveItemEffect(gameState.activeRoulette.teamId, gameState.activeRoulette.item)} className="w-full py-4 bg-yellow-600 text-black font-black uppercase rounded-xl shadow-lg">Forzar Aplicar Efecto</button>
-                       )}
+                {/* MODAL GANADOR GIGANTE */}
+                {gameState.status === 'finished' && gameState.winner && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-xl">
+                    <div className="text-center">
+                      <IconTrophy className="w-80 h-80 mx-auto mb-12 animate-pulse" style={{ color: TEAMS_INFO[gameState.winner].hex }} />
+                      <h2 className="text-[7rem] font-black uppercase mb-8 text-white drop-shadow-[0_10px_10px_rgba(0,0,0,1)]">¡TENEMOS GANADOR!</h2>
+                      <div className="text-[6rem] font-black uppercase tracking-widest px-20 py-10 rounded-[4rem] border-8 inline-block" style={{ backgroundColor: `${TEAMS_INFO[gameState.winner].hex}40`, borderColor: TEAMS_INFO[gameState.winner].hex, color: TEAMS_INFO[gameState.winner].hex }}>
+                        {TEAMS_INFO[gameState.winner].name}
+                      </div>
+                      <div className="mt-20"><button onClick={() => window.FirebaseAPI.setDoc(getDocRef(), INITIAL_STATE)} className="text-gray-600 hover:text-white underline">Reiniciar Carrera</button></div>
                     </div>
                   </div>
                 )}
@@ -694,7 +665,7 @@
           }
 
           // ==========================================
-          // VISTA 3: JUGADOR (CELULAR) 
+          // VISTA 2: JUGADOR (CELULAR) - NO CAMBIA MUCHO, SOLO EL TEMPORIZADOR A 15S
           // ==========================================
           if (role === 'player') {
             const myTeam = gameState.teams[myTeamId];
@@ -725,8 +696,8 @@
                   {gameState.status === 'question_active' && !myTeam.frozen && (
                     <div className="w-full max-w-md w-full text-center">
                       <div className="flex justify-center items-center gap-2 mb-6 bg-gray-950 p-3 rounded-xl border border-gray-800">
-                        <IconTimer className={`w-6 h-6 ${timeLeft <= 3 ? 'text-red-500 animate-bounce' : 'text-yellow-400'}`} />
-                        <span className={`text-2xl font-black tabular-nums ${timeLeft <= 3 ? 'text-red-500' : 'text-yellow-400'}`}>00:{timeLeft.toString().padStart(2, '0')}</span>
+                        <IconTimer className={`w-6 h-6 ${timeLeft <= 5 ? 'text-red-500 animate-bounce' : 'text-yellow-400'}`} />
+                        <span className={`text-2xl font-black tabular-nums ${timeLeft <= 5 ? 'text-red-500' : 'text-yellow-400'}`}>00:{timeLeft.toString().padStart(2, '0')}</span>
                       </div>
 
                       <h2 className="text-2xl md:text-3xl font-bold text-white mb-8 leading-tight">"{gameState.currentQuestion}"</h2>
@@ -767,7 +738,7 @@
                      <div className="text-center">
                        <div className="w-16 h-16 border-8 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-6 shadow-lg"></div>
                        <h2 className="text-3xl font-black text-white uppercase">¡Tiempo!</h2>
-                       <p className="text-xl text-gray-400 mt-4">El Juez está revisando las ortografías de todos...</p>
+                       <p className="text-xl text-gray-400 mt-4">Mira la pantalla gigante para los resultados...</p>
                      </div>
                   )}
 
