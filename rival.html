@@ -29,7 +29,7 @@
 <body>
     <div id="root"></div>
 
-    <!-- 1. MOTOR DE SONIDO RETRO 8-BITS (Web Audio API) -->
+    <!-- 1. MOTOR DE SONIDO RETRO 8-BITS -->
     <script>
         window.AudioContext = window.AudioContext || window.webkitAudioContext;
         const audioCtx = new AudioContext();
@@ -86,12 +86,11 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // Función auxiliar para llamar sonidos
         const playSound = (soundName) => {
             if (window.SFX && window.SFX[soundName]) window.SFX[soundName]();
         };
 
-        // --- ÍCONOS SVG NATIVOS ---
+        // --- ÍCONOS SVG ---
         const IconTrophy = ({className, style}) => <svg className={className} style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2Z"/></svg>;
         const IconStar = ({className}) => <svg className={className} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
         const IconShield = ({className}) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
@@ -102,7 +101,7 @@
         const IconTimer = ({className}) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="14" r="8"/><path d="M12 2v4"/><path d="M12 14 10 12"/><path d="M18 2h-4"/></svg>;
         const IconPlay = ({className}) => <svg className={className} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>;
 
-        // --- BANCO DE 80 PREGUNTAS ---
+        // --- BANCO DE PREGUNTAS ---
         const QUESTIONS_POOL = [
           { q: '¿Cuál es la capital del estado de Quintana Roo?', a: 'Chetumal' },
           { q: '¿En qué estado de la república se encuentra la zona arqueológica de La Venta?', a: 'Tabasco' },
@@ -220,7 +219,6 @@
           status: 'lobby',
           currentQuestion: '',
           hostAnswerHint: '',
-          deadline: 0,
           rouletteQueue: [], 
           activeRoulette: { teamId: null, spinning: false, item: null },
           winner: null,
@@ -230,9 +228,6 @@
           }), {})
         };
 
-        // ==========================================
-        // COMPONENTE PRINCIPAL DE REACT
-        // ==========================================
         function App() {
           const [user, setUser] = useState(null);
           const [db, setDb] = useState(null);
@@ -241,7 +236,6 @@
           const [myTeamId, setMyTeamId] = useState(null);
           const [firebaseLoaded, setFirebaseLoaded] = useState(false);
 
-          // Estados Locales
           const [pinInput, setPinInput] = useState('');
           const [selectedTeam, setSelectedTeam] = useState(1);
           const [errorMsg, setErrorMsg] = useState('');
@@ -249,8 +243,10 @@
           const [hostJudgments, setHostJudgments] = useState({}); 
           const [playerAnswerInput, setPlayerAnswerInput] = useState('');
           const [hasSubmitted, setHasSubmitted] = useState(false);
+          const [isProcessing, setIsProcessing] = useState(false); // CANDADO ANTI-DOBLE CLIC
 
-          const lastTickRef = useRef(null); // Para que el sonido del reloj no se repita 2 veces por segundo
+          const lastTickRef = useRef(null); 
+          const prevStateRef = useRef(null);
 
           // 1. Iniciar Firebase
           useEffect(() => {
@@ -262,7 +258,6 @@
             if (!firebaseLoaded) return;
             try {
               const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore } = window.FirebaseAPI;
-              
               const firebaseConfig = {
                   apiKey: "AIzaSyAWvlKYMuFlxL88OrSOzGPzXk0w_HUTGQ8",
                   authDomain: "scuatyg2026.firebaseapp.com",
@@ -271,7 +266,6 @@
                   messagingSenderId: "321639282182",
                   appId: "1:321639282182:web:6803746ad3ff4c8e8e3587"
               };
-              
               const app = initializeApp(firebaseConfig);
               const auth = getAuth(app);
               setDb(getFirestore(app));
@@ -287,19 +281,19 @@
             return doc(db, 'mariokart', 'partida_activa'); 
           };
 
-          // 2. Escuchar la Partida y Efectos de Sonido por Estado
+          // 2. Escuchar la Partida y Sonidos
           useEffect(() => {
             if (!user || !db) return;
-            const { onSnapshot, setDoc } = window.FirebaseAPI;
+            const { onSnapshot } = window.FirebaseAPI;
             const docRef = getDocRef();
 
             const unsub = onSnapshot(docRef, (docSnap) => {
               if (docSnap.exists()) {
                 const data = docSnap.data();
-                const prevState = gameState;
+                const prevState = prevStateRef.current;
                 setGameState(data);
                 
-                // Efectos de sonido basados en transiciones de estado
+                // Efectos de sonido estrictos
                 if (data.status === 'question_active' && (!prevState || prevState.status !== 'question_active')) playSound('question');
                 if (data.status === 'host_evaluating' && (!prevState || prevState.status !== 'host_evaluating')) playSound('timeUp');
                 if (data.status === 'finished' && (!prevState || prevState.status !== 'finished')) playSound('win');
@@ -308,77 +302,97 @@
                   setHasSubmitted(false);
                   setPlayerAnswerInput('');
                 }
-              } else if (role === 'host') {
-                setDoc(docRef, INITIAL_STATE);
+                
+                prevStateRef.current = data;
               }
             });
 
             return () => unsub();
-          }, [user, db, role, gameState]);
+          }, [user, db, role]);
 
-          // Sonido de Giro de Ruleta
           useEffect(() => {
             let spinInt;
-            if (gameState?.activeRoulette?.spinning) {
-              spinInt = setInterval(() => playSound('spin'), 100);
-            }
+            if (gameState?.activeRoulette?.spinning) spinInt = setInterval(() => playSound('spin'), 100);
             return () => clearInterval(spinInt);
           }, [gameState?.activeRoulette?.spinning]);
 
-          // Sonido de Revelación de Ítem
           useEffect(() => {
-            if (gameState?.activeRoulette?.item && !gameState?.activeRoulette?.spinning) {
-              playSound('itemReveal');
-            }
+            if (gameState?.activeRoulette?.item && !gameState?.activeRoulette?.spinning) playSound('itemReveal');
           }, [gameState?.activeRoulette?.item, gameState?.activeRoulette?.spinning]);
 
-          // 3. Lógica del Reloj (15 SEGUNDOS y Sonido)
+          // 3. Lógica del Reloj Local Seguro
           useEffect(() => {
-            if (!gameState || gameState.status !== 'question_active') {
+            let timer;
+            if (gameState?.status === 'question_active') {
+              setTimeLeft(15);
+              lastTickRef.current = 15;
+              timer = setInterval(() => {
+                setTimeLeft(prev => {
+                  const next = prev - 1;
+                  if (next !== lastTickRef.current && next > 0) {
+                      lastTickRef.current = next;
+                      if (next <= 5) playSound('tickHigh');
+                      else playSound('tick');
+                  }
+                  if (next <= 0) {
+                      clearInterval(timer);
+                      if (role === 'host') forceCloseQuestion();
+                      return 0;
+                  }
+                  return next;
+                });
+              }, 1000);
+            } else {
               setTimeLeft(0);
               lastTickRef.current = null;
-              return;
             }
-            const interval = setInterval(() => {
-              const now = Date.now();
-              const remaining = Math.max(0, Math.ceil((gameState.deadline - now) / 1000));
-              setTimeLeft(remaining);
-              
-              // Sonido de Reloj (Solo reproducir una vez por segundo)
-              if (remaining !== lastTickRef.current && remaining > 0) {
-                 lastTickRef.current = remaining;
-                 if (remaining <= 5) playSound('tickHigh');
-                 else playSound('tick');
-              }
-
-              if (remaining <= 0 && role === 'host') forceCloseQuestion();
-            }, 500);
-            return () => clearInterval(interval);
-          }, [gameState?.status, gameState?.deadline, role]);
+            return () => clearInterval(timer);
+          }, [gameState?.status, role]);
 
           const forceCloseQuestion = async () => {
+            if (isProcessing) return;
             const { updateDoc } = window.FirebaseAPI;
             setHostJudgments({});
-            await updateDoc(getDocRef(), { status: 'host_evaluating' });
+            
+            let updates = { status: 'host_evaluating' };
+            // Auto-rellenar a los que no contestaron para evitar campos nulos visuales
+            if (gameState && gameState.teams) {
+                Object.keys(gameState.teams).forEach(id => {
+                    if (!gameState.teams[id].frozen && !gameState.teams[id].ansText) {
+                        updates[`teams.${id}.ansText`] = 'No contestó';
+                    }
+                });
+            }
+            await updateDoc(getDocRef(), updates);
           };
 
           // --- FUNCIONES DEL JUGADOR ---
           const handlePlayerJoin = async () => {
-            window.SFX.init(); // Iniciar AudioContext en interacción del usuario
+            window.SFX.init();
             if (pinInput.toUpperCase() === PINS.teams[selectedTeam]) {
               setMyTeamId(selectedTeam);
               setRole('player');
-              if (db) await window.FirebaseAPI.updateDoc(getDocRef(), { [`teams.${selectedTeam}.connected`]: true });
+              if (db) await window.FirebaseAPI.setDoc(getDocRef(), { teams: { [selectedTeam]: { connected: true } } }, { merge: true });
             } else { setErrorMsg('PIN Incorrecto.'); }
           };
 
-          const submitTextAnswer = async () => {
-            if (gameState.status !== 'question_active' || !playerAnswerInput.trim() || hasSubmitted) return;
+          const submitTextAnswer = async (e) => {
+            if (e) e.preventDefault(); // Por si viene de un Form
+            if (gameState.status !== 'question_active' || !playerAnswerInput.trim() || hasSubmitted || isProcessing) return;
+            setIsProcessing(true);
             setHasSubmitted(true);
-            await window.FirebaseAPI.updateDoc(getDocRef(), { [`teams.${myTeamId}.ansText`]: playerAnswerInput.trim() });
+            try {
+                await window.FirebaseAPI.updateDoc(getDocRef(), { [`teams.${myTeamId}.ansText`]: playerAnswerInput.trim() });
+            } catch(e) {
+                console.error(e);
+                setHasSubmitted(false); // Permite reintentar si falla
+            }
+            setIsProcessing(false);
           };
 
           const playerSpinRoulette = async () => {
+            if(isProcessing) return;
+            setIsProcessing(true);
             await window.FirebaseAPI.updateDoc(getDocRef(), { 'activeRoulette.spinning': true });
             setTimeout(async () => {
               const randomItem = MYSTERY_BOX_POOL[Math.floor(Math.random() * MYSTERY_BOX_POOL.length)];
@@ -386,12 +400,13 @@
                 'activeRoulette.spinning': false,
                 'activeRoulette.item': randomItem
               });
+              setIsProcessing(false);
             }, 2500);
           };
 
           // --- FUNCIONES DEL HOST ---
           const handleHostLogin = async () => {
-            window.SFX.init(); // Iniciar AudioContext
+            window.SFX.init();
             if (pinInput.toUpperCase() === 'RESET2026') {
                 if(window.confirm('🚨 ¿ESTÁS SEGURO DE RESETEAR TODO EL TABLERO A CERO? Esto borrará el avance de todos los Karts.')) {
                     await window.FirebaseAPI.setDoc(getDocRef(), INITIAL_STATE);
@@ -403,20 +418,22 @@
 
             if (pinInput.toUpperCase() === PINS.host) {
               setRole('host');
-              if(!gameState) window.FirebaseAPI.setDoc(getDocRef(), INITIAL_STATE);
+              if(!gameState) await window.FirebaseAPI.setDoc(getDocRef(), INITIAL_STATE);
             } else { setErrorMsg('PIN de Administrador Incorrecto.'); }
           };
 
           const launchRandomQuestion = async () => {
+            if(isProcessing) return;
+            setIsProcessing(true);
             const randomQ = QUESTIONS_POOL[Math.floor(Math.random() * QUESTIONS_POOL.length)];
             let updates = { 
               status: 'question_active', 
               currentQuestion: randomQ.q,
-              hostAnswerHint: randomQ.a,
-              deadline: Date.now() + 15000 
+              hostAnswerHint: randomQ.a
             };
             Object.keys(gameState.teams).forEach(id => { updates[`teams.${id}.ansText`] = ''; });
             await window.FirebaseAPI.updateDoc(getDocRef(), updates);
+            setIsProcessing(false);
           };
 
           const toggleJudgment = (teamId) => {
@@ -425,6 +442,9 @@
           };
 
           const executeEvaluations = async () => {
+            if(isProcessing) return;
+            setIsProcessing(true);
+
             const { teams } = gameState;
             let newTeams = { ...teams };
             let newQueue = [];
@@ -443,7 +463,7 @@
                 let steps = t.mushroom ? 2 : 1;
                 t.pos = Math.min(15, t.pos + steps);
                 if (t.mushroom) t.mushroom = false;
-                if (ITEM_POSITIONS[id].includes(t.pos)) newQueue.push(id);
+                if (ITEM_POSITIONS[Number(id)] && ITEM_POSITIONS[Number(id)].includes(t.pos)) newQueue.push(id);
                 if (t.pos === 15 && !winner) winner = id;
               } else {
                 if (t.star) t.star = false;
@@ -461,13 +481,17 @@
               activeRoulette: nextInRoulette,
               winner: winner
             });
+            
+            setIsProcessing(false);
           };
 
           const resolveItemEffect = async (teamId, item) => {
-            let newTeams = { ...gameState.teams };
-            const activeRivals = Object.keys(newTeams).filter(id => id !== String(teamId) && newTeams[id].pos > 0);
+            if(isProcessing) return;
+            setIsProcessing(true);
 
-            // Sonido específico del ítem
+            let newTeams = { ...gameState.teams };
+            const activeRivals = Object.keys(newTeams).filter(id => String(id) !== String(teamId) && newTeams[id].pos > 0);
+
             if (item.id === 'turbo') { playSound('mushroom'); newTeams[teamId].mushroom = true; }
             else if (item.id === 'star') { playSound('star'); newTeams[teamId].star = true; }
             else if (item.id === 'banana') { 
@@ -503,6 +527,8 @@
               activeRoulette: nextInRoulette,
               status: newQueue.length > 0 ? 'roulette_active' : 'lobby'
             });
+            
+            setIsProcessing(false);
           };
 
           // ==========================================
@@ -612,7 +638,7 @@
                             <p className="text-gray-400 text-sm font-bold uppercase tracking-widest">Panel de Control Admin</p>
                             <p className="text-white text-xl">¿Listos para la carrera?</p>
                          </div>
-                         <button onClick={launchRandomQuestion} className="px-10 py-5 bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all text-white font-black text-2xl uppercase rounded-2xl shadow-[0_5px_0_rgba(30,58,138,1)] flex gap-3 items-center cursor-pointer">
+                         <button disabled={isProcessing} onClick={launchRandomQuestion} className={`px-10 py-5 text-white font-black text-2xl uppercase rounded-2xl shadow-[0_5px_0_rgba(30,58,138,1)] flex gap-3 items-center ${isProcessing ? 'bg-gray-600 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all cursor-pointer'}`}>
                             <IconPlay className="w-8 h-8"/> Lanzar Siguiente Pregunta
                          </button>
                       </div>
@@ -650,13 +676,13 @@
                              <div 
                                key={info.id} 
                                onClick={() => {
-                                  if(!t.frozen && !noContesto) toggleJudgment(info.id);
+                                  if(!t.frozen && !noContesto && !isProcessing) toggleJudgment(info.id);
                                }}
-                               className={`cursor-pointer transition-all duration-300 rounded-3xl p-6 text-center border-4 flex flex-col justify-center items-center relative overflow-hidden
+                               className={`transition-all duration-300 rounded-3xl p-6 text-center border-4 flex flex-col justify-center items-center relative overflow-hidden
                                   ${t.frozen ? 'bg-blue-900/20 border-blue-900 opacity-60 cursor-not-allowed' : 
                                     noContesto ? 'bg-red-950/30 border-red-900 cursor-not-allowed' :
-                                    isSelected ? 'selected-answer' : 
-                                    'bg-gray-900 border-gray-700 hover:border-gray-500'}`}
+                                    isSelected ? 'selected-answer cursor-pointer' : 
+                                    'bg-gray-900 border-gray-700 hover:border-gray-500 cursor-pointer'}`}
                              >
                                <div className="absolute inset-0 opacity-10 pointer-events-none" style={{backgroundColor: info.hex}}></div>
                                
@@ -677,7 +703,7 @@
                        </div>
 
                        <div className="mt-8 text-center">
-                          <button onClick={executeEvaluations} className="px-16 py-6 bg-purple-600 hover:bg-purple-500 active:scale-95 transition-all text-white font-black text-3xl uppercase tracking-widest rounded-[2rem] shadow-[0_8px_0_rgba(88,28,135,1)] cursor-pointer">
+                          <button disabled={isProcessing} onClick={executeEvaluations} className={`px-16 py-6 text-white font-black text-3xl uppercase tracking-widest rounded-[2rem] shadow-[0_8px_0_rgba(88,28,135,1)] ${isProcessing ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-500 active:scale-95 transition-all cursor-pointer'}`}>
                              ¡Aplicar y Avanzar!
                           </button>
                        </div>
@@ -714,8 +740,8 @@
                       )}
 
                       <div className="mt-12 flex justify-center gap-4 opacity-10 hover:opacity-100 transition-opacity">
-                         {!gameState.activeRoulette.spinning && !gameState.activeRoulette.item && <button onClick={()=>window.FirebaseAPI.updateDoc(getDocRef(), {'activeRoulette.spinning': true})} className="px-4 py-2 bg-gray-800 text-sm rounded cursor-pointer">Forzar Giro</button>}
-                         {gameState.activeRoulette.item && <button onClick={()=>resolveItemEffect(gameState.activeRoulette.teamId, gameState.activeRoulette.item)} className="px-4 py-2 bg-yellow-600 text-black text-sm font-bold rounded cursor-pointer">Forzar Aplicar</button>}
+                         {!gameState.activeRoulette.spinning && !gameState.activeRoulette.item && <button disabled={isProcessing} onClick={()=>window.FirebaseAPI.updateDoc(getDocRef(), {'activeRoulette.spinning': true})} className="px-4 py-2 bg-gray-800 text-sm rounded cursor-pointer">Forzar Giro</button>}
+                         {gameState.activeRoulette.item && <button disabled={isProcessing} onClick={()=>resolveItemEffect(gameState.activeRoulette.teamId, gameState.activeRoulette.item)} className="px-4 py-2 bg-yellow-600 text-black text-sm font-bold rounded cursor-pointer">Forzar Aplicar</button>}
                       </div>
                     </div>
                   </div>
@@ -768,7 +794,7 @@
                   )}
 
                   {gameState.status === 'question_active' && !myTeam.frozen && (
-                    <div className="w-full max-w-md w-full text-center">
+                    <form onSubmit={submitTextAnswer} className="w-full max-w-md w-full text-center">
                       <div className="flex justify-center items-center gap-2 mb-6 bg-gray-950 p-3 rounded-xl border border-gray-800">
                         <IconTimer className={`w-6 h-6 ${timeLeft <= 5 ? 'text-red-500 animate-bounce' : 'text-yellow-400'}`} />
                         <span className={`text-2xl font-black tabular-nums ${timeLeft <= 5 ? 'text-red-500' : 'text-yellow-400'}`}>00:{timeLeft.toString().padStart(2, '0')}</span>
@@ -786,7 +812,7 @@
                             autoFocus
                             className="w-full p-5 bg-gray-950 border-4 border-blue-500 rounded-2xl text-center text-2xl text-white font-bold mb-6 focus:outline-none focus:border-yellow-400 shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-colors"
                           />
-                          <button onClick={submitTextAnswer} className="w-full py-5 bg-blue-600 active:bg-blue-800 text-white font-black text-2xl uppercase tracking-widest rounded-2xl shadow-[0_8px_0_rgba(30,58,138,1)] active:translate-y-2 active:shadow-none transition-all cursor-pointer">
+                          <button type="submit" disabled={isProcessing} className={`w-full py-5 text-white font-black text-2xl uppercase tracking-widest rounded-2xl shadow-[0_8px_0_rgba(30,58,138,1)] transition-all ${isProcessing ? 'bg-gray-600 cursor-not-allowed' : 'bg-blue-600 active:bg-blue-800 active:translate-y-2 active:shadow-none cursor-pointer'}`}>
                             ¡Enviar!
                           </button>
                         </>
@@ -797,7 +823,7 @@
                           <p className="text-white text-xl font-mono mt-4 bg-black px-4 py-3 rounded-xl border border-gray-800 break-words">"{myTeam.ansText}"</p>
                         </div>
                       )}
-                    </div>
+                    </form>
                   )}
 
                   {gameState.status === 'question_active' && myTeam.frozen && (
@@ -823,7 +849,7 @@
                            {!gameState.activeRoulette.spinning && !gameState.activeRoulette.item ? (
                              <div className="animate-pulse">
                                 <p className="text-yellow-400 font-bold mb-4 text-xl uppercase tracking-widest">¡Es tu turno!</p>
-                                <button onClick={playerSpinRoulette} className="w-full py-12 bg-gradient-to-b from-yellow-300 to-yellow-600 text-black font-black text-4xl uppercase rounded-[2rem] shadow-[0_15px_0_rgba(161,98,7,1)] active:translate-y-4 active:shadow-none transition-all border-4 border-yellow-200 cursor-pointer">
+                                <button disabled={isProcessing} onClick={playerSpinRoulette} className={`w-full py-12 text-black font-black text-4xl uppercase rounded-[2rem] shadow-[0_15px_0_rgba(161,98,7,1)] transition-all border-4 border-yellow-200 ${isProcessing ? 'bg-gray-600 cursor-not-allowed shadow-none' : 'bg-gradient-to-b from-yellow-300 to-yellow-600 active:translate-y-4 active:shadow-none cursor-pointer'}`}>
                                   GIRAR RULETA
                                 </button>
                              </div>
@@ -835,7 +861,7 @@
                                  <span className="text-8xl">{gameState.activeRoulette.item.icon}</span>
                                </div>
                                <h3 className="text-4xl font-black text-white mb-8 uppercase">{gameState.activeRoulette.item.name}</h3>
-                               <button onClick={() => resolveItemEffect(gameState.activeRoulette.teamId, gameState.activeRoulette.item)} className="w-full py-6 bg-green-600 active:bg-green-800 text-white font-black text-3xl uppercase rounded-2xl shadow-[0_10px_0_rgba(21,128,61,1)] active:translate-y-2 active:shadow-none transition-all cursor-pointer">
+                               <button disabled={isProcessing} onClick={() => resolveItemEffect(gameState.activeRoulette.teamId, gameState.activeRoulette.item)} className={`w-full py-6 text-white font-black text-3xl uppercase rounded-2xl shadow-[0_10px_0_rgba(21,128,61,1)] transition-all ${isProcessing ? 'bg-gray-600 cursor-not-allowed shadow-none' : 'bg-green-600 active:bg-green-800 active:translate-y-2 active:shadow-none cursor-pointer'}`}>
                                  ¡Usar Ítem!
                                </button>
                              </div>
