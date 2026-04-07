@@ -213,7 +213,7 @@
           ...Array(5).fill({ id: 'turbo', name: 'Turbo', icon: '🍄', color: 'bg-red-500', desc: 'Próximo acierto = +2 casillas.' }),
           ...Array(6).fill({ id: 'banana', name: 'Plátano', icon: '🍌', color: 'bg-yellow-500', desc: 'Elige y congela a un rival al azar.' }),
           ...Array(6).fill({ id: 'shell', name: 'Caparazón', icon: '🐢', color: 'bg-red-600', desc: 'Ataca al 1er lugar (-1 casilla).' }),
-          ...Array(2).fill({ id: 'star', name: 'Estrella', icon: '⭐', color: 'bg-yellow-300', desc: 'Inmunidad a ataques.' }),
+          ...Array(2).fill({ id: 'star', name: 'Estrella', icon: '⭐', color: 'bg-yellow-300', desc: 'Avanza aunque falles O te protege de 1 ataque.' }),
           ...Array(1).fill({ id: 'lightning', name: 'Rayo', icon: '⚡', color: 'bg-blue-500', desc: '¡Todos retroceden una casilla!' }),
         ];
 
@@ -522,7 +522,21 @@
                 
                 if (t.pos === 15 && !winner) winner = id;
               } else {
-                if (t.star) t.star = false;
+                // LÓGICA DE ESTRELLA: Rescate automático si falló o no contestó
+                if (t.star) {
+                  t.star = false; // Se consume por salvarlo
+                  somebodyCorrect = true;
+                  let steps = t.mushroom ? 2 : 1;
+                  t.pos = Math.min(15, t.pos + steps);
+                  if (t.mushroom) t.mushroom = false;
+                  
+                  if (ITEM_POSITIONS[Number(id)] && ITEM_POSITIONS[Number(id)].includes(t.pos) && !t.usedItems.includes(t.pos)) {
+                     newQueue.push(id);
+                     t.usedItems.push(t.pos); 
+                  }
+                  
+                  if (t.pos === 15 && !winner) winner = id;
+                }
               }
             });
 
@@ -771,6 +785,9 @@
                                     'bg-gray-900 border-gray-700 hover:border-gray-500'} ${role === 'host' && !t.frozen && !noContesto && t.connected ? 'cursor-pointer' : ''}`}
                              >
                                <div className="absolute inset-0 opacity-10 pointer-events-none" style={{backgroundColor: info.hex}}></div>
+                               
+                               {/* INDICADOR VISUAL VIP DE ESTRELLA INMUNE */}
+                               {t.star && <div className="absolute top-3 left-3 flex gap-1 items-center bg-yellow-900/50 px-2 py-1 rounded-lg border border-yellow-500/50"><IconStar className="w-5 h-5 text-yellow-400" /><span className="text-yellow-400 text-xs font-bold">INMUNE</span></div>}
                                
                                <h3 style={{color: info.hex}} className="text-3xl font-black uppercase mb-4 relative z-10">{info.name}</h3>
                                
