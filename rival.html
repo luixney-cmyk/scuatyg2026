@@ -330,7 +330,7 @@
             if (gameState?.activeRoulette?.item && !gameState?.activeRoulette?.spinning) playSound('itemReveal');
           }, [gameState?.activeRoulette?.item, gameState?.activeRoulette?.spinning]);
 
-          // 3. Lógica del Reloj Totalmente Sincronizado por Firebase (Anti-Stale State)
+          // 3. Lógica del Reloj Totalmente Sincronizado por Firebase
           useEffect(() => {
             if (!gameState || gameState.status !== 'question_active' || !gameState.deadline) {
               setTimeLeft(0);
@@ -351,26 +351,23 @@
               
               if (remaining <= 0) {
                   clearInterval(interval);
-                  // Solo el host cierra la pregunta en la base de datos
                   if (role === 'host') {
                       forceCloseQuestion();
                   }
               }
-            }, 250); // Revisamos el tiempo más frecuentemente para mayor precisión
+            }, 250); 
             
             return () => clearInterval(interval);
           }, [gameState?.status, gameState?.deadline, role]);
 
-          // Función segura para cerrar la pregunta leyendo el estado más reciente (gameStateRef)
           const forceCloseQuestion = async () => {
             const currentGameState = gameStateRef.current;
             if (!currentGameState || currentGameState.status !== 'question_active') return;
 
             const { updateDoc } = window.FirebaseAPI;
-            setHostJudgments({}); // Limpiamos la selección del admin
+            setHostJudgments({});
             
             let updates = { status: 'host_evaluating' };
-            // Llenar con "No contestó" de forma segura usando el último estado real
             if (currentGameState.teams) {
                 Object.keys(currentGameState.teams).forEach(id => {
                     if (!currentGameState.teams[id].frozen && !currentGameState.teams[id].ansText) {
@@ -388,17 +385,27 @@
 
           // --- FUNCIONES DEL JUGADOR ---
           const handlePlayerJoin = async () => {
-            window.isPlayerMode = true; // Activa el modo silencio maestro para este dispositivo
+            window.isPlayerMode = true; 
             window.SFX.init();
             if (pinInput.toUpperCase() === PINS.teams[selectedTeam]) {
+              
+              // Verificación: ¿El equipo ya está conectado?
+              if (gameState && gameState.teams[selectedTeam]?.connected) {
+                const forceJoin = window.confirm(`⚠️ El equipo ${TEAMS_INFO[selectedTeam].name} YA SE ENCUENTRA EN LÍNEA.\n\nSi te saliste por accidente y quieres recuperar tu conexión, da clic en "Aceptar".\nSi no eres de este equipo, da clic en "Cancelar".`);
+                if (!forceJoin) {
+                  setErrorMsg('Ese jugador ya se encuentra en línea.');
+                  return;
+                }
+              }
+
               setMyTeamId(selectedTeam);
               setRole('player');
-              if (db) await window.FirebaseAPI.setDoc(getDocRef(), { teams: { [selectedTeam]: { connected: true } } }, { merge: true });
+              if (db) await window.FirebaseAPI.updateDoc(getDocRef(), { [`teams.${selectedTeam}.connected`]: true });
             } else { setErrorMsg('PIN Incorrecto.'); }
           };
 
           const submitTextAnswer = async (e) => {
-            if (e) e.preventDefault(); // Por si viene de un Form (Teclado Enter del celular)
+            if (e) e.preventDefault(); 
             if (gameState.status !== 'question_active' || !playerAnswerInput.trim() || hasSubmitted || isProcessing) return;
             setIsProcessing(true);
             setHasSubmitted(true);
@@ -451,7 +458,7 @@
               status: 'question_active', 
               currentQuestion: randomQ.q,
               hostAnswerHint: randomQ.a,
-              deadline: Date.now() + 15000 // Exactamente 15 Segundos
+              deadline: Date.now() + 15000 
             };
             Object.keys(gameState.teams).forEach(id => { updates[`teams.${id}.ansText`] = ''; });
             await window.FirebaseAPI.updateDoc(getDocRef(), updates);
@@ -640,7 +647,7 @@
           // ==========================================
           // VISTA 1: LA PANTALLA UNIFICADA (HOST + PROYECTOR)
           // ==========================================
-          if (role === 'host') {
+          if (role === 'projector' || role === 'host') {
             return (
               <div className="min-h-screen bg-gray-950 text-white p-6 font-sans flex flex-col relative overflow-hidden">
                 <header className="text-center mb-6">
@@ -655,15 +662,20 @@
                     <div className="flex-1 flex flex-col h-full">
                       <div className="flex-1 mb-8"><RaceTrack /></div>
                       
-                      <div className="bg-gray-900 border border-gray-800 p-6 rounded-3xl shadow-2xl flex justify-between items-center">
-                         <div>
-                            <p className="text-gray-400 text-sm font-bold uppercase tracking-widest">Panel de Control Admin</p>
-                            <p className="text-white text-xl">¿Listos para la carrera?</p>
-                         </div>
-                         <button disabled={isProcessing} onClick={launchRandomQuestion} className={`px-10 py-5 text-white font-black text-2xl uppercase rounded-2xl shadow-[0_5px_0_rgba(30,58,138,1)] flex gap-3 items-center ${isProcessing ? 'bg-gray-600 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all cursor-pointer'}`}>
-                            <IconPlay className="w-8 h-8"/> Lanzar Siguiente Pregunta
-                         </button>
-                      </div>
+                      {role === 'host' && (
+                          <div className="bg-gray-900 border border-gray-800 p-6 rounded-3xl shadow-2xl flex justify-between items-center">
+                             <div>
+                                <p className="text-gray-400 text-sm font-bold uppercase tracking-widest">Panel de Control Admin</p>
+                                <p className="text-white text-xl">¿Listos para la carrera?</p>
+                             </div>
+                             <button disabled={isProcessing} onClick={launchRandomQuestion} className={`px-10 py-5 text-white font-black text-2xl uppercase rounded-2xl shadow-[0_5px_0_rgba(30,58,138,1)] flex gap-3 items-center ${isProcessing ? 'bg-gray-600 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all cursor-pointer'}`}>
+                                <IconPlay className="w-8 h-8"/> Lanzar Siguiente Pregunta
+                             </button>
+                          </div>
+                      )}
+                      {role === 'projector' && (
+                         <div className="text-center mb-4 animate-pulse"><p className="text-3xl text-gray-500 font-bold tracking-widest uppercase">Esperando siguiente pregunta...</p></div>
+                      )}
                     </div>
                   )}
 
@@ -683,9 +695,13 @@
 
                   {gameState.status === 'host_evaluating' && (
                     <div className="flex-1 flex flex-col h-full w-full">
-                       <div className="text-center mb-8">
+                       <div className="text-center mb-8 relative">
                          <h2 className="text-4xl font-black text-yellow-400 uppercase tracking-widest">Respuestas Recibidas</h2>
-                         <p className="text-xl text-gray-400 mt-2">Respuestas en verde avanzarán una casilla.</p>
+                         {/* CINTILLO DE RESPUESTA OFICIAL */}
+                         <div className="mt-4 inline-block bg-green-900/80 border-4 border-green-500 px-10 py-4 rounded-3xl shadow-[0_0_30px_rgba(34,197,94,0.4)] transform hover:scale-105 transition-transform">
+                           <p className="text-sm text-green-300 font-black uppercase tracking-widest mb-1">Respuesta Oficial</p>
+                           <p className="text-5xl text-white font-black">"{gameState.hostAnswerHint}"</p>
+                         </div>
                        </div>
                        
                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 flex-1">
@@ -698,13 +714,13 @@
                              <div 
                                key={info.id} 
                                onClick={() => {
-                                  if(!t.frozen && !noContesto && !isProcessing) toggleJudgment(info.id);
+                                  if(role === 'host' && !t.frozen && !noContesto && !isProcessing) toggleJudgment(info.id);
                                }}
                                className={`transition-all duration-300 rounded-3xl p-6 text-center border-4 flex flex-col justify-center items-center relative overflow-hidden
                                   ${t.frozen ? 'bg-blue-900/20 border-blue-900 opacity-60 cursor-not-allowed' : 
                                     noContesto ? 'bg-red-950/30 border-red-900 cursor-not-allowed' :
-                                    isSelected ? 'selected-answer cursor-pointer' : 
-                                    'bg-gray-900 border-gray-700 hover:border-gray-500 cursor-pointer'}`}
+                                    isSelected ? 'selected-answer' : 
+                                    'bg-gray-900 border-gray-700 hover:border-gray-500'} ${role === 'host' && !t.frozen && !noContesto ? 'cursor-pointer' : ''}`}
                              >
                                <div className="absolute inset-0 opacity-10 pointer-events-none" style={{backgroundColor: info.hex}}></div>
                                
@@ -724,11 +740,13 @@
                          })}
                        </div>
 
-                       <div className="mt-8 text-center">
-                          <button disabled={isProcessing} onClick={executeEvaluations} className={`px-16 py-6 text-white font-black text-3xl uppercase tracking-widest rounded-[2rem] shadow-[0_8px_0_rgba(88,28,135,1)] ${isProcessing ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-500 active:scale-95 transition-all cursor-pointer'}`}>
-                             ¡Aplicar y Avanzar!
-                          </button>
-                       </div>
+                       {role === 'host' && (
+                           <div className="mt-8 text-center">
+                              <button disabled={isProcessing} onClick={executeEvaluations} className={`px-16 py-6 text-white font-black text-3xl uppercase tracking-widest rounded-[2rem] shadow-[0_8px_0_rgba(88,28,135,1)] ${isProcessing ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-500 active:scale-95 transition-all cursor-pointer'}`}>
+                                 ¡Aplicar y Avanzar!
+                              </button>
+                           </div>
+                       )}
                     </div>
                   )}
 
@@ -761,10 +779,12 @@
                         </div>
                       )}
 
-                      <div className="mt-12 flex justify-center gap-4 opacity-10 hover:opacity-100 transition-opacity">
-                         {!gameState.activeRoulette.spinning && !gameState.activeRoulette.item && <button disabled={isProcessing} onClick={()=>window.FirebaseAPI.updateDoc(getDocRef(), {'activeRoulette.spinning': true})} className="px-4 py-2 bg-gray-800 text-sm rounded cursor-pointer">Forzar Giro</button>}
-                         {gameState.activeRoulette.item && <button disabled={isProcessing} onClick={()=>resolveItemEffect(gameState.activeRoulette.teamId, gameState.activeRoulette.item)} className="px-4 py-2 bg-yellow-600 text-black text-sm font-bold rounded cursor-pointer">Forzar Aplicar</button>}
-                      </div>
+                      {role === 'host' && (
+                          <div className="mt-12 flex justify-center gap-4 opacity-10 hover:opacity-100 transition-opacity">
+                             {!gameState.activeRoulette.spinning && !gameState.activeRoulette.item && <button disabled={isProcessing} onClick={()=>window.FirebaseAPI.updateDoc(getDocRef(), {'activeRoulette.spinning': true})} className="px-4 py-2 bg-gray-800 text-sm rounded cursor-pointer">Forzar Giro</button>}
+                             {gameState.activeRoulette.item && <button disabled={isProcessing} onClick={()=>resolveItemEffect(gameState.activeRoulette.teamId, gameState.activeRoulette.item)} className="px-4 py-2 bg-yellow-600 text-black text-sm font-bold rounded cursor-pointer">Forzar Aplicar</button>}
+                          </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -778,7 +798,9 @@
                       <div className="text-[6rem] font-black uppercase tracking-widest px-20 py-10 rounded-[4rem] border-8 inline-block" style={{ backgroundColor: `${TEAMS_INFO[gameState.winner].hex}40`, borderColor: TEAMS_INFO[gameState.winner].hex, color: TEAMS_INFO[gameState.winner].hex }}>
                         {TEAMS_INFO[gameState.winner].name}
                       </div>
-                      <div className="mt-20"><button onClick={() => window.FirebaseAPI.setDoc(getDocRef(), INITIAL_STATE)} className="text-gray-600 hover:text-white underline text-2xl font-bold cursor-pointer">Reiniciar Carrera</button></div>
+                      {role === 'host' && (
+                          <div className="mt-20"><button onClick={() => window.FirebaseAPI.setDoc(getDocRef(), INITIAL_STATE)} className="text-gray-600 hover:text-white underline text-2xl font-bold cursor-pointer">Reiniciar Carrera</button></div>
+                      )}
                     </div>
                   </div>
                 )}
