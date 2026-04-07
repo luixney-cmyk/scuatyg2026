@@ -614,8 +614,11 @@
                 const team = gameState.teams[info.id];
                 return (
                 <div key={info.id} className="flex items-center gap-3 relative z-10 my-1">
-                  <div className={`w-32 md:w-40 text-xs md:text-sm font-black uppercase truncate px-3 py-3 rounded-xl flex justify-between items-center border-l-8 ${team.frozen ? 'opacity-50' : ''} ${team.connected ? 'bg-gray-800' : 'bg-gray-950/50'}`} style={{ borderColor: info.hex }}>
-                    <span style={{color: info.hex}}>{info.name}</span>
+                  <div className={`w-32 md:w-40 text-xs md:text-sm font-black uppercase truncate px-3 py-3 rounded-xl flex justify-between items-center border-l-8 ${team.frozen ? 'opacity-50' : ''} ${team.connected ? 'bg-gray-800' : 'bg-gray-950 text-gray-600'}`} style={{ borderColor: team.connected ? info.hex : '#374151' }}>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-3 h-3 rounded-full ${team.connected ? 'bg-green-500 shadow-[0_0_8px_#22c55e] animate-pulse' : 'bg-red-900'}`}></div>
+                      <span style={{color: team.connected ? info.hex : '#4b5563'}}>{info.name}</span>
+                    </div>
                     <div className="flex gap-1">
                       {team.mushroom && <span title="Turbo Guardado">🍄</span>}{team.star && <span title="Estrella Activa">⭐</span>}{team.frozen && <span title="Congelado">🧊</span>}
                     </div>
@@ -624,6 +627,16 @@
                   <div className="flex-1 flex h-12 md:h-16 bg-gray-950 rounded-full border border-gray-800 overflow-hidden relative shadow-inner">
                     <div className="absolute top-0 left-0 bottom-0 opacity-20 transition-all duration-1000 ease-in-out" style={{ width: `${(team.pos / 15) * 100}%`, backgroundColor: info.hex }}/>
                     
+                    {/* CASILLA DE SALIDA (Posición 0) */}
+                    <div className="w-12 md:w-16 border-r border-gray-800/50 flex items-center justify-center relative z-10 bg-gray-900/50">
+                        {team.pos === 0 && team.connected && (
+                            <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.9)] border-4 border-white transform scale-125 transition-transform ${team.frozen ? 'grayscale opacity-50' : ''}`} style={{ backgroundColor: info.hex, fontSize: '1.5rem' }}>🚗</div>
+                        )}
+                        {team.pos === 0 && !team.connected && (
+                            <span className="text-[10px] text-red-900/50 font-bold uppercase">Off</span>
+                        )}
+                    </div>
+
                     {Array.from({ length: 15 }).map((_, stepIdx) => {
                       const stepNum = stepIdx + 1;
                       const isItem = ITEM_POSITIONS[info.id].includes(stepNum);
@@ -714,13 +727,14 @@
                              <div 
                                key={info.id} 
                                onClick={() => {
-                                  if(role === 'host' && !t.frozen && !noContesto && !isProcessing) toggleJudgment(info.id);
+                                  if(role === 'host' && !t.frozen && !noContesto && !isProcessing && t.connected) toggleJudgment(info.id);
                                }}
                                className={`transition-all duration-300 rounded-3xl p-6 text-center border-4 flex flex-col justify-center items-center relative overflow-hidden
                                   ${t.frozen ? 'bg-blue-900/20 border-blue-900 opacity-60 cursor-not-allowed' : 
+                                    !t.connected ? 'bg-gray-950 border-gray-800 opacity-50' :
                                     noContesto ? 'bg-red-950/30 border-red-900 cursor-not-allowed' :
                                     isSelected ? 'selected-answer' : 
-                                    'bg-gray-900 border-gray-700 hover:border-gray-500'} ${role === 'host' && !t.frozen && !noContesto ? 'cursor-pointer' : ''}`}
+                                    'bg-gray-900 border-gray-700 hover:border-gray-500'} ${role === 'host' && !t.frozen && !noContesto && t.connected ? 'cursor-pointer' : ''}`}
                              >
                                <div className="absolute inset-0 opacity-10 pointer-events-none" style={{backgroundColor: info.hex}}></div>
                                
@@ -728,6 +742,8 @@
                                
                                {t.frozen ? (
                                  <div className="text-4xl text-blue-400 font-black tracking-widest animate-pulse relative z-10">CONGELADO</div>
+                               ) : !t.connected ? (
+                                 <div className="text-2xl text-red-900 font-black tracking-widest relative z-10">DESCONECTADO</div>
                                ) : (
                                  <div className={`text-4xl font-mono font-bold break-words px-4 py-4 rounded-2xl w-full relative z-10 ${noContesto ? 'text-red-400' : isSelected ? 'text-green-100 bg-green-800/50' : 'text-white'}`}>
                                    {t.ansText || 'No contestó'}
