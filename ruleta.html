@@ -181,7 +181,7 @@
         }
     </style>
 </head>
-<body class="flex flex-col items-center py-6 relative">
+<body class="flex flex-col items-center py-6 relative" onclick="window.initAudio()">
 
     <!-- ==========================================
          PANTALLA DE BLOQUEO DE SEGURIDAD
@@ -191,7 +191,7 @@
             <i data-lucide="lock" class="w-12 h-12 text-yellow-400 mx-auto mb-4 animate-pulse"></i>
             <h2 class="font-pixel text-yellow-400 text-xl mb-4">SYSTEM LOCKED</h2>
             <p class="text-gray-300 font-medium mb-6 text-sm">Ingrese el código de autorización para acceder al panel de la Ruleta.</p>
-            <input type="password" id="access-code-input" class="w-full bg-black text-green-400 font-pixel text-center p-4 border-2 border-gray-600 mb-4 focus:outline-none focus:border-green-400 rounded transition-colors" placeholder="****" autocomplete="off">
+            <input type="password" id="access-code-input" class="w-full bg-black text-green-400 font-pixel text-center p-4 border-2 border-gray-600 mb-4 focus:outline-none focus:border-green-400 rounded transition-colors" placeholder="****" autocomplete="off" onfocus="window.initAudio()">
             <button onclick="checkAccessCode()" class="btn-mario font-pixel text-xs w-full py-4 mt-2">
                 DESBLOQUEAR
             </button>
@@ -461,19 +461,194 @@
                     console.error("Save error:", err);
                 }
             } else {
-                // Fallback offline en memoria
                 updateCounter();
                 drawWheel();
             }
         }
 
+        // ==========================================
+        //  NUEVO SISTEMA DE AUDIO (SINTETIZADO)
+        // ==========================================
+        let audioCtx;
+        window.initAudio = function() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        // Clic Genérico de Interfaz
+        function playClick() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.04);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.04);
+        }
+
+        // Tics del giro de la ruleta (sonido mecánico)
+        function playRouletteTick() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(250, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+        }
+
+        // Motor de giro: Llama a los ticks reduciendo la velocidad para sincronizar con CSS
+        function startSpinningSound() {
+            if (!audioCtx) return;
+            let delay = 20; // Inicia rápido
+            let elapsed = 0;
+            const maxTime = 4000; // 4 segundos exactos
+            
+            function tick() {
+                playRouletteTick();
+                delay = delay * 1.085; // Factor de freno
+                elapsed += delay;
+                if (elapsed < maxTime) {
+                    setTimeout(tick, delay);
+                }
+            }
+            tick();
+        }
+
+        // Revelación de Reto "Ta-da"
+        function playRevealSound() {
+            if (!audioCtx) return;
+            const notes = [523.25, 659.25, 783.99, 1046.50]; // C, E, G, C alta
+            let time = audioCtx.currentTime;
+            notes.forEach((freq, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.08, time);
+                gain.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(time); osc.stop(time + 0.15);
+                time += 0.08;
+            });
+        }
+
+        // Sonido de inicio (¡A Jugar!)
+        function playGoSound() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(880, audioCtx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+        }
+
+        // Tic normal del cronómetro
+        function playTickSound() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle'; 
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime); 
+            osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.1); 
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime); 
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        // Tic de Alarma (Últimos 10 segundos)
+        function playAlertTick() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(1000, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        // Sirena Final / Tiempo agotado
+        function playBuzzer() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, audioCtx.currentTime); 
+            osc.frequency.linearRampToValueAtTime(80, audioCtx.currentTime + 1.5);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 1.5);
+        }
+
+        // Moneda (Estrella Ganada)
+        function playCoinSound() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square'; 
+            osc.frequency.setValueAtTime(987.77, audioCtx.currentTime); 
+            osc.frequency.setValueAtTime(1318.51, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime); 
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3); 
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+        }
+
+        // Melodía de Victoria Final
+        function playVictorySound() {
+            if (!audioCtx) return;
+            const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50]; 
+            let time = audioCtx.currentTime;
+            notes.forEach((freq, index) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.15, time);
+                
+                let duration = index === notes.length - 1 ? 1.5 : 0.15;
+                gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+                
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(time); osc.stop(time + duration);
+                time += duration;
+            });
+        }
+
+        // Listener global para clics en botones y checkboxes
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('button') || e.target.closest('input[type="checkbox"]')) {
+                playClick();
+            }
+        });
+
+        // ==========================================
+        //  LÓGICA PRINCIPAL DEL JUEGO
+        // ==========================================
+
         window.checkAccessCode = function() {
+            window.initAudio();
             const inputEl = document.getElementById('access-code-input');
             const input = inputEl.value.trim().toUpperCase();
             
             if (btoa(input) === secretCode) {
+                playCoinSound();
                 document.getElementById('login-overlay').style.display = 'none';
-                initAudio();
                 isUnlocked = true;
                 
                 if (user && db) {
@@ -486,6 +661,7 @@
                     drawWheel();
                 }
             } else {
+                playBuzzer();
                 inputEl.classList.remove('border-gray-600');
                 inputEl.classList.add('border-red-600', 'bg-red-950', 'text-red-400');
                 inputEl.value = '';
@@ -510,73 +686,6 @@
             if (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'i' || event.key === 'J' || event.key === 'j')) event.preventDefault();
         });
 
-        // --- SISTEMA DE AUDIO (Web Audio API) ---
-        let audioCtx;
-        window.initAudio = function() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-        }
-
-        function playBuzzer() {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(150, audioCtx.currentTime); 
-            osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 1.5);
-            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 1.5);
-        }
-
-        function playCoinSound() {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'square'; 
-            osc.frequency.setValueAtTime(987.77, audioCtx.currentTime); 
-            osc.frequency.setValueAtTime(1318.51, audioCtx.currentTime + 0.1);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime); 
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3); 
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.4);
-        }
-
-        function playTickSound() {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'triangle'; 
-            osc.frequency.setValueAtTime(800, audioCtx.currentTime); 
-            osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.1); 
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime); 
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-        }
-
-        function playVictorySound() {
-            if (!audioCtx) return;
-            const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50]; 
-            let time = audioCtx.currentTime;
-            notes.forEach((freq, index) => {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'square';
-                osc.frequency.value = freq;
-                gain.gain.setValueAtTime(0.1, time);
-                
-                let duration = index === notes.length - 1 ? 0.8 : 0.15;
-                gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
-                
-                osc.connect(gain); gain.connect(audioCtx.destination);
-                osc.start(time); osc.stop(time + duration);
-                time += duration;
-            });
-        }
-
-        // Botón para resetear la memoria en la nube
         document.getElementById('btn-reset-game').addEventListener('click', async () => {
             if(confirm("¿ESTÁS SEGURO? Se borrarán todos los puntos y retos eliminados EN TODOS LOS DISPOSITIVOS. Esta acción no se puede deshacer.")){
                 teams = JSON.parse(JSON.stringify(defaultTeams));
@@ -587,6 +696,7 @@
                 document.getElementById('podium-content').classList.add('border-blue-500');
                 document.getElementById('podium-title').innerHTML = '<i data-lucide="trophy" class="w-8 h-8 text-yellow-400"></i> LEADERBOARD';
                 lucide.createIcons();
+                playBuzzer();
                 alert("Memoria en la nube borrada. ¡Nuevo juego listo!");
             }
         });
@@ -674,6 +784,9 @@
             const totalRotation = currentRotation + (360 * 8) + extraDegrees;
             canvas.style.transform = `rotate(${totalRotation}deg)`;
             
+            // Inicia el sonido del giro!
+            startSpinningSound();
+
             setTimeout(() => {
                 isSpinning = false;
                 spinBtn.disabled = false;
@@ -683,7 +796,9 @@
                 const sliceAngle = 360 / challenges.length;
                 let pointingAngle = (360 - normalizedRotation + 270) % 360; 
                 selectedChallengeIndex = Math.floor(pointingAngle / sliceAngle);
-
+                
+                // Sonido épico cuando se revela
+                playRevealSound();
                 openChallengeModal(challenges[selectedChallengeIndex]);
             }, 4000); 
         });
@@ -758,6 +873,7 @@
                 prepTime--;
                 timerCount.textContent = prepTime;
                 
+                // Tics de preparación
                 if (prepTime <= 3 && prepTime > 0) {
                     playTickSound();
                 }
@@ -765,7 +881,7 @@
                 if (prepTime <= 0) {
                     clearInterval(selectionTimerInterval);
                     timerContainer.classList.add('hidden');
-                    playCoinSound();
+                    playGoSound(); // ¡A jugar!
                     
                     btnStart.disabled = false;
                     btnStart.classList.remove('opacity-50', 'cursor-not-allowed');
@@ -787,6 +903,7 @@
         }
 
         document.getElementById('btn-start-timer').addEventListener('click', () => {
+            playGoSound(); // Sonido de arrancar
             stepRules.classList.add('hidden');
             stepTimer.classList.remove('hidden');
             
@@ -796,6 +913,14 @@
             timerInterval = setInterval(() => {
                 timeLeft--;
                 updateTimerUI();
+                
+                // Tics del cronómetro (Normal o Alarma)
+                if (timeLeft <= 10 && timeLeft > 0) {
+                    playAlertTick();
+                } else if (timeLeft > 10 && timeLeft % 1 === 0) {
+                    playTickSound();
+                }
+
                 if (timeLeft <= 0) triggerTimesUp(true);
             }, 1000);
         });
@@ -825,6 +950,7 @@
                 timesUpTitle.classList.remove('text-green-500');
                 timesUpTitle.classList.add('text-red-500');
             } else {
+                playCoinSound(); // Detenido manualmente = bien
                 modalBg.style.borderColor = '#22c55e';
                 timesUpTitle.textContent = "¡RETO DETENIDO!";
                 timesUpTitle.classList.remove('text-red-500');
