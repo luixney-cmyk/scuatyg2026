@@ -24,6 +24,13 @@
             transform: scale(1.05);
             box-shadow: 0 0 30px rgba(34, 197, 94, 0.4);
         }
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin-custom {
+            animation: spin-slow 2s linear infinite;
+        }
     </style>
 </head>
 <body>
@@ -72,11 +79,11 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, setDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         window.FirebaseAPI = {
             initializeApp, getAuth, signInAnonymously, onAuthStateChanged,
-            getFirestore, doc, onSnapshot, setDoc, updateDoc
+            getFirestore, doc, onSnapshot, setDoc, updateDoc, getDoc
         };
         
         window.dispatchEvent(new Event('firebase-loaded'));
@@ -91,7 +98,7 @@
             if (window.SFX && window.SFX[soundName]) window.SFX[soundName]();
         };
 
-        // --- ÍCONOS SVG ---
+        // --- ÍCONOS SVG ORIGINALES ---
         const IconTrophy = ({className, style}) => <svg className={className} style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2Z"/></svg>;
         const IconStar = ({className}) => <svg className={className} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
         const IconShield = ({className}) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
@@ -102,7 +109,7 @@
         const IconTimer = ({className}) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="14" r="8"/><path d="M12 2v4"/><path d="M12 14 10 12"/><path d="M18 2h-4"/></svg>;
         const IconPlay = ({className}) => <svg className={className} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>;
 
-        // --- BANCO DE PREGUNTAS ---
+        // --- BANCO DE PREGUNTAS COMPLETO (80+ PREGUNTAS) ---
         const QUESTIONS_POOL = [
           { q: '¿Cuál es la capital del estado de Quintana Roo?', a: 'Chetumal' },
           { q: '¿En qué estado de la república se encuentra la zona arqueológica de La Venta?', a: 'Tabasco' },
@@ -210,8 +217,8 @@
 
         const MYSTERY_BOX_POOL = [
           ...Array(5).fill({ id: 'turbo', name: 'Turbo', icon: '🍄', color: 'bg-red-500', desc: 'Próximo acierto = +2 casillas.' }),
-          ...Array(6).fill({ id: 'banana', name: 'Plátano', icon: '🍌', color: 'bg-yellow-500', desc: 'Elige y congela a un rival al azar.' }),
-          ...Array(6).fill({ id: 'shell', name: 'Caparazón', icon: '🐢', color: 'bg-red-600', desc: 'Ataca al 1er lugar (-1 casilla).' }),
+          ...Array(6).fill({ id: 'banana', name: 'Plátano', icon: '🍌', color: 'bg-yellow-500', desc: 'Elige y congela a un rival.' }),
+          ...Array(6).fill({ id: 'shell', name: 'Caparazón', icon: '🐢', color: 'bg-red-600', desc: 'Ataca a un rival seleccionado (-1 casilla).' }),
           ...Array(2).fill({ id: 'star', name: 'Estrella', icon: '⭐', color: 'bg-yellow-300', desc: 'Avanza aunque falles O te protege de 1 ataque.' }),
           ...Array(1).fill({ id: 'lightning', name: 'Rayo', icon: '⚡', color: 'bg-blue-500', desc: '¡Todos retroceden una casilla!' }),
         ];
@@ -222,13 +229,13 @@
           hostAnswerHint: '',
           deadline: 0,
           rouletteQueue: [], 
-          activeRoulette: { teamId: null, spinning: false, item: null },
+          activeRoulette: { teamId: null, spinning: false, item: null, targetId: null },
           winner: null,
-          tiedTeams: [], // Arreglo de IDs en muerte súbita
+          tiedTeams: [],
           usedQuestions: [],
           teams: Object.keys(TEAMS_INFO).reduce((acc, id) => ({
             ...acc,
-            [id]: { pos: 0, ansText: '', connected: false, frozen: false, star: false, mushroom: false, usedItems: [] }
+            [id]: { pos: 0, ansText: '', connected: false, sessionID: null, frozen: false, star: false, mushroom: false, usedItems: [] }
           }), {})
         };
 
@@ -238,6 +245,7 @@
           const [gameState, setGameState] = useState(null);
           const [role, setRole] = useState(null); 
           const [myTeamId, setMyTeamId] = useState(null);
+          const [mySessionID, setMySessionID] = useState(null);
           const [firebaseLoaded, setFirebaseLoaded] = useState(false);
 
           const [pinInput, setPinInput] = useState('');
@@ -248,21 +256,14 @@
           const [playerAnswerInput, setPlayerAnswerInput] = useState('');
           const [hasSubmitted, setHasSubmitted] = useState(false);
           const [isProcessing, setIsProcessing] = useState(false);
-          const [bananaTarget, setBananaTarget] = useState(""); 
+          const [punishTarget, setPunishTarget] = useState(""); 
 
           const lastTickRef = useRef(null); 
           const prevStateRef = useRef(null);
           const gameStateRef = useRef(gameState);
 
-          // Variable auxiliar para saber si hay muerte súbita y si estoy en ella
-          const isTieBreaker = gameState && gameState.tiedTeams && gameState.tiedTeams.length > 1;
-          const amITied = isTieBreaker && gameState.tiedTeams.includes(String(myTeamId));
+          useEffect(() => { gameStateRef.current = gameState; }, [gameState]);
 
-          useEffect(() => {
-              gameStateRef.current = gameState;
-          }, [gameState]);
-
-          // 1. Iniciar Firebase
           useEffect(() => {
               if (window.FirebaseAPI) setFirebaseLoaded(true);
               else window.addEventListener('firebase-loaded', () => setFirebaseLoaded(true));
@@ -270,57 +271,45 @@
 
           useEffect(() => {
             if (!firebaseLoaded) return;
-            try {
-              const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore } = window.FirebaseAPI;
-              const firebaseConfig = {
-                  apiKey: "AIzaSyAWvlKYMuFlxL88OrSOzGPzXk0w_HUTGQ8",
-                  authDomain: "scuatyg2026.firebaseapp.com",
-                  projectId: "scuatyg2026",
-                  storageBucket: "scuatyg2026.firebasestorage.app",
-                  messagingSenderId: "321639282182",
-                  appId: "1:321639282182:web:6803746ad3ff4c8e8e3587"
-              };
-              const app = initializeApp(firebaseConfig);
-              const auth = getAuth(app);
-              setDb(getFirestore(app));
-
-              signInAnonymously(auth).catch(e => console.error(e));
-              const unsubscribe = onAuthStateChanged(auth, setUser);
-              return () => unsubscribe();
-            } catch (e) { console.error("Firebase init error:", e); }
+            const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore } = window.FirebaseAPI;
+            const firebaseConfig = {
+                apiKey: "AIzaSyAWvlKYMuFlxL88OrSOzGPzXk0w_HUTGQ8",
+                authDomain: "scuatyg2026.firebaseapp.com",
+                projectId: "scuatyg2026",
+                storageBucket: "scuatyg2026.firebasestorage.app",
+                messagingSenderId: "321639282182",
+                appId: "1:321639282182:web:6803746ad3ff4c8e8e3587"
+            };
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            setDb(getFirestore(app));
+            signInAnonymously(auth);
+            return onAuthStateChanged(auth, setUser);
           }, [firebaseLoaded]);
 
-          const getDocRef = () => {
-            const { doc } = window.FirebaseAPI;
-            return doc(db, 'mariokart', 'partida_activa'); 
-          };
+          const getDocRef = () => window.FirebaseAPI.doc(db, 'mariokart', 'partida_activa');
 
-          // 2. Escuchar la Partida y Sonidos
+          // --- PERSISTENCIA Y ESCUCHA ---
           useEffect(() => {
             if (!user || !db) return;
-            const { onSnapshot } = window.FirebaseAPI;
-            const docRef = getDocRef();
-
-            const unsub = onSnapshot(docRef, (docSnap) => {
+            const unsub = window.FirebaseAPI.onSnapshot(getDocRef(), (docSnap) => {
               if (docSnap.exists()) {
                 const data = docSnap.data();
                 const prevState = prevStateRef.current;
                 setGameState(data);
                 
-                if (data.status === 'question_active' && (!prevState || prevState.status !== 'question_active')) playSound('question');
-                if (data.status === 'host_evaluating' && (!prevState || prevState.status !== 'host_evaluating')) playSound('timeUp');
-                if (data.status === 'finished' && (!prevState || prevState.status !== 'finished')) playSound('win');
+                if (data.status === 'question_active' && prevState?.status !== 'question_active') playSound('question');
+                if (data.status === 'host_evaluating' && prevState?.status !== 'host_evaluating') playSound('timeUp');
+                if (data.status === 'finished' && prevState?.status !== 'finished') playSound('win');
 
                 if (role === 'player' && data.status !== 'question_active') {
                   setHasSubmitted(false);
                   setPlayerAnswerInput('');
-                  setBananaTarget(""); 
+                  setPunishTarget(""); 
                 }
-                
                 prevStateRef.current = data;
               }
             });
-
             return () => unsub();
           }, [user, db, role]);
 
@@ -334,92 +323,68 @@
             if (gameState?.activeRoulette?.item && !gameState?.activeRoulette?.spinning) playSound('itemReveal');
           }, [gameState?.activeRoulette?.item, gameState?.activeRoulette?.spinning]);
 
-          // 3. Lógica del Reloj
+          // --- RELOJ SINCRONIZADO ---
           useEffect(() => {
             if (!gameState || gameState.status !== 'question_active' || !gameState.deadline) {
-              setTimeLeft(0);
-              lastTickRef.current = null;
-              return;
+              setTimeLeft(0); return;
             }
-            
             const interval = setInterval(() => {
               const now = Date.now();
               const remaining = Math.max(0, Math.ceil((gameState.deadline - now) / 1000));
               setTimeLeft(remaining);
-              
               if (remaining !== lastTickRef.current && remaining > 0) {
                   lastTickRef.current = remaining;
                   if (remaining <= 5) playSound('tickHigh');
                   else playSound('tick');
               }
-              
-              if (remaining <= 0) {
+              if (remaining <= 0 && role === 'host') {
                   clearInterval(interval);
-                  if (role === 'host') {
-                      forceCloseQuestion();
-                  }
+                  forceCloseQuestion();
               }
             }, 250); 
-            
             return () => clearInterval(interval);
           }, [gameState?.status, gameState?.deadline, role]);
 
           const forceCloseQuestion = async () => {
-            const currentGameState = gameStateRef.current;
-            if (!currentGameState || currentGameState.status !== 'question_active') return;
-
-            const { updateDoc } = window.FirebaseAPI;
+            if (gameStateRef.current.status !== 'question_active') return;
             setHostJudgments({});
-            
             let updates = { status: 'host_evaluating' };
-            if (currentGameState.teams) {
-                // En muerte súbita, solo rellenar con "No contestó" a los que están compitiendo
-                const checkTeams = currentGameState.tiedTeams && currentGameState.tiedTeams.length > 1 
-                  ? currentGameState.tiedTeams 
-                  : Object.keys(currentGameState.teams);
-
-                checkTeams.forEach(id => {
-                    if (!currentGameState.teams[id].frozen && !currentGameState.teams[id].ansText) {
-                        updates[`teams.${id}.ansText`] = 'No contestó';
-                    }
-                });
-            }
-            
-            try {
-                await updateDoc(getDocRef(), updates);
-            } catch (e) { console.error(e); }
+            const checkTeams = gameStateRef.current.tiedTeams?.length > 1 ? gameStateRef.current.tiedTeams : Object.keys(gameStateRef.current.teams);
+            checkTeams.forEach(id => {
+                if (!gameStateRef.current.teams[id].frozen && !gameStateRef.current.teams[id].ansText) {
+                    updates[`teams.${id}.ansText`] = 'No contestó';
+                }
+            });
+            await window.FirebaseAPI.updateDoc(getDocRef(), updates);
           };
 
-          // --- FUNCIONES DEL JUGADOR ---
+          // --- LÓGICA JUGADOR ---
           const handlePlayerJoin = async () => {
-            window.isPlayerMode = true; 
-            window.SFX.init();
+            window.isPlayerMode = true; window.SFX.init();
             if (pinInput.toUpperCase() === PINS.teams[selectedTeam]) {
-              if (gameState && gameState.teams[selectedTeam]?.connected) {
-                const forceJoin = window.confirm(`⚠️ El equipo ${TEAMS_INFO[selectedTeam].name} YA SE ENCUENTRA EN LÍNEA.\n\nSi te saliste por accidente y quieres recuperar tu conexión, da clic en "Aceptar".\nSi no eres de este equipo, da clic en "Cancelar".`);
-                if (!forceJoin) {
-                  setErrorMsg('Ese jugador ya se encuentra en línea.');
-                  return;
-                }
+              const snap = await window.FirebaseAPI.getDoc(getDocRef());
+              const currentTeams = snap.data()?.teams;
+              if (currentTeams?.[selectedTeam]?.connected) {
+                if (!window.confirm(`⚠️ El equipo ${TEAMS_INFO[selectedTeam].name} YA ESTÁ EN LÍNEA. ¿Deseas forzar la entrada y expulsar al otro dispositivo?`)) return;
               }
+              const sid = crypto.randomUUID();
               setMyTeamId(selectedTeam);
+              setMySessionID(sid);
               setRole('player');
-              if (db) await window.FirebaseAPI.updateDoc(getDocRef(), { [`teams.${selectedTeam}.connected`]: true });
+              await window.FirebaseAPI.updateDoc(getDocRef(), { 
+                [`teams.${selectedTeam}.connected`]: true,
+                [`teams.${selectedTeam}.sessionID`]: sid
+              });
             } else { setErrorMsg('PIN Incorrecto.'); }
           };
 
           const submitTextAnswer = async (e) => {
-            if (e) e.preventDefault(); 
+            e.preventDefault();
             if (gameState.status !== 'question_active' || !playerAnswerInput.trim() || hasSubmitted || isProcessing) return;
-            setIsProcessing(true);
-            setHasSubmitted(true);
-            try {
-                await window.FirebaseAPI.updateDoc(getDocRef(), { [`teams.${myTeamId}.ansText`]: playerAnswerInput.trim() });
-            } catch(e) {
-                console.error(e);
-                setHasSubmitted(false); 
-            }
-            setIsProcessing(false);
+            setIsProcessing(true); setHasSubmitted(true);
+            try { await window.FirebaseAPI.updateDoc(getDocRef(), { [`teams.${myTeamId}.ansText`]: playerAnswerInput.trim() }); }
+            catch(e) { setHasSubmitted(false); }
+            finally { setIsProcessing(false); }
           };
 
           const playerSpinRoulette = async () => {
@@ -428,57 +393,128 @@
             await window.FirebaseAPI.updateDoc(getDocRef(), { 'activeRoulette.spinning': true });
             setTimeout(async () => {
               const randomItem = MYSTERY_BOX_POOL[Math.floor(Math.random() * MYSTERY_BOX_POOL.length)];
-              await window.FirebaseAPI.updateDoc(getDocRef(), {
-                'activeRoulette.spinning': false,
-                'activeRoulette.item': randomItem
-              });
+              await window.FirebaseAPI.updateDoc(getDocRef(), { 'activeRoulette.spinning': false, 'activeRoulette.item': randomItem });
               setIsProcessing(false);
             }, 2500);
           };
 
-          // --- FUNCIONES DEL HOST ---
+          const updatePunishTargetToDB = async (targetId) => {
+              setPunishTarget(targetId);
+              if (gameState.status === 'roulette_active') {
+                  await window.FirebaseAPI.updateDoc(getDocRef(), { 'activeRoulette.targetId': targetId });
+              }
+          };
+
+          // --- LÓGICA HOST ---
           const handleHostLogin = async () => {
             window.SFX.init();
             if (pinInput.toUpperCase() === 'RESET2026') {
-                if(window.confirm('🚨 ¿ESTÁS SEGURO DE RESETEAR TODO EL TABLERO A CERO? Esto borrará el avance de todos los Karts.')) {
-                    await window.FirebaseAPI.setDoc(getDocRef(), INITIAL_STATE);
-                    setPinInput('');
-                    alert('Tablero reseteado exitosamente.');
-                }
+                if(confirm('🚨 ¿BORRAR TODO EL PROGRESO?')) await window.FirebaseAPI.setDoc(getDocRef(), INITIAL_STATE);
                 return;
             }
-
             if (pinInput.toUpperCase() === PINS.host) {
               setRole('host');
-              if(!gameState) await window.FirebaseAPI.setDoc(getDocRef(), INITIAL_STATE);
-            } else { setErrorMsg('PIN de Administrador Incorrecto.'); }
+              const snap = await window.FirebaseAPI.getDoc(getDocRef());
+              if(!snap.exists()) await window.FirebaseAPI.setDoc(getDocRef(), INITIAL_STATE);
+            } else { setErrorMsg('PIN Incorrecto.'); }
           };
 
           const launchRandomQuestion = async () => {
             if(isProcessing) return;
             setIsProcessing(true);
-
-            const usedQuestionsArray = gameState.usedQuestions || [];
-            const availableQs = QUESTIONS_POOL.map((q, i) => ({...q, originalIndex: i}))
-                                              .filter(q => !usedQuestionsArray.includes(q.originalIndex));
-            
-            if (availableQs.length === 0) {
-               alert("¡Se acabaron las preguntas! Reinicia el tablero para volver a jugar.");
-               setIsProcessing(false);
-               return;
-            }
-
-            const randomQ = availableQs[Math.floor(Math.random() * availableQs.length)];
-
+            const used = gameState.usedQuestions || [];
+            const avail = QUESTIONS_POOL.map((q, i) => ({...q, idx: i})).filter(q => !used.includes(q.idx));
+            if (!avail.length) { alert("¡Sin preguntas!"); setIsProcessing(false); return; }
+            const randomQ = avail[Math.floor(Math.random() * avail.length)];
             let updates = { 
-              status: 'question_active', 
-              currentQuestion: randomQ.q,
-              hostAnswerHint: randomQ.a,
-              deadline: Date.now() + 15000,
-              usedQuestions: [...usedQuestionsArray, randomQ.originalIndex] 
+              status: 'question_active', currentQuestion: randomQ.q, hostAnswerHint: randomQ.a,
+              deadline: Date.now() + 16000, usedQuestions: [...used, randomQ.idx] 
             };
             Object.keys(gameState.teams).forEach(id => { updates[`teams.${id}.ansText`] = ''; });
             await window.FirebaseAPI.updateDoc(getDocRef(), updates);
+            setIsProcessing(false);
+          };
+
+          const executeEvaluations = async () => {
+            if(isProcessing) return;
+            setIsProcessing(true);
+            let newTeams = JSON.parse(JSON.stringify(gameState.teams));
+            let newQueue = []; let winner = null; let somebodyCorrect = false;
+            let tied = gameState.tiedTeams || [];
+
+            // Desempate
+            if (tied.length > 1) {
+                let winners = tied.filter(id => hostJudgments[id]);
+                if (winners.length === 1) winner = winners[0];
+                else if (winners.length > 1) tied = winners;
+                if (winners.length > 0) playSound('correct');
+                await window.FirebaseAPI.updateDoc(getDocRef(), { status: winner ? 'finished' : 'lobby', winner, tiedTeams: tied });
+                setIsProcessing(false); return;
+            }
+
+            // Normal
+            let potentialWinners = [];
+            Object.keys(newTeams).forEach(id => {
+              const t = newTeams[id];
+              const isCorrect = hostJudgments[id] === true;
+              if (t.frozen) { t.frozen = false; t.ansText = ''; }
+              else if (isCorrect || t.star) {
+                somebodyCorrect = true;
+                t.pos = Math.min(15, t.pos + (t.mushroom ? 2 : 1));
+                if (t.mushroom) t.mushroom = false;
+                if (t.star && !isCorrect) t.star = false; // Gasta estrella si falló pero avanzó
+                if (t.pos === 15) potentialWinners.push(id);
+                else if (ITEM_POSITIONS[id].includes(t.pos) && !t.usedItems.includes(t.pos)) {
+                   newQueue.push(id); t.usedItems.push(t.pos); 
+                }
+              }
+            });
+
+            if (somebodyCorrect) playSound('correct');
+            if (potentialWinners.length === 1) winner = potentialWinners[0];
+            else if (potentialWinners.length > 1) tied = potentialWinners;
+
+            await window.FirebaseAPI.updateDoc(getDocRef(), {
+              status: winner ? 'finished' : (tied.length > 1 ? 'lobby' : (newQueue.length > 0 ? 'roulette_active' : 'lobby')),
+              teams: newTeams, rouletteQueue: newQueue, activeRoulette: newQueue.length ? { teamId: newQueue[0], spinning: false, item: null, targetId: null } : { teamId: null, spinning: false, item: null, targetId: null },
+              winner, tiedTeams: tied
+            });
+            setIsProcessing(false);
+          };
+
+          const resolveItemEffect = async (teamId, item, targetId = null) => {
+            if(isProcessing) return;
+            setIsProcessing(true);
+            let nt = JSON.parse(JSON.stringify(gameState.teams));
+            const rivals = Object.keys(nt).filter(id => id !== String(teamId) && nt[id].pos > 0);
+
+            if (item.id === 'turbo') { playSound('mushroom'); nt[teamId].mushroom = true; }
+            else if (item.id === 'star') { playSound('star'); nt[teamId].star = true; }
+            else if (item.id === 'banana') { 
+                playSound('banana');
+                let vid = targetId || (rivals.length ? rivals[Math.floor(Math.random()*rivals.length)] : null);
+                if (vid) { if(nt[vid].star) nt[vid].star=false; else nt[vid].frozen=true; }
+            } else if (item.id === 'shell') {
+                playSound('shell');
+                let vid = targetId; 
+                if (vid && nt[vid]) {
+                    if(nt[vid].star) nt[vid].star=false; else nt[vid].pos=Math.max(0, nt[vid].pos-1);
+                } else {
+                    const max = Math.max(...Object.values(nt).map(t=>t.pos));
+                    Object.keys(nt).filter(id => nt[id].pos === max && id != teamId).forEach(id => { 
+                        if(nt[id].star) nt[id].star=false; else nt[id].pos=Math.max(0, nt[id].pos-1); 
+                    });
+                }
+            } else if (item.id === 'lightning') {
+                playSound('lightning');
+                rivals.forEach(id => { if(nt[id].star) nt[id].star=false; else nt[id].pos=Math.max(0, nt[id].pos-1); });
+            }
+
+            const q = [...gameState.rouletteQueue]; q.shift();
+            await window.FirebaseAPI.updateDoc(getDocRef(), {
+              teams: nt, rouletteQueue: q, activeRoulette: q.length ? { teamId: q[0], spinning: false, item: null, targetId: null } : { teamId: null, spinning: false, item: null, targetId: null },
+              status: q.length ? 'roulette_active' : 'lobby'
+            });
             setIsProcessing(false);
           };
 
@@ -487,430 +523,125 @@
               setHostJudgments({ ...hostJudgments, [teamId]: !current });
           };
 
-          const executeEvaluations = async () => {
-            if(isProcessing) return;
-            setIsProcessing(true);
+          // --- VISTAS ---
+          if (!firebaseLoaded || (role && !gameState)) return <div className="min-h-screen bg-gray-950 flex items-center justify-center animate-pulse text-2xl font-bold">Iniciando UATyG Engine...</div>;
 
-            const { teams, tiedTeams } = gameState;
-            let newTeams = { ...teams };
-            let newQueue = [];
-            let winner = null;
-            let somebodyCorrect = false;
-            let newTiedTeams = tiedTeams || [];
-
-            // ==========================================
-            // LÓGICA DE DESEMPATE (Muerte Súbita)
-            // ==========================================
-            if (newTiedTeams.length > 1) {
-                let correctTiedTeams = [];
-                newTiedTeams.forEach(id => {
-                    if (hostJudgments[id] === true) {
-                        correctTiedTeams.push(id);
-                        somebodyCorrect = true;
-                    }
-                });
-
-                if (somebodyCorrect) playSound('correct');
-
-                if (correctTiedTeams.length === 1) {
-                    winner = correctTiedTeams[0]; // ¡Un solo ganador!
-                } else if (correctTiedTeams.length > 1) {
-                    newTiedTeams = correctTiedTeams; // Siguen empatados, filtramos a los que fallaron
-                } else {
-                    // Si todos fallan, se repite con el mismo grupo
-                }
-
-                await window.FirebaseAPI.updateDoc(getDocRef(), {
-                    status: winner ? 'finished' : 'lobby',
-                    winner: winner,
-                    tiedTeams: newTiedTeams
-                });
-                setIsProcessing(false);
-                return;
-            }
-
-            // ==========================================
-            // LÓGICA NORMAL DE JUEGO
-            // ==========================================
-            let potentialWinners = [];
-
-            Object.keys(newTeams).forEach(id => {
-              const t = newTeams[id];
-              const isCorrect = hostJudgments[id] === true;
-              t.usedItems = t.usedItems || [];
-
-              if (t.frozen) {
-                t.frozen = false;
-                t.ansText = '';
-              } else if (isCorrect) {
-                somebodyCorrect = true;
-                let steps = t.mushroom ? 2 : 1;
-                t.pos = Math.min(15, t.pos + steps);
-                if (t.mushroom) t.mushroom = false;
-                
-                if (t.pos === 15) {
-                    potentialWinners.push(id);
-                } else if (ITEM_POSITIONS[Number(id)] && ITEM_POSITIONS[Number(id)].includes(t.pos) && !t.usedItems.includes(t.pos)) {
-                   newQueue.push(id);
-                   t.usedItems.push(t.pos); 
-                }
-              } else {
-                if (t.star) {
-                  t.star = false; 
-                  somebodyCorrect = true;
-                  let steps = t.mushroom ? 2 : 1;
-                  t.pos = Math.min(15, t.pos + steps);
-                  if (t.mushroom) t.mushroom = false;
-                  
-                  if (t.pos === 15) {
-                      potentialWinners.push(id);
-                  } else if (ITEM_POSITIONS[Number(id)] && ITEM_POSITIONS[Number(id)].includes(t.pos) && !t.usedItems.includes(t.pos)) {
-                     newQueue.push(id);
-                     t.usedItems.push(t.pos); 
-                  }
-                }
-              }
-            });
-
-            if (somebodyCorrect) playSound('correct');
-
-            if (potentialWinners.length === 1) {
-                winner = potentialWinners[0];
-                newQueue = []; // Fin del juego
-            } else if (potentialWinners.length > 1) {
-                newTiedTeams = potentialWinners;
-                newQueue = []; // Cancelamos la ruleta para ir al desempate
-            }
-
-            const nextInRoulette = newQueue.length > 0 ? { teamId: newQueue[0], spinning: false, item: null } : { teamId: null, spinning: false, item: null };
-
-            await window.FirebaseAPI.updateDoc(getDocRef(), {
-              status: winner ? 'finished' : (newTiedTeams.length > 1 ? 'lobby' : (newQueue.length > 0 ? 'roulette_active' : 'lobby')),
-              teams: newTeams,
-              rouletteQueue: newQueue,
-              activeRoulette: nextInRoulette,
-              winner: winner,
-              tiedTeams: newTiedTeams
-            });
-            
-            setIsProcessing(false);
-          };
-
-          const resolveItemEffect = async (teamId, item, targetId = null) => {
-            if(isProcessing) return;
-            setIsProcessing(true);
-
-            let newTeams = { ...gameState.teams };
-            const activeRivals = Object.keys(newTeams).filter(id => String(id) !== String(teamId) && newTeams[id].pos > 0);
-
-            if (item.id === 'turbo') { playSound('mushroom'); newTeams[teamId].mushroom = true; }
-            else if (item.id === 'star') { playSound('star'); newTeams[teamId].star = true; }
-            else if (item.id === 'banana') { 
-              playSound('banana');
-              if (targetId && newTeams[targetId]) {
-                 if (newTeams[targetId].star) newTeams[targetId].star = false;
-                 else newTeams[targetId].frozen = true;
-              } else if (activeRivals.length > 0) {
-                 const victimId = activeRivals[Math.floor(Math.random() * activeRivals.length)];
-                 if (newTeams[victimId].star) newTeams[victimId].star = false;
-                 else newTeams[victimId].frozen = true;
-              }
-            } else if (item.id === 'shell') {
-              playSound('shell');
-              const maxPos = Math.max(...Object.values(newTeams).map(t => t.pos));
-              const leaders = Object.keys(newTeams).filter(id => newTeams[id].pos === maxPos);
-              leaders.forEach(lId => {
-                if (newTeams[lId].star) newTeams[lId].star = false;
-                else newTeams[lId].pos = Math.max(0, newTeams[lId].pos - 1);
-              });
-            } else if (item.id === 'lightning') {
-              playSound('lightning');
-              activeRivals.forEach(rId => {
-                if (newTeams[rId].star) newTeams[rId].star = false;
-                else newTeams[rId].pos = Math.max(0, newTeams[rId].pos - 1);
-              });
-            }
-
-            const newQueue = [...gameState.rouletteQueue];
-            newQueue.shift(); 
-            const nextInRoulette = newQueue.length > 0 ? { teamId: newQueue[0], spinning: false, item: null } : { teamId: null, spinning: false, item: null };
-
-            await window.FirebaseAPI.updateDoc(getDocRef(), {
-              teams: newTeams,
-              rouletteQueue: newQueue,
-              activeRoulette: nextInRoulette,
-              status: newQueue.length > 0 ? 'roulette_active' : 'lobby'
-            });
-            
-            setIsProcessing(false);
-          };
-
-          // ==========================================
-          // VISTAS CONDICIONALES
-          // ==========================================
-          if (!firebaseLoaded || (role && !gameState)) {
-            return <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center animate-pulse text-2xl font-bold">Conectando a UATyG Cloud...</div>;
-          }
-
-          if (!role) {
-            return (
-              <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center p-4">
-                <h1 className="text-4xl md:text-6xl font-black mb-12 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-yellow-400 uppercase tracking-widest drop-shadow-xl">
-                  Dr. Mario's Brain Challenge
-                </h1>
-                
-                <div className="grid md:grid-cols-2 gap-10 w-full max-w-5xl">
-                  <div className="bg-gray-900 p-10 rounded-3xl border-2 border-yellow-700 shadow-[0_0_40px_rgba(161,98,7,0.3)]">
-                    <h2 className="text-2xl font-bold text-yellow-400 mb-6 flex items-center justify-center gap-3"><IconSettings className="w-8 h-8"/> Pantalla Principal (Admin)</h2>
-                    <p className="text-gray-400 text-center mb-6">Esta pantalla se conectará al proyector.</p>
-                    
-                    <div className="border-t border-gray-800 pt-6">
-                      <input type="password" placeholder="PIN Secreto" value={pinInput} onChange={e=>setPinInput(e.target.value)} className="w-full p-4 bg-gray-950 border border-gray-700 rounded-xl mb-4 text-center tracking-widest text-xl focus:border-yellow-500 focus:outline-none" />
-                      <button onClick={handleHostLogin} className="w-full py-4 bg-yellow-600 hover:bg-yellow-500 rounded-xl text-black font-black uppercase text-xl transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer">Ingresar al Tablero</button>
-                      {errorMsg && <p className="text-red-400 text-sm mt-3 text-center font-bold">{errorMsg}</p>}
-                    </div>
-                  </div>
-
-                  <div className="bg-gray-900 p-10 rounded-3xl border-2 border-blue-900 shadow-[0_0_40px_rgba(30,58,138,0.3)]">
-                    <h2 className="text-2xl font-bold text-blue-400 mb-6 flex items-center justify-center gap-3"><IconUsers className="w-8 h-8"/> Control de Karts</h2>
-                    <p className="text-gray-400 text-center mb-6">Selecciona el equipo al que representas para responder desde tu celular.</p>
-
-                    <select value={selectedTeam} onChange={e=>setSelectedTeam(parseInt(e.target.value))} className="w-full p-4 bg-gray-950 border border-blue-800 rounded-xl mb-4 text-center text-xl font-bold focus:border-blue-500 focus:outline-none">
-                      {Object.values(TEAMS_INFO).map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                    </select>
-                    <input type="password" placeholder="PIN de Equipo" value={pinInput} onChange={e=>setPinInput(e.target.value)} className="w-full p-4 bg-gray-950 border border-gray-700 rounded-xl text-center mb-6 uppercase tracking-widest text-xl focus:border-blue-500 focus:outline-none" />
-                    <button onClick={handlePlayerJoin} className="w-full py-4 bg-blue-600 hover:bg-blue-500 rounded-xl text-white font-black uppercase text-xl transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer">Conectar Celular</button>
-                  </div>
+          if (!role) return (
+            <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center p-4">
+              <h1 className="text-4xl md:text-6xl font-black mb-12 text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-yellow-400 uppercase tracking-widest italic">Dr. Mario's Brain Challenge</h1>
+              <div className="grid md:grid-cols-2 gap-10 w-full max-w-5xl">
+                <div className="bg-gray-900 p-10 rounded-3xl border-2 border-yellow-700 shadow-xl text-center">
+                  <h2 className="text-2xl font-bold text-yellow-400 mb-6 flex justify-center gap-3"><IconSettings className="w-8 h-8"/> Pantalla Principal</h2>
+                  <input type="password" placeholder="PIN Admin" value={pinInput} onChange={e=>setPinInput(e.target.value)} className="w-full p-4 bg-gray-950 border border-gray-700 rounded-xl mb-4 text-center text-xl"/>
+                  <button onClick={handleHostLogin} className="w-full py-4 bg-yellow-600 rounded-xl text-black font-black uppercase text-xl transition-all hover:scale-105 active:scale-95">Ingresar</button>
+                </div>
+                <div className="bg-gray-900 p-10 rounded-3xl border-2 border-blue-900 shadow-xl text-center">
+                  <h2 className="text-2xl font-bold text-blue-400 mb-6 flex justify-center gap-3"><IconUsers className="w-8 h-8"/> Control Kart</h2>
+                  <select value={selectedTeam} onChange={e=>setSelectedTeam(parseInt(e.target.value))} className="w-full p-4 bg-gray-950 border border-blue-800 rounded-xl mb-4 text-center font-bold">
+                    {Object.values(TEAMS_INFO).map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                  </select>
+                  <input type="password" placeholder="PIN Equipo" value={pinInput} onChange={e=>setPinInput(e.target.value)} className="w-full p-4 bg-gray-950 border border-gray-700 rounded-xl mb-4 text-center text-xl uppercase"/>
+                  <button onClick={handlePlayerJoin} className="w-full py-4 bg-blue-600 rounded-xl text-white font-black uppercase text-xl transition-all hover:scale-105 active:scale-95">Conectar</button>
                 </div>
               </div>
-            );
-          }
-
-          // --- COMPONENTE COMPARTIDO: LA PISTA VISUAL ---
-          const RaceTrack = () => (
-            <div className="w-full bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden flex flex-col justify-around h-full min-h-[400px]">
-              <div className="absolute right-[2%] top-0 bottom-0 w-12 flex flex-col opacity-20">
-                {Array.from({length: 20}).map((_, i) => <div key={i} className={`flex-1 ${i % 2 === 0 ? 'bg-white' : 'bg-black'}`}></div>)}
-              </div>
-
-              {Object.values(TEAMS_INFO).map((info) => {
-                const team = gameState.teams[info.id];
-                return (
-                <div key={info.id} className="flex items-center gap-3 relative z-10 my-1">
-                  <div className={`w-32 md:w-40 text-xs md:text-sm font-black uppercase truncate px-3 py-3 rounded-xl flex justify-between items-center border-l-8 ${team.frozen ? 'opacity-50' : ''} ${team.connected ? 'bg-gray-800' : 'bg-gray-950 text-gray-600'}`} style={{ borderColor: team.connected ? info.hex : '#374151' }}>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-3 h-3 rounded-full ${team.connected ? 'bg-green-500 shadow-[0_0_8px_#22c55e] animate-pulse' : 'bg-red-900'}`}></div>
-                      <span style={{color: team.connected ? info.hex : '#4b5563'}}>{info.name}</span>
-                    </div>
-                    <div className="flex gap-1">
-                      {team.mushroom && <span title="Turbo Guardado">🍄</span>}{team.star && <span title="Estrella Activa">⭐</span>}{team.frozen && <span title="Congelado">🧊</span>}
-                    </div>
-                  </div>
-
-                  <div className="flex-1 flex h-12 md:h-16 bg-gray-950 rounded-full border border-gray-800 overflow-hidden relative shadow-inner">
-                    <div className="absolute top-0 left-0 bottom-0 opacity-20 transition-all duration-1000 ease-in-out" style={{ width: `${(team.pos / 15) * 100}%`, backgroundColor: info.hex }}/>
-                    
-                    <div className="w-12 md:w-16 border-r border-gray-800/50 flex items-center justify-center relative z-10 bg-gray-900/50">
-                        {team.pos === 0 && team.connected && (
-                            <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.9)] border-4 border-white transform scale-125 transition-transform ${team.frozen ? 'grayscale opacity-50' : ''}`} style={{ backgroundColor: info.hex, fontSize: '1.5rem' }}>🚗</div>
-                        )}
-                        {team.pos === 0 && !team.connected && (
-                            <span className="text-[10px] text-red-900/50 font-bold uppercase">Off</span>
-                        )}
-                    </div>
-
-                    {Array.from({ length: 15 }).map((_, stepIdx) => {
-                      const stepNum = stepIdx + 1;
-                      const isItem = ITEM_POSITIONS[info.id].includes(stepNum) && (!team.usedItems || !team.usedItems.includes(stepNum));
-                      const isOccupied = team.pos === stepNum;
-                      return (
-                        <div key={stepNum} className={`flex-1 border-r border-gray-800/50 flex items-center justify-center relative ${isOccupied ? 'z-20' : 'z-10'}`}>
-                          {isItem && !isOccupied && <div className="w-6 h-6 md:w-8 md:h-8 rounded-lg bg-yellow-500 border-2 border-yellow-700 flex items-center justify-center animate-pulse opacity-80"><span className="text-black font-black text-xs md:text-sm">?</span></div>}
-                          {isOccupied && <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.9)] border-4 border-white transform scale-125 transition-transform ${team.frozen ? 'grayscale opacity-50' : ''}`} style={{ backgroundColor: info.hex, fontSize: '1.5rem' }}>🚗</div>}
-                        </div>
-                      );
-                    })}
-                    <div className="w-12 md:w-16 bg-yellow-400/10 flex items-center justify-center border-l-2 border-yellow-500/30">
-                      <IconStar className={`w-6 h-6 md:w-8 md:h-8 ${team.pos === 15 ? 'text-yellow-400 animate-spin' : 'text-gray-700'}`} />
-                    </div>
-                  </div>
-                </div>
-              )})}
+              {errorMsg && <p className="text-red-400 font-bold mt-4">{errorMsg}</p>}
             </div>
           );
 
-          // ==========================================
-          // VISTA 1: LA PANTALLA UNIFICADA (HOST + PROYECTOR)
-          // ==========================================
-          if (role === 'projector' || role === 'host') {
-            const isTieBreaker = gameState.tiedTeams && gameState.tiedTeams.length > 1;
-
+          if (role === 'host') {
+            const isTieBreaker = gameState.tiedTeams?.length > 1;
             return (
               <div className="min-h-screen bg-gray-950 text-white p-6 font-sans flex flex-col relative overflow-hidden">
-                <header className="text-center mb-6">
-                  <h1 className="text-4xl md:text-6xl font-black uppercase text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-yellow-400 drop-shadow-lg tracking-widest">
-                    Dr. Mario's Brain Challenge
-                  </h1>
-                </header>
-
+                <header className="text-center mb-6"><h1 className="text-4xl md:text-6xl font-black uppercase text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-yellow-400 drop-shadow-lg tracking-widest">DR. MARIO CHALLENGE</h1></header>
                 <div className="flex-1 flex flex-col w-full max-w-[1400px] mx-auto z-10 gap-6">
-                  
                   {gameState.status === 'lobby' && (
-                    <div className="flex-1 flex flex-col h-full">
-                      
+                    <div className="flex-1 flex flex-col">
                       {isTieBreaker ? (
-                        <div className="text-center mb-8 bg-red-900/30 border-4 border-red-600 rounded-3xl p-8">
-                            <h2 className="text-5xl font-black text-red-500 uppercase tracking-widest animate-pulse mb-4">🔥 ¡DESEMPATE EN CURSO! 🔥</h2>
-                            <p className="text-2xl text-white font-bold">Muerte súbita exclusiva para: {gameState.tiedTeams.map(id => TEAMS_INFO[id].name).join(', ')}</p>
-                        </div>
-                      ) : (
-                        <div className="flex-1 mb-8"><RaceTrack /></div>
-                      )}
-                      
-                      {role === 'host' && (
-                          <div className={`border p-6 rounded-3xl shadow-2xl flex justify-between items-center ${isTieBreaker ? 'bg-red-950 border-red-800' : 'bg-gray-900 border-gray-800'}`}>
-                             <div>
-                                <p className="text-gray-400 text-sm font-bold uppercase tracking-widest">Panel de Control Admin</p>
-                                <p className="text-white text-xl">{isTieBreaker ? '¿Listos para la muerte súbita?' : '¿Listos para la carrera?'}</p>
-                             </div>
-                             <button disabled={isProcessing} onClick={launchRandomQuestion} className={`px-10 py-5 text-white font-black text-2xl uppercase rounded-2xl shadow-[0_5px_0_rgba(30,58,138,1)] flex gap-3 items-center ${isProcessing ? 'bg-gray-600 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all cursor-pointer'}`}>
-                                <IconPlay className="w-8 h-8"/> Lanzar Siguiente Pregunta
-                             </button>
-                          </div>
-                      )}
-                      {role === 'projector' && !isTieBreaker && (
-                         <div className="text-center mb-4 animate-pulse"><p className="text-3xl text-gray-500 font-bold tracking-widest uppercase">Esperando siguiente pregunta...</p></div>
-                      )}
+                        <div className="text-center mb-8 bg-red-900/30 border-4 border-red-600 rounded-3xl p-8 animate-pulse"><h2 className="text-5xl font-black text-red-500 uppercase">🔥 ¡MUERTE SÚBITA! 🔥</h2><p className="text-2xl font-bold">Participan: {gameState.tiedTeams.map(id => TEAMS_INFO[id].name).join(', ')}</p></div>
+                      ) : <div className="flex-1 mb-8"><RaceTrack gameState={gameState} /></div>}
+                      <div className="bg-gray-900 p-8 rounded-3xl border border-gray-800 flex justify-between items-center">
+                        <p className="text-xl">¿Listos para la {isTieBreaker ? 'muerte súbita' : 'carrera'}?</p>
+                        <button disabled={isProcessing} onClick={launchRandomQuestion} className="px-10 py-5 bg-blue-600 rounded-2xl text-2xl font-black uppercase flex gap-3"><IconPlay className="w-8 h-8"/> Lanzar Pregunta</button>
+                      </div>
                     </div>
                   )}
 
                   {gameState.status === 'question_active' && (
                     <div className="flex-1 flex flex-col items-center justify-center">
-                      <div className={`bg-blue-900/20 border-4 border-blue-500 rounded-[3rem] p-16 text-center shadow-[0_0_150px_rgba(59,130,246,0.3)] w-full max-w-5xl relative ${isTieBreaker ? 'border-red-500 shadow-[0_0_150px_rgba(239,68,68,0.3)]' : ''}`}>
-                        {isTieBreaker && <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-red-600 text-white font-black px-6 py-2 rounded-full uppercase tracking-widest animate-pulse border-4 border-gray-950">🔥 MUERTE SÚBITA 🔥</div>}
-                        <h2 className="text-5xl md:text-7xl font-black text-white mb-16 leading-tight">"{gameState.currentQuestion}"</h2>
+                      <div className={`bg-blue-900/20 border-4 border-blue-500 rounded-[3rem] p-16 text-center w-full max-w-5xl ${isTieBreaker ? 'border-red-500' : ''}`}>
+                        <h2 className="text-5xl md:text-7xl font-black mb-16">"{gameState.currentQuestion}"</h2>
                         <div className="flex justify-center items-center gap-8">
                           <IconTimer className="w-32 h-32 text-yellow-400 animate-pulse" />
-                          <span className={`text-[10rem] font-black tabular-nums leading-none ${timeLeft <= 5 ? 'text-red-500 animate-bounce drop-shadow-[0_0_30px_rgba(239,68,68,0.8)]' : 'text-yellow-400 drop-shadow-[0_0_30px_rgba(250,204,21,0.5)]'}`}>
-                            {timeLeft}s
-                          </span>
+                          <span className={`text-[10rem] font-black ${timeLeft <= 5 ? 'text-red-500 animate-bounce' : 'text-yellow-400'}`}>{timeLeft}s</span>
                         </div>
                       </div>
                     </div>
                   )}
 
                   {gameState.status === 'host_evaluating' && (
-                    <div className="flex-1 flex flex-col h-full w-full">
-                       <div className="text-center mb-8 relative">
-                         <h2 className="text-4xl font-black text-yellow-400 uppercase tracking-widest">{isTieBreaker ? '🔥 RESULTADOS DEL DESEMPATE 🔥' : 'Respuestas Recibidas'}</h2>
-                         <div className="mt-4 inline-block bg-green-900/80 border-4 border-green-500 px-10 py-4 rounded-3xl shadow-[0_0_30px_rgba(34,197,94,0.4)] transform hover:scale-105 transition-transform">
-                           <p className="text-sm text-green-300 font-black uppercase tracking-widest mb-1">Respuesta Oficial</p>
+                    <div className="flex-1 flex flex-col">
+                       <div className="text-center mb-8">
+                         <h2 className="text-4xl font-black text-yellow-400 uppercase">Respuestas Recibidas</h2>
+                         <div className="mt-4 inline-block bg-green-900/80 border-4 border-green-500 px-10 py-4 rounded-3xl">
                            <p className="text-5xl text-white font-black">"{gameState.hostAnswerHint}"</p>
                          </div>
                        </div>
-                       
                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 flex-1">
                          {Object.values(TEAMS_INFO).filter(info => !isTieBreaker || gameState.tiedTeams.includes(String(info.id))).map(info => {
-                           const t = gameState.teams[info.id];
-                           const isSelected = hostJudgments[info.id];
-                           const noContesto = !t.ansText || t.ansText === 'No contestó';
-                           
+                           const t = gameState.teams[info.id]; const isSel = hostJudgments[info.id];
+                           const noAns = !t.ansText || t.ansText === 'No contestó';
                            return (
-                             <div 
-                               key={info.id} 
-                               onClick={() => {
-                                  if(role === 'host' && !t.frozen && !noContesto && !isProcessing && t.connected) toggleJudgment(info.id);
-                               }}
-                               className={`transition-all duration-300 rounded-3xl p-6 text-center border-4 flex flex-col justify-center items-center relative overflow-hidden
-                                  ${t.frozen ? 'bg-blue-900/20 border-blue-900 opacity-60 cursor-not-allowed' : 
-                                    !t.connected ? 'bg-gray-950 border-gray-800 opacity-50' :
-                                    noContesto ? 'bg-red-950/30 border-red-900 cursor-not-allowed' :
-                                    isSelected ? 'selected-answer' : 
-                                    'bg-gray-900 border-gray-700 hover:border-gray-500'} ${role === 'host' && !t.frozen && !noContesto && t.connected ? 'cursor-pointer' : ''}`}
-                             >
-                               <div className="absolute inset-0 opacity-10 pointer-events-none" style={{backgroundColor: info.hex}}></div>
-                               
-                               {t.star && <div className="absolute top-3 left-3 flex gap-1 items-center bg-yellow-900/50 px-2 py-1 rounded-lg border border-yellow-500/50"><IconStar className="w-5 h-5 text-yellow-400" /><span className="text-yellow-400 text-xs font-bold">INMUNE</span></div>}
-                               
-                               <h3 style={{color: info.hex}} className="text-3xl font-black uppercase mb-4 relative z-10">{info.name}</h3>
-                               
-                               {t.frozen ? (
-                                 <div className="text-4xl text-blue-400 font-black tracking-widest animate-pulse relative z-10">CONGELADO</div>
-                               ) : !t.connected ? (
-                                 <div className="text-2xl text-red-900 font-black tracking-widest relative z-10">DESCONECTADO</div>
-                               ) : (
-                                 <div className={`text-4xl font-mono font-bold break-words px-4 py-4 rounded-2xl w-full relative z-10 ${noContesto ? 'text-red-400' : isSelected ? 'text-green-100 bg-green-800/50' : 'text-white'}`}>
-                                   {t.ansText || 'No contestó'}
-                                 </div>
-                               )}
-                               
-                               {isSelected && <IconCheck className="w-16 h-16 text-green-400 absolute top-2 right-2 opacity-30 pointer-events-none" />}
+                             <div key={info.id} onClick={() => !t.frozen && !noAns && t.connected && toggleJudgment(info.id)}
+                               className={`transition-all rounded-3xl p-6 text-center border-4 flex flex-col items-center relative overflow-hidden cursor-pointer
+                                  ${t.frozen ? 'bg-blue-900/20 opacity-60' : !t.connected ? 'bg-gray-950 opacity-50' : noAns ? 'bg-red-950/30' : isSel ? 'selected-answer' : 'bg-gray-900'}`} >
+                               <h3 style={{color: info.hex}} className="text-3xl font-black uppercase mb-4">{info.name}</h3>
+                               <div className="text-4xl font-mono font-bold break-words px-4 py-4 rounded-2xl w-full">{t.frozen ? '🧊 HIELO' : t.ansText || '---'}</div>
                              </div>
                            )
                          })}
                        </div>
-
-                       {role === 'host' && (
-                           <div className="mt-8 text-center">
-                              <button disabled={isProcessing} onClick={executeEvaluations} className={`px-16 py-6 text-white font-black text-3xl uppercase tracking-widest rounded-[2rem] shadow-[0_8px_0_rgba(88,28,135,1)] ${isProcessing ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-500 active:scale-95 transition-all cursor-pointer'}`}>
-                                 ¡Aplicar y Avanzar!
-                              </button>
-                           </div>
-                       )}
+                       <div className="mt-8 text-center"><button onClick={executeEvaluations} className="px-16 py-6 bg-purple-600 rounded-[2rem] text-3xl font-black uppercase">¡Aplicar y Avanzar!</button></div>
                     </div>
                   )}
-
-                  {gameState.status === 'roulette_active' && <div className="flex-1"><RaceTrack /></div>}
                 </div>
 
-                {/* MODAL GIGANTE DE RULETA */}
+                {/* MODAL RULETA ADMIN */}
                 {gameState.status === 'roulette_active' && gameState.activeRoulette.teamId && (
                   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm">
-                    <div className="bg-gray-900 border-4 border-yellow-500 rounded-[3rem] p-20 text-center shadow-[0_0_150px_rgba(234,179,8,0.4)] w-full max-w-3xl">
-                      <h2 className="text-6xl font-black uppercase text-yellow-400 mb-6 drop-shadow-md tracking-widest">CAJA MISTERIOSA</h2>
-                      <p className="text-4xl text-white mb-12">Turno de: <span className="font-bold uppercase" style={{color: TEAMS_INFO[gameState.activeRoulette.teamId].hex}}>{TEAMS_INFO[gameState.activeRoulette.teamId].name}</span></p>
-
-                      {gameState.activeRoulette.spinning ? (
-                        <div className="w-64 h-64 mx-auto bg-gradient-to-br from-yellow-300 to-yellow-600 rounded-[3rem] flex items-center justify-center animate-spin shadow-2xl border-8 border-white">
-                          <span className="text-[10rem] text-black font-black leading-none pb-4">?</span>
-                        </div>
-                      ) : gameState.activeRoulette.item ? (
+                    <div className="bg-gray-900 border-4 border-yellow-500 rounded-[3rem] p-20 text-center shadow-2xl w-full max-w-3xl">
+                      <h2 className="text-6xl font-black text-yellow-400 mb-6 uppercase">CAJA MISTERIOSA</h2>
+                      <p className="text-4xl mb-6">Turno de: <span className="font-bold uppercase" style={{color: TEAMS_INFO[gameState.activeRoulette.teamId].hex}}>{TEAMS_INFO[gameState.activeRoulette.teamId].name}</span></p>
+                      
+                      {gameState.activeRoulette.spinning ? <div className="w-64 h-64 mx-auto bg-yellow-500 rounded-[3rem] animate-spin-custom flex items-center justify-center text-[10rem] text-black">?</div> : 
+                        gameState.activeRoulette.item ? (
                         <div className="animate-bounce">
-                          <div className={`w-64 h-64 mx-auto ${gameState.activeRoulette.item.color} rounded-[3rem] flex items-center justify-center mb-10 shadow-2xl border-8 border-white/20`}>
-                            <span className="text-[9rem]">{gameState.activeRoulette.item.icon}</span>
-                          </div>
-                          <h3 className="text-6xl font-black text-white uppercase">{gameState.activeRoulette.item.name}</h3>
-                          <p className="text-3xl text-gray-300 mt-6 font-bold">{gameState.activeRoulette.item.desc}</p>
+                            <div className={`w-64 h-64 mx-auto ${gameState.activeRoulette.item.color} rounded-[3rem] flex items-center justify-center text-[9rem] border-8`}>{gameState.activeRoulette.item.icon}</div>
+                            <h3 className="text-6xl font-black mt-10 uppercase">{gameState.activeRoulette.item.name}</h3>
+                            {gameState.activeRoulette.targetId && (
+                                <div className="mt-6 bg-red-600/20 border-2 border-red-500 px-6 py-3 rounded-2xl inline-block">
+                                    <p className="text-xl text-red-400 font-bold uppercase tracking-widest">Apuntando a:</p>
+                                    <p className="text-4xl text-white font-black uppercase" style={{ color: TEAMS_INFO[gameState.activeRoulette.targetId]?.hex }}>{TEAMS_INFO[gameState.activeRoulette.targetId]?.name}</p>
+                                </div>
+                            )}
                         </div>
-                      ) : (
-                        <div className="w-64 h-64 mx-auto bg-gray-800 rounded-[3rem] flex flex-col items-center justify-center border-8 border-dashed border-gray-600 animate-pulse p-6">
-                          <IconAlert className="w-20 h-20 text-gray-500 mb-4"/>
-                          <span className="text-xl text-gray-400 font-bold">Esperando a que el jugador gire la ruleta en su celular...</span>
-                        </div>
-                      )}
-
-                      {role === 'host' && (
-                          <div className="mt-12 flex justify-center gap-4 opacity-10 hover:opacity-100 transition-opacity">
-                             {!gameState.activeRoulette.spinning && !gameState.activeRoulette.item && <button disabled={isProcessing} onClick={()=>window.FirebaseAPI.updateDoc(getDocRef(), {'activeRoulette.spinning': true})} className="px-4 py-2 bg-gray-800 text-sm rounded cursor-pointer">Forzar Giro</button>}
-                             {gameState.activeRoulette.item && <button disabled={isProcessing} onClick={()=>resolveItemEffect(gameState.activeRoulette.teamId, gameState.activeRoulette.item)} className="px-4 py-2 bg-yellow-600 text-black text-sm font-bold rounded cursor-pointer">Forzar Aplicar</button>}
-                          </div>
-                      )}
+                        ) : 
+                        <div className="w-64 h-64 mx-auto bg-gray-800 rounded-[3rem] animate-pulse flex items-center justify-center text-gray-500">Esperando...</div>
+                      }
+                      <div className="mt-12 flex justify-center gap-4 opacity-30 hover:opacity-100 transition-opacity">
+                         {!gameState.activeRoulette.spinning && !gameState.activeRoulette.item && <button onClick={()=>window.FirebaseAPI.updateDoc(getDocRef(), {'activeRoulette.spinning': true})} className="px-4 py-2 bg-slate-800 rounded text-sm">Forzar Giro</button>}
+                         {gameState.activeRoulette.item && <button onClick={()=>resolveItemEffect(gameState.activeRoulette.teamId, gameState.activeRoulette.item, gameState.activeRoulette.targetId)} className="px-4 py-2 bg-yellow-600 text-black font-bold rounded">Forzar Aplicar</button>}
+                      </div>
                     </div>
                   </div>
                 )}
 
-                {/* MODAL GANADOR GIGANTE */}
-                {gameState.status === 'finished' && gameState.winner && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-xl">
-                    <div className="text-center">
+                {gameState.status === 'finished' && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 text-center">
+                    <div>
                       <IconTrophy className="w-80 h-80 mx-auto mb-12 animate-pulse" style={{ color: TEAMS_INFO[gameState.winner].hex }} />
-                      <h2 className="text-[7rem] font-black uppercase mb-8 text-white drop-shadow-[0_10px_10px_rgba(0,0,0,1)]">¡TENEMOS GANADOR!</h2>
-                      <div className="text-[6rem] font-black uppercase tracking-widest px-20 py-10 rounded-[4rem] border-8 inline-block" style={{ backgroundColor: `${TEAMS_INFO[gameState.winner].hex}40`, borderColor: TEAMS_INFO[gameState.winner].hex, color: TEAMS_INFO[gameState.winner].hex }}>
-                        {TEAMS_INFO[gameState.winner].name}
-                      </div>
-                      {role === 'host' && (
-                          <div className="mt-20"><button onClick={() => window.FirebaseAPI.setDoc(getDocRef(), INITIAL_STATE)} className="text-gray-600 hover:text-white underline text-2xl font-bold cursor-pointer">Reiniciar Carrera</button></div>
-                      )}
+                      <h2 className="text-[7rem] font-black uppercase mb-8">¡TENEMOS GANADOR!</h2>
+                      <div className="text-[6rem] font-black uppercase px-20 py-10 rounded-[4rem] border-8" style={{ color: TEAMS_INFO[gameState.winner].hex, borderColor: TEAMS_INFO[gameState.winner].hex }}>{TEAMS_INFO[gameState.winner].name}</div>
+                      <div className="mt-20"><button onClick={() => window.FirebaseAPI.setDoc(getDocRef(), INITIAL_STATE)} className="text-gray-500 underline text-2xl font-bold">Reiniciar</button></div>
                     </div>
                   </div>
                 )}
@@ -918,173 +649,50 @@
             );
           }
 
-          // ==========================================
-          // VISTA 2: JUGADOR (CELULAR)
-          // ==========================================
           if (role === 'player') {
-            const myTeam = gameState.teams[myTeamId];
-            const info = TEAMS_INFO[myTeamId];
-            const amIActiveRoulette = gameState.status === 'roulette_active' && String(gameState.activeRoulette.teamId) === String(myTeamId);
+            const myTeam = gameState.teams[myTeamId]; const info = TEAMS_INFO[myTeamId];
+            const isTie = gameState.tiedTeams?.length > 1; const amITied = isTie && gameState.tiedTeams.includes(String(myTeamId));
+            const amIRoulette = gameState.status === 'roulette_active' && String(gameState.activeRoulette.teamId) === String(myTeamId);
 
-            // Variable auxiliar para saber si hay muerte súbita y si estoy en ella
-            const isTieBreaker = gameState.tiedTeams && gameState.tiedTeams.length > 1;
-            const amITied = isTieBreaker && gameState.tiedTeams.includes(String(myTeamId));
-
-            const availableRivals = Object.values(TEAMS_INFO).filter(t => String(t.id) !== String(myTeamId) && gameState.teams[t.id].pos > 0);
-
-            // PANTALLA DE OBSERVADOR PARA LOS QUE NO PASARON AL DESEMPATE
-            if (isTieBreaker && !amITied && gameState.status !== 'finished') {
-               return (
-                  <div className="min-h-[100dvh] bg-gray-950 flex flex-col overflow-hidden">
-                    <div className={`p-4 ${info.color} flex justify-between items-center shadow-lg relative z-20 opacity-50`}>
-                      <div className="font-black uppercase text-xl text-white drop-shadow-md">{info.name}</div>
-                    </div>
-                    <div className="flex-1 flex flex-col p-6 bg-gray-900 items-center justify-center">
-                       <div className="text-center animate-pulse">
-                          <span className="text-8xl mb-6 block">🔥</span>
-                          <h2 className="text-4xl font-black text-red-500 uppercase tracking-widest">Muerte Súbita</h2>
-                          <p className="text-xl text-gray-400 mt-4 font-bold">Has sido eliminado. Observa el desempate en la pantalla gigante.</p>
-                       </div>
-                    </div>
-                  </div>
-               );
+            // --- PROTECCIÓN DE SESIÓN ---
+            if (mySessionID && gameState.teams[myTeamId].sessionID !== mySessionID) {
+                return <div className="h-screen bg-black flex flex-col items-center justify-center p-10 text-center"><IconAlert className="w-20 h-20 text-red-500 mb-6"/><h2 className="text-2xl font-bold">SESIÓN EXPIRADA</h2><p className="text-gray-400 mt-4">Otro dispositivo ingresó como este equipo. Debes volver a iniciar sesión.</p><button onClick={()=>location.reload()} className="mt-8 px-8 py-3 bg-blue-600 rounded-xl font-bold">REINTENTAR</button></div>;
             }
 
+            if (isTie && !amITied && gameState.status !== 'finished') return <div className="h-screen bg-gray-950 flex items-center justify-center text-center p-10"><div><span className="text-8xl block mb-6">🔥</span><h2 className="text-4xl font-black text-red-500 uppercase">Eliminado</h2><p className="text-gray-400 mt-4">Observa el desempate en la pantalla principal.</p></div></div>;
+
             return (
-              <div className="min-h-[100dvh] bg-gray-950 flex flex-col selection:bg-transparent overflow-hidden touch-manipulation">
-                <div className={`p-4 ${info.color} flex justify-between items-center shadow-lg relative z-20`}>
-                  <div className="font-black uppercase text-xl text-white drop-shadow-md">{info.name}</div>
-                  <div className="flex gap-1 text-xs text-white/90 font-bold">
-                     {myTeam.mushroom && <span className="bg-black/30 px-2 py-1 rounded">🍄 Turbo</span>}
-                     {myTeam.star && <span className="bg-black/30 px-2 py-1 rounded">⭐ Inmune</span>}
-                     {myTeam.frozen && <span className="bg-black/30 px-2 py-1 rounded">🧊 Frío</span>}
-                  </div>
-                </div>
-
+              <div className="min-h-[100dvh] bg-gray-950 flex flex-col touch-manipulation">
+                <div className={`p-4 ${info.color} flex justify-between items-center shadow-lg`}><div className="font-black uppercase text-xl text-white">{info.name}</div><div className="flex gap-1">{myTeam.mushroom && <span>🍄</span>}{myTeam.star && <span>⭐</span>}{myTeam.frozen && <span>🧊</span>}</div></div>
                 <div className="flex-1 flex flex-col p-6 bg-gray-900 items-center justify-center relative overflow-y-auto">
-                  
-                  {gameState.status === 'lobby' && (
-                     <div className="text-center animate-pulse">
-                       {amITied ? <span className="text-7xl block mb-4">🔥</span> : <IconShield className="w-20 h-20 text-gray-700 mx-auto mb-6" />}
-                       <h2 className={`text-3xl font-black uppercase ${amITied ? 'text-red-500' : 'text-gray-400'}`}>{amITied ? '¡DESEMPATE!' : 'Preparando Kart...'}</h2>
-                       <p className="text-lg text-gray-500 mt-2">Atento a la pantalla principal.</p>
-                     </div>
-                  )}
-
+                  {gameState.status === 'lobby' && <div className="text-center animate-pulse"><h2 className={`text-3xl font-black uppercase ${amITied ? 'text-red-500':'text-gray-500'}`}>{amITied ? '¡DESEMPATE!':'Preparando Kart...'}</h2></div>}
                   {gameState.status === 'question_active' && !myTeam.frozen && (
-                    <form onSubmit={submitTextAnswer} className="w-full max-w-md w-full text-center">
-                      {amITied && (
-                          <div className="bg-red-600 text-white font-black px-6 py-2 rounded-full mb-6 inline-block animate-pulse uppercase tracking-widest border-2 border-red-400 shadow-[0_0_15px_rgba(220,38,38,0.6)]">
-                            🔥 Muerte Súbita 🔥
-                          </div>
-                      )}
-                      <div className="flex justify-center items-center gap-2 mb-6 bg-gray-950 p-3 rounded-xl border border-gray-800">
-                        <IconTimer className={`w-6 h-6 ${timeLeft <= 5 ? 'text-red-500 animate-bounce' : 'text-yellow-400'}`} />
-                        <span className={`text-2xl font-black tabular-nums ${timeLeft <= 5 ? 'text-red-500' : 'text-yellow-400'}`}>00:{timeLeft.toString().padStart(2, '0')}</span>
-                      </div>
-
-                      <h2 className="text-2xl md:text-3xl font-bold text-white mb-8 leading-tight">"{gameState.currentQuestion}"</h2>
-                      
+                    <form onSubmit={submitTextAnswer} className="w-full max-w-md text-center">
+                      <div className="bg-gray-950 p-3 rounded-xl border mb-6 flex justify-center gap-2"><IconTimer className="w-6 h-6 text-yellow-400"/><span className="text-2xl font-black text-yellow-400">{timeLeft}s</span></div>
+                      <h2 className="text-2xl font-bold mb-8">"{gameState.currentQuestion}"</h2>
                       {!hasSubmitted ? (
                         <>
-                          <input 
-                            type="text" 
-                            value={playerAnswerInput}
-                            onChange={e=>setPlayerAnswerInput(e.target.value)}
-                            placeholder="Escribe aquí..."
-                            autoFocus
-                            className="w-full p-5 bg-gray-950 border-4 border-blue-500 rounded-2xl text-center text-2xl text-white font-bold mb-6 focus:outline-none focus:border-yellow-400 shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-colors"
-                          />
-                          <button type="submit" disabled={isProcessing} className={`w-full py-5 text-white font-black text-2xl uppercase tracking-widest rounded-2xl shadow-[0_8px_0_rgba(30,58,138,1)] transition-all ${isProcessing ? 'bg-gray-600 cursor-not-allowed' : 'bg-blue-600 active:bg-blue-800 active:translate-y-2 active:shadow-none cursor-pointer'}`}>
-                            ¡Enviar!
-                          </button>
+                          <input type="text" value={playerAnswerInput} onChange={e=>setPlayerAnswerInput(e.target.value)} placeholder="Escribe aquí..." autoFocus className="w-full p-5 bg-gray-950 border-4 border-blue-500 rounded-2xl text-center text-2xl font-bold mb-6"/>
+                          <button disabled={isProcessing} className="w-full py-5 bg-blue-600 rounded-2xl text-2xl font-black uppercase shadow-lg active:translate-y-2">¡Enviar!</button>
                         </>
-                      ) : (
-                        <div className="bg-green-900/30 border-2 border-green-500 p-8 rounded-3xl shadow-xl mt-4">
-                          <IconCheck className="w-16 h-16 text-green-400 mx-auto mb-4 animate-bounce"/>
-                          <h3 className="text-2xl font-black text-green-400 uppercase">Enviado</h3>
-                          <p className="text-white text-xl font-mono mt-4 bg-black px-4 py-3 rounded-xl border border-gray-800 break-words">"{myTeam.ansText}"</p>
-                        </div>
-                      )}
+                      ) : <div className="bg-green-900/30 border-2 border-green-500 p-8 rounded-3xl animate-bounce"><h3 className="text-2xl font-black text-green-400">ENVIADO</h3><p className="mt-4 italic">"{myTeam.ansText}"</p></div>}
                     </form>
                   )}
-
-                  {gameState.status === 'question_active' && myTeam.frozen && (
-                    <div className="text-center">
-                      <div className="text-9xl mb-6">🧊</div>
-                      <h2 className="text-4xl font-black text-blue-300 uppercase">Congelado</h2>
-                      <p className="text-blue-400/80 mt-4 text-xl">Un plátano te hizo resbalar. Pierdes este turno.</p>
-                    </div>
-                  )}
-
-                  {gameState.status === 'host_evaluating' && (
-                     <div className="text-center">
-                       <div className="w-16 h-16 border-8 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-6 shadow-lg"></div>
-                       <h2 className="text-3xl font-black text-white uppercase">¡Tiempo!</h2>
-                       <p className="text-xl text-gray-400 mt-4">Mira la pantalla gigante para los resultados...</p>
-                     </div>
-                  )}
-
-                  {gameState.status === 'roulette_active' && (
+                  {gameState.status === 'question_active' && myTeam.frozen && <div className="text-center"><span className="text-9xl block mb-6">🧊</span><h2 className="text-4xl font-black text-blue-300 uppercase">Congelado</h2></div>}
+                  {gameState.status === 'roulette_active' && amIRoulette && (
                      <div className="w-full text-center">
-                       {amIActiveRoulette ? (
-                         <>
-                           {!gameState.activeRoulette.spinning && !gameState.activeRoulette.item ? (
-                             <div className="animate-pulse">
-                                <p className="text-yellow-400 font-bold mb-4 text-xl uppercase tracking-widest">¡Es tu turno!</p>
-                                <button disabled={isProcessing} onClick={playerSpinRoulette} className={`w-full py-12 text-black font-black text-4xl uppercase rounded-[2rem] shadow-[0_15px_0_rgba(161,98,7,1)] transition-all border-4 border-yellow-200 ${isProcessing ? 'bg-gray-600 cursor-not-allowed shadow-none' : 'bg-gradient-to-b from-yellow-300 to-yellow-600 active:translate-y-4 active:shadow-none cursor-pointer'}`}>
-                                  GIRAR RULETA
-                                </button>
-                             </div>
-                           ) : gameState.activeRoulette.spinning ? (
-                             <h2 className="text-4xl font-black text-yellow-400 animate-pulse uppercase">Mira la pantalla gigante...</h2>
-                           ) : (
-                             <div className="animate-fade-in mt-4 flex flex-col items-center">
-                               <div className={`w-32 h-32 mx-auto ${gameState.activeRoulette.item.color} rounded-3xl flex items-center justify-center mb-4 shadow-2xl border-4 border-white/20`}>
-                                 <span className="text-7xl">{gameState.activeRoulette.item.icon}</span>
-                               </div>
-                               <h3 className="text-3xl font-black text-white mb-6 uppercase">{gameState.activeRoulette.item.name}</h3>
-                               
-                               {/* SELECCIÓN MANUAL DEL PLÁTANO */}
-                               {gameState.activeRoulette.item.id === 'banana' && availableRivals.length > 0 && (
-                                  <div className="mb-6 w-full text-left bg-gray-950 p-4 rounded-2xl border border-yellow-600/50">
-                                     <p className="text-yellow-400 font-bold uppercase text-sm mb-2">Selecciona a quién congelar:</p>
-                                     <select value={bananaTarget} onChange={e=>setBananaTarget(e.target.value)} className="w-full p-4 bg-black border border-gray-700 rounded-xl text-white font-bold text-xl focus:border-yellow-500 focus:outline-none">
-                                        <option value="" disabled>-- Elige un rival --</option>
-                                        {availableRivals.map(t => (
-                                           <option key={t.id} value={t.id}>{t.name} (Casilla {gameState.teams[t.id].pos})</option>
-                                        ))}
-                                     </select>
-                                  </div>
-                               )}
-                               
-                               {gameState.activeRoulette.item.id === 'banana' && availableRivals.length === 0 && (
-                                  <p className="text-gray-400 mb-6 font-bold">Aún no hay rivales a los qué atacar...</p>
-                               )}
-
-                               <button 
-                                  disabled={isProcessing || (gameState.activeRoulette.item.id === 'banana' && availableRivals.length > 0 && !bananaTarget)} 
-                                  onClick={() => resolveItemEffect(gameState.activeRoulette.teamId, gameState.activeRoulette.item, bananaTarget)} 
-                                  className={`w-full py-5 text-white font-black text-2xl uppercase rounded-2xl shadow-[0_8px_0_rgba(21,128,61,1)] transition-all ${(isProcessing || (gameState.activeRoulette.item.id === 'banana' && availableRivals.length > 0 && !bananaTarget)) ? 'bg-gray-600 cursor-not-allowed shadow-none' : 'bg-green-600 active:bg-green-800 active:translate-y-2 active:shadow-none cursor-pointer'}`}
-                               >
-                                 ¡Usar Ítem!
-                               </button>
-                             </div>
-                           )}
-                         </>
-                       ) : (
-                         <div className="text-gray-500">
-                           <IconAlert className="w-20 h-20 mx-auto mb-6 opacity-30"/>
-                           <p className="text-xl uppercase font-bold tracking-widest text-gray-600">Otro equipo está en la ruleta</p>
-                         </div>
-                       )}
-                     </div>
-                  )}
-
-                  {gameState.status === 'finished' && (
-                     <div className="text-center">
-                       <IconTrophy className="w-32 h-32 text-yellow-500 mx-auto mb-6" />
-                       <h2 className="text-4xl font-black text-white uppercase tracking-widest">¡Fin de la carrera!</h2>
+                       {!gameState.activeRoulette.spinning && !gameState.activeRoulette.item ? <button onClick={playerSpinRoulette} className="w-full py-12 bg-yellow-500 rounded-[2rem] text-4xl font-black text-black animate-bounce uppercase">GIRAR RULETA</button> : 
+                        gameState.activeRoulette.spinning ? <h2 className="text-3xl font-black text-yellow-500 animate-pulse uppercase">¡GIRANDO! Mira el Proyector</h2> : 
+                        <div className="mt-4 flex flex-col items-center"><div className={`w-32 h-32 ${gameState.activeRoulette.item.color} rounded-3xl flex items-center justify-center text-7xl border-4 mb-4`}>{gameState.activeRoulette.item.icon}</div><h3 className="text-3xl font-black uppercase mb-6">{gameState.activeRoulette.item.name}</h3>
+                          {(gameState.activeRoulette.item.id === 'banana' || gameState.activeRoulette.item.id === 'shell') && (
+                             <select value={punishTarget} onChange={e=>updatePunishTargetToDB(e.target.value)} className="w-full p-4 bg-black border border-gray-700 rounded-xl mb-6 font-bold">
+                               <option value="">-- Elige a quién castigar --</option>
+                               {Object.values(TEAMS_INFO).filter(t=>t.id!=myTeamId && gameState.teams[t.id].pos>0).map(t=><option key={t.id} value={t.id}>{t.name} (Casilla {gameState.teams[t.id].pos})</option>)}
+                             </select>
+                          )}
+                          <button disabled={isProcessing || ((gameState.activeRoulette.item.id==='banana' || gameState.activeRoulette.item.id==='shell') && !punishTarget)} onClick={()=>resolveItemEffect(myTeamId, gameState.activeRoulette.item, punishTarget)} className="w-full py-5 bg-green-600 rounded-2xl text-2xl font-black uppercase">¡Usar Ítem!</button>
+                        </div>
+                       }
                      </div>
                   )}
                 </div>
@@ -1093,6 +701,36 @@
           }
           return null;
         }
+
+        // --- COMPONENTE PISTA ---
+        const RaceTrack = ({gameState}) => (
+          <div className="w-full bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden flex flex-col justify-around h-full min-h-[400px]">
+            {Object.values(TEAMS_INFO).map((info) => {
+              const team = gameState.teams[info.id];
+              return (
+              <div key={info.id} className="flex items-center gap-3 relative z-10 my-1">
+                <div className={`w-32 md:w-40 text-xs md:text-sm font-black uppercase px-3 py-3 rounded-xl flex justify-between items-center border-l-8 ${team.connected ? 'bg-gray-800':'bg-gray-950 opacity-40'}`} style={{ borderColor: team.connected ? info.hex : '#374151' }}>
+                  <span style={{color: team.connected ? info.hex : '#4b5563'}}>{info.name}</span>
+                  <div className="flex gap-1">{team.mushroom && '🍄'}{team.star && '⭐'}{team.frozen && '🧊'}</div>
+                </div>
+                <div className="flex-1 flex h-12 md:h-16 bg-gray-950 rounded-full border border-gray-800 relative shadow-inner overflow-hidden">
+                  <div className="absolute inset-y-0 left-0 opacity-10 transition-all duration-1000" style={{ width: `${(team.pos / 15) * 100}%`, backgroundColor: info.hex }}/>
+                  {Array.from({ length: 16 }).map((_, i) => {
+                    const isOccupied = team.pos === i;
+                    const isItem = ITEM_POSITIONS[info.id].includes(i) && !team.usedItems?.includes(i);
+                    return (
+                      <div key={i} className="flex-1 border-r border-gray-800/30 flex items-center justify-center relative">
+                        {isItem && !isOccupied && <div className="w-6 h-6 bg-yellow-500 rounded text-black font-black text-[10px] animate-pulse">?</div>}
+                        {isOccupied && team.connected && <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full border-4 border-white flex items-center justify-center text-2xl shadow-xl transition-all duration-500 ${team.frozen ? 'grayscale opacity-50':''}`} style={{ backgroundColor: info.hex }}>🚗</div>}
+                      </div>
+                    );
+                  })}
+                  <div className="w-12 md:w-16 bg-yellow-500/10 flex items-center justify-center"><IconStar className={`w-6 h-6 ${team.pos===15?'text-yellow-400 animate-spin':'text-gray-700'}`}/></div>
+                </div>
+              </div>
+            )})}
+          </div>
+        );
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
