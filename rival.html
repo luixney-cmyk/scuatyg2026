@@ -702,6 +702,38 @@
             setIsProcessing(false);
           };
 
+          // FUNCIÓN DE PODIO Y RANKINGS
+          const getRankings = () => {
+              if (!gameState || !gameState.winner) return { first: [], second: [], third: [] };
+              const scores = {};
+              
+              // Asignar "puntuaciones" virtuales para ordenar
+              Object.keys(gameState.teams).forEach(id => {
+                  if (String(id) === String(gameState.winner)) {
+                      scores[id] = 1000; // Campeón absoluto
+                  } else if (gameState.tiedTeams && gameState.tiedTeams.includes(String(id))) {
+                      scores[id] = 999; // Perdedor de muerte súbita (2do lugar por defecto)
+                  } else {
+                      scores[id] = gameState.teams[id].pos || 0; // Posición normal en el tablero
+                  }
+              });
+              
+              const grouped = {};
+              Object.keys(scores).forEach(id => {
+                  const s = scores[id];
+                  if (s === 0) return; // No rankear a quienes no jugaron o siguen en cero
+                  if (!grouped[s]) grouped[s] = [];
+                  grouped[s].push(id);
+              });
+              
+              const sortedScores = Object.keys(grouped).map(Number).sort((a, b) => b - a);
+              return {
+                  first: grouped[sortedScores[0]] || [],
+                  second: grouped[sortedScores[1]] || [],
+                  third: grouped[sortedScores[2]] || []
+              };
+          };
+
           if (!firebaseLoaded || (role && !gameState)) {
             return <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center animate-pulse text-2xl font-bold">Conectando a UATyG Cloud...</div>;
           }
@@ -966,20 +998,48 @@
                 )}
 
                 {/* MODAL GANADOR GIGANTE */}
-                {gameState.status === 'finished' && gameState.winner && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-xl">
-                    <div className="text-center">
-                      <IconTrophy className="w-80 h-80 mx-auto mb-12 animate-pulse" style={{ color: TEAMS_INFO[gameState.winner].hex }} />
-                      <h2 className="text-[7rem] font-black uppercase mb-8 text-white drop-shadow-[0_10px_10px_rgba(0,0,0,1)]">¡TENEMOS GANADOR!</h2>
-                      <div className="text-[6rem] font-black uppercase tracking-widest px-20 py-10 rounded-[4rem] border-8 inline-block" style={{ backgroundColor: `${TEAMS_INFO[gameState.winner].hex}40`, borderColor: TEAMS_INFO[gameState.winner].hex, color: TEAMS_INFO[gameState.winner].hex }}>
+                {gameState.status === 'finished' && gameState.winner && (() => {
+                  const rankings = getRankings();
+                  return (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-xl overflow-y-auto p-4">
+                    <div className="text-center w-full max-w-6xl py-10">
+                      <IconTrophy className="w-64 h-64 md:w-80 md:h-80 mx-auto mb-8 animate-pulse" style={{ color: TEAMS_INFO[gameState.winner].hex }} />
+                      <h2 className="text-[4rem] md:text-[7rem] font-black uppercase mb-6 text-white drop-shadow-[0_10px_10px_rgba(0,0,0,1)] leading-none">¡TENEMOS GANADOR!</h2>
+                      
+                      <div className="text-[4rem] md:text-[6rem] font-black uppercase tracking-widest px-10 py-6 md:px-20 md:py-10 rounded-[3rem] border-8 inline-block shadow-[0_0_50px_rgba(255,255,255,0.1)]" style={{ backgroundColor: `${TEAMS_INFO[gameState.winner].hex}40`, borderColor: TEAMS_INFO[gameState.winner].hex, color: TEAMS_INFO[gameState.winner].hex }}>
                         {TEAMS_INFO[gameState.winner].name}
                       </div>
+
+                      <div className="flex flex-col md:flex-row justify-center items-stretch gap-8 mt-12 px-4">
+                          {rankings.second.length > 0 && (
+                              <div className="flex-1 bg-gray-900 border-4 border-gray-400 p-8 rounded-[2rem] shadow-[0_0_30px_rgba(156,163,175,0.2)]">
+                                  <h3 className="text-4xl text-gray-400 font-black uppercase mb-6 tracking-widest">2do Lugar</h3>
+                                  <div className="flex flex-wrap justify-center gap-6">
+                                      {rankings.second.map(id => (
+                                          <span key={id} className="text-4xl font-bold uppercase" style={{ color: TEAMS_INFO[id].hex }}>{TEAMS_INFO[id].name}</span>
+                                      ))}
+                                  </div>
+                              </div>
+                          )}
+                          {rankings.third.length > 0 && (
+                              <div className="flex-1 bg-gray-900 border-4 border-yellow-700 p-8 rounded-[2rem] shadow-[0_0_30px_rgba(161,98,7,0.2)]">
+                                  <h3 className="text-4xl text-yellow-600 font-black uppercase mb-6 tracking-widest">3er Lugar</h3>
+                                  <div className="flex flex-wrap justify-center gap-6">
+                                      {rankings.third.map(id => (
+                                          <span key={id} className="text-4xl font-bold uppercase" style={{ color: TEAMS_INFO[id].hex }}>{TEAMS_INFO[id].name}</span>
+                                      ))}
+                                  </div>
+                              </div>
+                          )}
+                      </div>
+
                       {role === 'host' && (
-                          <div className="mt-20"><button onClick={() => window.FirebaseAPI.setDoc(getDocRef(), INITIAL_STATE)} className="text-gray-600 hover:text-white underline text-2xl font-bold cursor-pointer">Reiniciar Carrera</button></div>
+                          <div className="mt-16"><button onClick={() => window.FirebaseAPI.setDoc(getDocRef(), INITIAL_STATE)} className="text-gray-500 hover:text-white underline text-3xl font-bold cursor-pointer transition-colors">Reiniciar Carrera</button></div>
                       )}
                     </div>
                   </div>
-                )}
+                  );
+                })()}
               </div>
             );
           }
@@ -1153,12 +1213,38 @@
                      </div>
                   )}
 
-                  {gameState.status === 'finished' && (
-                     <div className="text-center">
-                       <IconTrophy className="w-32 h-32 text-yellow-500 mx-auto mb-6" />
-                       <h2 className="text-4xl font-black text-white uppercase tracking-widest">¡Fin de la carrera!</h2>
+                  {gameState.status === 'finished' && gameState.winner && (() => {
+                     const rankings = getRankings();
+                     return (
+                     <div className="text-center w-full max-w-sm mx-auto pb-10">
+                       <IconTrophy className="w-32 h-32 text-yellow-500 mx-auto mb-6 animate-pulse" style={{ color: TEAMS_INFO[gameState.winner].hex }} />
+                       <h2 className="text-4xl font-black text-white uppercase tracking-widest mb-8">¡Fin de la carrera!</h2>
+                       
+                       <div className="bg-gray-950 p-5 rounded-3xl mb-4 border-4 shadow-xl" style={{ borderColor: TEAMS_INFO[gameState.winner].hex }}>
+                           <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-1">1er Lugar</p>
+                           <p className="text-4xl font-black uppercase" style={{ color: TEAMS_INFO[gameState.winner].hex }}>{TEAMS_INFO[gameState.winner].name}</p>
+                       </div>
+
+                       {rankings.second.length > 0 && (
+                           <div className="bg-gray-900 p-4 rounded-2xl mb-4 border-2 border-gray-500">
+                               <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-1">2do Lugar</p>
+                               <p className="text-2xl font-bold uppercase text-gray-300">
+                                   {rankings.second.map(id => TEAMS_INFO[id].name).join(', ')}
+                               </p>
+                           </div>
+                       )}
+
+                       {rankings.third.length > 0 && (
+                           <div className="bg-gray-900 p-4 rounded-2xl mb-4 border-2 border-yellow-700">
+                               <p className="text-xs text-yellow-700 font-bold uppercase tracking-widest mb-1">3er Lugar</p>
+                               <p className="text-2xl font-bold uppercase text-yellow-600">
+                                   {rankings.third.map(id => TEAMS_INFO[id].name).join(', ')}
+                               </p>
+                           </div>
+                       )}
                      </div>
-                  )}
+                     );
+                  })()}
                 </div>
               </div>
             );
