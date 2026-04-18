@@ -148,6 +148,20 @@
 
     <main class="container mx-auto mt-8 px-4 max-w-4xl">
         
+        <!-- ACCESOS RÁPIDOS (Actividades y Cronograma) -->
+        <div class="grid grid-cols-2 gap-4 mb-8">
+            <!-- Botón Actividades -->
+            <a href="actividades.html" class="nes-btn bg-green-500 text-white font-pixel py-4 px-2 hover:bg-green-400 no-underline text-[9px] md:text-xs flex-col">
+                <i data-lucide="clipboard-list" class="w-8 h-8 md:w-10 md:h-10 mb-2 drop-shadow-md"></i>
+                <span>ACTIVIDADES</span>
+            </a>
+            <!-- Botón Cronograma -->
+            <a href="cronograma.html" class="nes-btn bg-yellow-400 text-gray-900 font-pixel py-4 px-2 hover:bg-yellow-300 no-underline text-[9px] md:text-xs flex-col">
+                <i data-lucide="calendar-days" class="w-8 h-8 md:w-10 md:h-10 mb-2 drop-shadow-md"></i>
+                <span>CRONOGRAMA</span>
+            </a>
+        </div>
+
         <!-- Indicador de Offline -->
         <div id="offline-indicator" class="hidden mb-4 flex justify-center items-center gap-2 text-xs font-bold text-yellow-800 bg-yellow-200 border border-yellow-400 py-2 px-4 rounded-lg w-max mx-auto shadow-sm">
             <i data-lucide="wifi-off" class="w-4 h-4"></i>
