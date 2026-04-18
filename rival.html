@@ -220,7 +220,9 @@
           ...Array(6).fill({ id: 'banana', name: 'Plátano', icon: '🍌', color: 'bg-yellow-500', desc: 'Elige y congela a un rival al azar.' }),
           ...Array(6).fill({ id: 'shell', name: 'Caparazón', icon: '🐢', color: 'bg-red-600', desc: 'Ataca al 1er lugar (-1 casilla).' }),
           ...Array(2).fill({ id: 'star', name: 'Estrella', icon: '⭐', color: 'bg-yellow-300', desc: 'Avanza aunque falles O te protege de 1 ataque.' }),
-          ...Array(1).fill({ id: 'lightning', name: 'Rayo', icon: '⚡', color: 'bg-blue-500', desc: '¡Todos retroceden una casilla!' }),
+          ...Array(1).fill({ id: 'lightning', name: 'Rayo Simple', icon: '⚡', color: 'bg-blue-500', desc: '¡Los demás retroceden una casilla!' }),
+          // NUEVO ÍTEM: Rayo Caótico
+          ...Array(1).fill({ id: 'chaotic_lightning', name: 'Rayo Caótico', icon: '🌩️', color: 'bg-purple-600', desc: '¡TODOS retroceden una casilla (incluyéndote)!' }),
         ];
 
         const INITIAL_STATE = {
@@ -231,11 +233,10 @@
           rouletteQueue: [], 
           activeRoulette: { teamId: null, spinning: false, item: null, targetId: null },
           winner: null,
-          tiedTeams: [], // Arreglo de IDs en muerte súbita
+          tiedTeams: [],
           usedQuestions: [],
           teams: Object.keys(TEAMS_INFO).reduce((acc, id) => ({
             ...acc,
-            // MEJORA INCLUIDA: sessionID inicializado en null para proteger conexiones
             [id]: { pos: 0, ansText: '', connected: false, sessionID: null, frozen: false, star: false, mushroom: false, usedItems: [] }
           }), {})
         };
@@ -258,22 +259,16 @@
           const [hasSubmitted, setHasSubmitted] = useState(false);
           const [isProcessing, setIsProcessing] = useState(false);
           
-          // MEJORA INCLUIDA: Cambiamos bananaTarget a punishTarget para que sirva para cualquier ítem
           const [punishTarget, setPunishTarget] = useState(""); 
 
           const lastTickRef = useRef(null); 
           const prevStateRef = useRef(null);
           const gameStateRef = useRef(gameState);
 
-          // Variable auxiliar para saber si hay muerte súbita y si estoy en ella
-          const isTieBreaker = gameState && gameState.tiedTeams && gameState.tiedTeams.length > 1;
-          const amITied = isTieBreaker && gameState.tiedTeams.includes(String(myTeamId));
-
           useEffect(() => {
               gameStateRef.current = gameState;
           }, [gameState]);
 
-          // 1. Iniciar Firebase
           useEffect(() => {
               if (window.FirebaseAPI) setFirebaseLoaded(true);
               else window.addEventListener('firebase-loaded', () => setFirebaseLoaded(true));
@@ -306,7 +301,6 @@
             return doc(db, 'mariokart', 'partida_activa'); 
           };
 
-          // 2. Escuchar la Partida y Sonidos
           useEffect(() => {
             if (!user || !db) return;
             const { onSnapshot } = window.FirebaseAPI;
@@ -325,7 +319,7 @@
                 if (role === 'player' && data.status !== 'question_active') {
                   setHasSubmitted(false);
                   setPlayerAnswerInput('');
-                  setPunishTarget(""); // Limpiar objetivo anterior
+                  setPunishTarget(""); 
                 }
                 
                 prevStateRef.current = data;
@@ -345,7 +339,6 @@
             if (gameState?.activeRoulette?.item && !gameState?.activeRoulette?.spinning) playSound('itemReveal');
           }, [gameState?.activeRoulette?.item, gameState?.activeRoulette?.spinning]);
 
-          // 3. Lógica del Reloj
           useEffect(() => {
             if (!gameState || gameState.status !== 'question_active' || !gameState.deadline) {
               setTimeLeft(0);
@@ -353,7 +346,6 @@
               return;
             }
             
-            // MEJORA INCLUIDA: Intervalo reducido a 100ms para mayor fluidez visual y sincronización
             const interval = setInterval(() => {
               const now = Date.now();
               const remaining = Math.max(0, Math.ceil((gameState.deadline - now) / 1000));
@@ -400,7 +392,6 @@
             catch (e) { console.error(e); }
           };
 
-          // --- FUNCIONES DEL JUGADOR ---
           const handlePlayerJoin = async () => {
             window.isPlayerMode = true; 
             window.SFX.init();
@@ -416,7 +407,6 @@
                 }
               }
               
-              // MEJORA INCLUIDA: Asignamos un sessionID único al jugador para evitar suplantaciones
               const sid = crypto.randomUUID();
               setMyTeamId(selectedTeam);
               setMySessionID(sid);
@@ -446,18 +436,52 @@
           const playerSpinRoulette = async () => {
             if(isProcessing) return;
             setIsProcessing(true);
-            await window.FirebaseAPI.updateDoc(getDocRef(), { 'activeRoulette.spinning': true });
-            setTimeout(async () => {
-              const randomItem = MYSTERY_BOX_POOL[Math.floor(Math.random() * MYSTERY_BOX_POOL.length)];
-              await window.FirebaseAPI.updateDoc(getDocRef(), {
-                'activeRoulette.spinning': false,
-                'activeRoulette.item': randomItem
-              });
-              setIsProcessing(false);
-            }, 2500);
+            try {
+                await window.FirebaseAPI.updateDoc(getDocRef(), { 'activeRoulette.spinning': true });
+                setTimeout(async () => {
+                  const randomItem = MYSTERY_BOX_POOL[Math.floor(Math.random() * MYSTERY_BOX_POOL.length)];
+                  await window.FirebaseAPI.updateDoc(getDocRef(), {
+                    'activeRoulette.spinning': false,
+                    'activeRoulette.item': randomItem
+                  });
+                  setIsProcessing(false);
+                }, 2500);
+            } catch (e) {
+                console.error("Error al girar ruleta:", e);
+                setIsProcessing(false);
+            }
           };
 
-          // MEJORA INCLUIDA: Función para sincronizar la mira (target) con el proyector en tiempo real
+          // FUNCIONES DE RESCATE HOST PARA RULETAS ATASCADAS
+          const hostForceAssignItem = async () => {
+            if(isProcessing) return;
+            setIsProcessing(true);
+            const randomItem = MYSTERY_BOX_POOL[Math.floor(Math.random() * MYSTERY_BOX_POOL.length)];
+            try {
+                await window.FirebaseAPI.updateDoc(getDocRef(), {
+                  'activeRoulette.spinning': false,
+                  'activeRoulette.item': randomItem
+                });
+            } catch(e) { console.error(e); }
+            setIsProcessing(false);
+          };
+
+          const hostSkipRouletteTurn = async () => {
+            if(isProcessing) return;
+            setIsProcessing(true);
+            try {
+                const newQueue = [...(gameState.rouletteQueue || [])];
+                newQueue.shift(); 
+                const nextInRoulette = newQueue.length > 0 ? { teamId: newQueue[0], spinning: false, item: null, targetId: null } : { teamId: null, spinning: false, item: null, targetId: null };
+                await window.FirebaseAPI.updateDoc(getDocRef(), {
+                  rouletteQueue: newQueue,
+                  activeRoulette: nextInRoulette,
+                  status: newQueue.length > 0 ? 'roulette_active' : 'lobby'
+                });
+            } catch(e) { console.error(e); }
+            setIsProcessing(false);
+          };
+
           const updatePunishTargetToDB = async (targetId) => {
               setPunishTarget(targetId);
               if (gameState.status === 'roulette_active') {
@@ -465,7 +489,6 @@
               }
           };
 
-          // --- FUNCIONES DEL HOST ---
           const handleHostLogin = async () => {
             window.SFX.init();
             if (pinInput.toUpperCase() === 'RESET2026') {
@@ -503,7 +526,6 @@
               status: 'question_active', 
               currentQuestion: randomQ.q,
               hostAnswerHint: randomQ.a,
-              // MEJORA INCLUIDA: Se aumentó el tiempo a 20 segundos (21000ms incluyendo el margen de red)
               deadline: Date.now() + 21000, 
               usedQuestions: [...usedQuestionsArray, randomQ.originalIndex] 
             };
@@ -604,7 +626,6 @@
                 newQueue = [];
             }
 
-            // Se reinicia targetId a null al pasar al siguiente en la ruleta
             const nextInRoulette = newQueue.length > 0 ? { teamId: newQueue[0], spinning: false, item: null, targetId: null } : { teamId: null, spinning: false, item: null, targetId: null };
 
             await window.FirebaseAPI.updateDoc(getDocRef(), {
@@ -657,6 +678,14 @@
                 if (newTeams[rId].star) newTeams[rId].star = false;
                 else newTeams[rId].pos = Math.max(0, newTeams[rId].pos - 1);
               });
+            } else if (item.id === 'chaotic_lightning') {
+              playSound('lightning');
+              // Nuevo ítem: TODOS retroceden 1 (incluyendo al que lo tiró)
+              const allActive = Object.keys(newTeams).filter(id => newTeams[id].pos > 0);
+              allActive.forEach(aId => {
+                if (newTeams[aId].star) newTeams[aId].star = false;
+                else newTeams[aId].pos = Math.max(0, newTeams[aId].pos - 1);
+              });
             }
 
             const newQueue = [...gameState.rouletteQueue];
@@ -673,9 +702,6 @@
             setIsProcessing(false);
           };
 
-          // ==========================================
-          // VISTAS CONDICIONALES
-          // ==========================================
           if (!firebaseLoaded || (role && !gameState)) {
             return <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center animate-pulse text-2xl font-bold">Conectando a UATyG Cloud...</div>;
           }
@@ -714,7 +740,6 @@
             );
           }
 
-          // --- COMPONENTE COMPARTIDO: LA PISTA VISUAL ---
           const RaceTrack = () => (
             <div className="w-full bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden flex flex-col justify-around h-full min-h-[400px]">
               <div className="absolute right-[2%] top-0 bottom-0 w-12 flex flex-col opacity-20">
@@ -767,9 +792,6 @@
             </div>
           );
 
-          // ==========================================
-          // VISTA 1: LA PANTALLA UNIFICADA (HOST + PROYECTOR)
-          // ==========================================
           if (role === 'projector' || role === 'host') {
             const isTieBreaker = gameState.tiedTeams && gameState.tiedTeams.length > 1;
 
@@ -894,9 +916,9 @@
                 {/* MODAL GIGANTE DE RULETA */}
                 {gameState.status === 'roulette_active' && gameState.activeRoulette.teamId && (
                   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm">
-                    <div className="bg-gray-900 border-4 border-yellow-500 rounded-[3rem] p-20 text-center shadow-[0_0_150px_rgba(234,179,8,0.4)] w-full max-w-3xl">
-                      <h2 className="text-6xl font-black uppercase text-yellow-400 mb-6 drop-shadow-md tracking-widest">CAJA MISTERIOSA</h2>
-                      <p className="text-4xl text-white mb-12">Turno de: <span className="font-bold uppercase" style={{color: TEAMS_INFO[gameState.activeRoulette.teamId].hex}}>{TEAMS_INFO[gameState.activeRoulette.teamId].name}</span></p>
+                    <div className="bg-gray-900 border-4 border-yellow-500 rounded-[3rem] p-16 text-center shadow-[0_0_150px_rgba(234,179,8,0.4)] w-full max-w-4xl relative">
+                      <h2 className="text-5xl md:text-6xl font-black uppercase text-yellow-400 mb-6 drop-shadow-md tracking-widest">CAJA MISTERIOSA</h2>
+                      <p className="text-3xl md:text-4xl text-white mb-10">Turno de: <span className="font-bold uppercase" style={{color: TEAMS_INFO[gameState.activeRoulette.teamId].hex}}>{TEAMS_INFO[gameState.activeRoulette.teamId].name}</span></p>
 
                       {gameState.activeRoulette.spinning ? (
                         <div className="w-64 h-64 mx-auto bg-gradient-to-br from-yellow-300 to-yellow-600 rounded-[3rem] flex items-center justify-center animate-spin shadow-2xl border-8 border-white">
@@ -904,13 +926,12 @@
                         </div>
                       ) : gameState.activeRoulette.item ? (
                         <div className="animate-bounce">
-                          <div className={`w-64 h-64 mx-auto ${gameState.activeRoulette.item.color} rounded-[3rem] flex items-center justify-center mb-10 shadow-2xl border-8 border-white/20`}>
-                            <span className="text-[9rem]">{gameState.activeRoulette.item.icon}</span>
+                          <div className={`w-64 h-64 mx-auto ${gameState.activeRoulette.item.color} rounded-[3rem] flex items-center justify-center mb-8 shadow-2xl border-8 border-white/20`}>
+                            <span className="text-[8rem] md:text-[9rem]">{gameState.activeRoulette.item.icon}</span>
                           </div>
-                          <h3 className="text-6xl font-black text-white uppercase">{gameState.activeRoulette.item.name}</h3>
-                          <p className="text-3xl text-gray-300 mt-6 font-bold">{gameState.activeRoulette.item.desc}</p>
+                          <h3 className="text-4xl md:text-6xl font-black text-white uppercase">{gameState.activeRoulette.item.name}</h3>
+                          <p className="text-2xl md:text-3xl text-gray-300 mt-4 font-bold">{gameState.activeRoulette.item.desc}</p>
                           
-                          {/* MEJORA INCLUIDA: Aquí el proyector muestra en vivo a quién está apuntando el jugador */}
                           {gameState.activeRoulette.targetId && (
                               <div className="mt-6 bg-red-600/20 border-2 border-red-500 px-6 py-3 rounded-2xl inline-block">
                                   <p className="text-xl text-red-400 font-bold uppercase tracking-widest">Apuntando a:</p>
@@ -921,14 +942,23 @@
                       ) : (
                         <div className="w-64 h-64 mx-auto bg-gray-800 rounded-[3rem] flex flex-col items-center justify-center border-8 border-dashed border-gray-600 animate-pulse p-6">
                           <IconAlert className="w-20 h-20 text-gray-500 mb-4"/>
-                          <span className="text-xl text-gray-400 font-bold">Esperando a que el jugador gire la ruleta en su celular...</span>
+                          <span className="text-xl text-gray-400 font-bold">Esperando a que el jugador gire la ruleta...</span>
                         </div>
                       )}
 
+                      {/* CONTROLES DE RESCATE AVANZADOS PARA EL HOST */}
                       {role === 'host' && (
-                          <div className="mt-12 flex justify-center gap-4 opacity-10 hover:opacity-100 transition-opacity">
-                             {!gameState.activeRoulette.spinning && !gameState.activeRoulette.item && <button disabled={isProcessing} onClick={()=>window.FirebaseAPI.updateDoc(getDocRef(), {'activeRoulette.spinning': true})} className="px-4 py-2 bg-gray-800 text-sm rounded cursor-pointer">Forzar Giro</button>}
-                             {gameState.activeRoulette.item && <button disabled={isProcessing} onClick={()=>resolveItemEffect(gameState.activeRoulette.teamId, gameState.activeRoulette.item)} className="px-4 py-2 bg-yellow-600 text-black text-sm font-bold rounded cursor-pointer">Forzar Aplicar</button>}
+                          <div className="mt-12 p-4 bg-gray-950 rounded-2xl border border-gray-800 opacity-50 hover:opacity-100 transition-opacity">
+                             <p className="text-gray-500 text-sm font-bold uppercase tracking-widest mb-3">Opciones de Rescate (Si se traba)</p>
+                             <div className="flex flex-wrap justify-center gap-4">
+                               {!gameState.activeRoulette.item && (
+                                   <button disabled={isProcessing} onClick={hostForceAssignItem} className="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-500">Forzar Ítem Al Azar</button>
+                               )}
+                               {gameState.activeRoulette.item && (
+                                   <button disabled={isProcessing} onClick={()=>resolveItemEffect(gameState.activeRoulette.teamId, gameState.activeRoulette.item)} className="px-6 py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-500">Forzar Aplicación</button>
+                               )}
+                               <button disabled={isProcessing} onClick={hostSkipRouletteTurn} className="px-6 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-500">Omitir Turno Completo</button>
+                             </div>
                           </div>
                       )}
                     </div>
@@ -954,9 +984,6 @@
             );
           }
 
-          // ==========================================
-          // VISTA 2: JUGADOR (CELULAR)
-          // ==========================================
           if (role === 'player') {
             const myTeam = gameState.teams[myTeamId];
             const info = TEAMS_INFO[myTeamId];
@@ -967,14 +994,14 @@
 
             const availableRivals = Object.values(TEAMS_INFO).filter(t => String(t.id) !== String(myTeamId) && gameState.teams[t.id].pos > 0);
 
-            // MEJORA INCLUIDA: Pantalla de alerta si otro compañero trata de usar tu mismo Kart
+            // MEJORA INCLUIDA: Pantalla de desconexión mejorada para reconectar fácilmente sin perder todo
             if (mySessionID && gameState.teams[myTeamId].sessionID !== mySessionID) {
                 return (
                   <div className="h-screen bg-black flex flex-col items-center justify-center p-10 text-center">
                     <IconAlert className="w-20 h-20 text-red-500 mb-6"/>
-                    <h2 className="text-2xl font-bold">SESIÓN EXPIRADA</h2>
-                    <p className="text-gray-400 mt-4">Otro dispositivo ingresó como este equipo. Debes volver a iniciar sesión.</p>
-                    <button onClick={()=>location.reload()} className="mt-8 px-8 py-3 bg-blue-600 rounded-xl font-bold">REINTENTAR</button>
+                    <h2 className="text-3xl font-bold text-white mb-2 uppercase">SESIÓN EXPIRADA</h2>
+                    <p className="text-gray-400 mt-4 text-lg">La sesión ha cambiado, entraste desde otro dispositivo o el administrador reseteó el tablero.</p>
+                    <button onClick={()=>location.reload()} className="mt-10 w-full max-w-sm px-8 py-5 bg-blue-600 text-xl rounded-xl font-black uppercase tracking-widest shadow-lg">Volver al Inicio</button>
                   </div>
                 );
             }
@@ -1091,7 +1118,6 @@
                                </div>
                                <h3 className="text-3xl font-black text-white mb-6 uppercase">{gameState.activeRoulette.item.name}</h3>
                                
-                               {/* MEJORA INCLUIDA: SELECCIÓN MANUAL DEL PLÁTANO Y DEL CAPARAZÓN CON ACTUALIZACIÓN EN VIVO */}
                                {(gameState.activeRoulette.item.id === 'banana' || gameState.activeRoulette.item.id === 'shell') && availableRivals.length > 0 && (
                                   <div className="mb-6 w-full text-left bg-gray-950 p-4 rounded-2xl border border-yellow-600/50">
                                      <p className="text-yellow-400 font-bold uppercase text-sm mb-2">Selecciona a quién castigar:</p>
