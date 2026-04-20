@@ -119,12 +119,17 @@
         const IconCheck = ({className}) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
         const IconTimer = ({className}) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="14" r="8"/><path d="M12 2v4"/><path d="M12 14 10 12"/><path d="M18 2h-4"/></svg>;
         const IconPlay = ({className}) => <svg className={className} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>;
+        const IconImage = ({className}) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>;
 
-        // --- BANCO DE PREGUNTAS (AHORA SOPORTA PROPIEDAD "audio") ---
+        // --- BANCO DE PREGUNTAS (SOPORTA "audio" E "image") ---
         const QUESTIONS_POOL = [
-          // PREGUNTA CON AUDIO AÑADIDA AQUÍ:
+          // PREGUNTA CON IMAGEN AÑADIDA AQUÍ:
+          { q: '¿Cómo se llama esta obra?', a: 'Las dos Fridas', image: 'dos.png' },
+
+          // PREGUNTAS CON AUDIO:
           { q: '¿A qué anime corresponde este ending? (Escucha el audio)', a: 'Dragon Ball', audio: 'rtpd audio.mp3' },
           { q: '¿A qué estación de Vivaldi corresponde este audio?', a: 'Otoño', audio: 'otoño.mp3' },
+          { q: '¿A qué película corresponde este audio?', a: 'Gladiador', audio: 'maximo.mp3' },
           
           { q: '¿Cuál es la capital del estado de Quintana Roo?', a: 'Chetumal' },
           { q: '¿En qué estado de la república se encuentra la zona arqueológica de La Venta?', a: 'Tabasco' },
@@ -243,7 +248,8 @@
           status: 'lobby',
           currentQuestion: '',
           hostAnswerHint: '',
-          questionAudio: null, // NUEVO CAMPO PARA AUDIO
+          questionAudio: null,
+          questionImage: null, // NUEVO CAMPO PARA IMÁGENES
           deadline: 0,
           rouletteQueue: [], 
           activeRoulette: { teamId: null, spinning: false, item: null, targetId: null },
@@ -328,7 +334,6 @@
                 setGameState(data);
                 
                 if (data.status === 'question_active' && (!prevState || prevState.status !== 'question_active')) {
-                    // Si la pregunta no tiene un audio asociado, sonará el pitido clásico
                     if (!data.questionAudio) {
                         playSound('question');
                     }
@@ -541,12 +546,12 @@
 
             const randomQ = availableQs[Math.floor(Math.random() * availableQs.length)];
 
-            // Actualizamos la base de datos incluyendo el campo questionAudio
             let updates = { 
               status: 'question_active', 
               currentQuestion: randomQ.q,
               hostAnswerHint: randomQ.a,
-              questionAudio: randomQ.audio || null, // SI TIENE AUDIO, LO CARGAMOS
+              questionAudio: randomQ.audio || null, 
+              questionImage: randomQ.image || null, // SI TIENE IMAGEN
               deadline: Date.now() + 21000, 
               usedQuestions: [...usedQuestionsArray, randomQ.originalIndex] 
             };
@@ -563,7 +568,6 @@
             const availableQs = QUESTIONS_POOL.map((q, i) => ({...q, originalIndex: i}))
                                               .filter(q => !usedQuestionsArray.includes(q.originalIndex));
             
-            // Buscamos exclusivamente preguntas que tengan el campo de audio
             const audioQs = availableQs.filter(q => q.audio);
             
             if (audioQs.length === 0) {
@@ -572,14 +576,47 @@
                return;
             }
 
-            // Tomamos la primera pregunta con audio
-            const selectedQ = audioQs[0];
+            const selectedQ = audioQs[Math.floor(Math.random() * audioQs.length)];
 
             let updates = { 
               status: 'question_active', 
               currentQuestion: selectedQ.q,
               hostAnswerHint: selectedQ.a,
-              questionAudio: selectedQ.audio,
+              questionAudio: selectedQ.audio || null,
+              questionImage: selectedQ.image || null,
+              deadline: Date.now() + 21000, 
+              usedQuestions: [...usedQuestionsArray, selectedQ.originalIndex] 
+            };
+            Object.keys(gameState.teams).forEach(id => { updates[`teams.${id}.ansText`] = ''; });
+            await window.FirebaseAPI.updateDoc(getDocRef(), updates);
+            setIsProcessing(false);
+          };
+
+          // NUEVA FUNCIÓN: LANZAR PREGUNTAS DE IMAGEN
+          const launchImageQuestion = async () => {
+            if(isProcessing) return;
+            setIsProcessing(true);
+
+            const usedQuestionsArray = gameState.usedQuestions || [];
+            const availableQs = QUESTIONS_POOL.map((q, i) => ({...q, originalIndex: i}))
+                                              .filter(q => !usedQuestionsArray.includes(q.originalIndex));
+            
+            const imageQs = availableQs.filter(q => q.image);
+            
+            if (imageQs.length === 0) {
+               alert("¡Ya no hay preguntas con imagen disponibles o ya se jugaron todas!");
+               setIsProcessing(false);
+               return;
+            }
+
+            const selectedQ = imageQs[Math.floor(Math.random() * imageQs.length)];
+
+            let updates = { 
+              status: 'question_active', 
+              currentQuestion: selectedQ.q,
+              hostAnswerHint: selectedQ.a,
+              questionAudio: selectedQ.audio || null,
+              questionImage: selectedQ.image || null,
               deadline: Date.now() + 21000, 
               usedQuestions: [...usedQuestionsArray, selectedQ.originalIndex] 
             };
@@ -907,6 +944,9 @@
                                 <p className="text-white text-xl">{isTieBreaker ? '¿Listos para la muerte súbita?' : '¿Listos para la carrera?'}</p>
                              </div>
                              <div className="flex flex-wrap justify-center gap-4">
+                               <button disabled={isProcessing} onClick={launchImageQuestion} className={`px-6 py-4 text-white font-black text-xl uppercase rounded-2xl shadow-[0_5px_0_rgba(21,128,61,1)] flex gap-2 items-center ${isProcessing ? 'bg-gray-600 cursor-not-allowed shadow-none' : 'bg-green-600 hover:bg-green-500 active:translate-y-1 active:shadow-none transition-all cursor-pointer'}`}>
+                                  <IconImage className="w-6 h-6"/> Imagen
+                               </button>
                                <button disabled={isProcessing} onClick={launchAudioQuestion} className={`px-6 py-4 text-white font-black text-xl uppercase rounded-2xl shadow-[0_5px_0_rgba(161,98,7,1)] flex gap-2 items-center ${isProcessing ? 'bg-gray-600 cursor-not-allowed shadow-none' : 'bg-yellow-600 hover:bg-yellow-500 active:translate-y-1 active:shadow-none transition-all cursor-pointer'}`}>
                                   🎵 Audio
                                </button>
@@ -926,18 +966,33 @@
                     <div className="flex-1 flex flex-col items-center justify-center">
                       <div className={`bg-blue-900/20 border-4 border-blue-500 rounded-[3rem] p-16 text-center shadow-[0_0_150px_rgba(59,130,246,0.3)] w-full max-w-5xl relative ${isTieBreaker ? 'border-red-500 shadow-[0_0_150px_rgba(239,68,68,0.3)]' : ''}`}>
                         {isTieBreaker && <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-red-600 text-white font-black px-6 py-2 rounded-full uppercase tracking-widest animate-pulse border-4 border-gray-950">🔥 MUERTE SÚBITA 🔥</div>}
-                        <h2 className={`font-black text-white ${gameState.questionAudio ? 'text-4xl md:text-5xl mb-8' : 'text-5xl md:text-7xl mb-16'} leading-tight`}>"{gameState.currentQuestion}"</h2>
+                        <h2 className={`font-black text-white ${(gameState.questionAudio || gameState.questionImage) ? 'text-4xl md:text-5xl mb-8' : 'text-5xl md:text-7xl mb-16'} leading-tight`}>"{gameState.currentQuestion}"</h2>
                         
                         {/* SECCIÓN DEL REPRODUCTOR DE AUDIO */}
                         {gameState.questionAudio && (
                             <div className="mb-10 flex flex-col items-center justify-center animate-pulse">
-                                <span className="text-yellow-400 font-bold tracking-widest uppercase mb-4 text-xl">🎵 Reproduciendo Audio 🎵</span>
-                                {/* autoPlay activado, y controls disponibles por si se llega a pausar o bloquear */}
+                                <span className="text-yellow-400 font-bold tracking-widest uppercase mb-4 text-xl">🎵 Reproduciendo Audio (Máx 15s) 🎵</span>
                                 <audio 
                                     src={gameState.questionAudio} 
                                     autoPlay 
                                     controls 
+                                    onTimeUpdate={(e) => {
+                                        if (e.target.currentTime >= 15) {
+                                            e.target.pause();
+                                        }
+                                    }}
                                     className="w-full max-w-lg rounded-full shadow-[0_0_30px_rgba(59,130,246,0.6)] border-2 border-blue-400 opacity-90" 
+                                />
+                            </div>
+                        )}
+
+                        {/* SECCIÓN DE IMAGEN */}
+                        {gameState.questionImage && (
+                            <div className="mb-8 flex justify-center animate-fade-in">
+                                <img 
+                                    src={gameState.questionImage} 
+                                    alt="Pregunta Visual" 
+                                    className="max-h-64 md:max-h-96 rounded-2xl shadow-[0_0_40px_rgba(59,130,246,0.5)] border-4 border-blue-400 object-contain"
                                 />
                             </div>
                         )}
