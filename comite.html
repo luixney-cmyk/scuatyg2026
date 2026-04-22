@@ -41,6 +41,29 @@
         .medal-silver { background-color: #e5e7eb; border-color: #9ca3af; }
         .medal-bronze { background-color: #fb923c; border-color: #c2410c; }
 
+        /* Estilos para selección múltiple de medallas (Empates) */
+        .oro-checkbox:checked + label {
+            background-color: #fef08a !important;
+            border-color: #ca8a04 !important;
+            color: #854d0e !important;
+            transform: scale(1.05);
+            box-shadow: 2px 2px 0px rgba(0,0,0,1);
+        }
+        .plata-checkbox:checked + label {
+            background-color: #d1d5db !important;
+            border-color: #4b5563 !important;
+            color: #1f2937 !important;
+            transform: scale(1.05);
+            box-shadow: 2px 2px 0px rgba(0,0,0,1);
+        }
+        .bronce-checkbox:checked + label {
+            background-color: #ffedd5 !important;
+            border-color: #c2410c !important;
+            color: #7c2d12 !important;
+            transform: scale(1.05);
+            box-shadow: 2px 2px 0px rgba(0,0,0,1);
+        }
+
         /* Estilo para los checkboxes de participación */
         .participant-checkbox:checked + label {
             background-color: #bfdbfe;
@@ -74,23 +97,14 @@
 
         // Bloquear atajos de teclado de herramientas de desarrollador
         document.onkeydown = function(e) {
-            // Prevenir F12
             if(e.keyCode == 123) return false;
-            // Prevenir Ctrl+Shift+I (Inspector)
             if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false;
-            // Prevenir Ctrl+Shift+C (Inspector de elementos)
             if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false;
-            // Prevenir Ctrl+Shift+J (Consola)
             if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false;
-            // Prevenir Ctrl+U (Ver código fuente)
             if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
         }
     </script>
 
-    <!-- ==========================================
-         MODALES DEL SISTEMA (Reemplazo de Alerts)
-         ========================================== -->
-         
     <!-- Modal de Alerta Custom -->
     <div id="custom-alert-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
         <div class="nes-container bg-white p-6 text-center max-w-sm w-full rounded-lg border-4 border-red-600 shadow-[8px_8px_0_0_rgba(220,38,38,1)]">
@@ -292,34 +306,31 @@
                 </div>
 
                 <div id="formulario-campos" class="space-y-6">
-                    <p class="text-center text-xs text-gray-500 font-bold mb-4 uppercase border-b-2 border-gray-200 pb-2">Selecciona a los equipos ganadores:</p>
+                    <p class="text-center text-xs text-gray-500 font-bold mb-4 uppercase border-b-2 border-gray-200 pb-2">Selecciona a los equipos ganadores (puedes elegir varios en caso de empate):</p>
 
                     <!-- 1ER LUGAR (ORO) -->
                     <div class="medal-gold p-4 border-4 rounded relative shadow-md">
                         <i class="w-6 h-6 absolute -top-3 -left-3 text-yellow-600 fill-yellow-500 bg-white rounded-full border-2 border-yellow-600" data-lucide="crown"></i>
                         <label class="block font-pixel text-yellow-900 text-[10px] mb-2 drop-shadow-sm">1ER LUGAR (ORO):</label>
-                        <select id="oro-select" onchange="actualizarSelectores()" class="w-full border-2 border-black p-2 font-bold text-gray-800 outline-none focus:border-black bg-white/90 text-sm md:text-base cursor-pointer shadow-inner">
-                            <option value="">-- Seleccionar Equipo --</option>
-                            <!-- Opciones se inyectan en JS -->
-                        </select>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2" id="oro-grid">
+                            <!-- Los checkboxes se inyectan con JavaScript -->
+                        </div>
                     </div>
 
                     <!-- 2DO LUGAR (PLATA) -->
                     <div class="medal-silver p-4 border-4 rounded relative shadow-md">
                         <label class="block font-pixel text-gray-700 text-[10px] mb-2 drop-shadow-sm">2DO LUGAR (PLATA):</label>
-                        <select id="plata-select" onchange="actualizarSelectores()" class="w-full border-2 border-black p-2 font-bold text-gray-800 outline-none focus:border-black bg-white/90 text-sm md:text-base cursor-pointer shadow-inner">
-                            <option value="">-- Seleccionar Equipo --</option>
-                            <!-- Opciones se inyectan en JS -->
-                        </select>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2" id="plata-grid">
+                            <!-- Los checkboxes se inyectan con JavaScript -->
+                        </div>
                     </div>
 
                     <!-- 3ER LUGAR (BRONCE) -->
                     <div class="medal-bronze p-4 border-4 rounded relative shadow-md">
                         <label class="block font-pixel text-orange-950 text-[10px] mb-2 drop-shadow-sm">3ER LUGAR (BRONCE):</label>
-                        <select id="bronce-select" onchange="actualizarSelectores()" class="w-full border-2 border-black p-2 font-bold text-gray-800 outline-none focus:border-black bg-white/90 text-sm md:text-base cursor-pointer shadow-inner">
-                            <option value="">-- Seleccionar Equipo --</option>
-                            <!-- Opciones se inyectan en JS -->
-                        </select>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2" id="bronce-grid">
+                            <!-- Los checkboxes se inyectan con JavaScript -->
+                        </div>
                     </div>
 
                     <!-- PARTICIPACIÓN -->
@@ -327,7 +338,7 @@
                         <h3 class="font-bold text-sm text-center text-gray-700 mb-2"><i data-lucide="users" class="w-5 h-5 inline mr-1 text-blue-500"></i> PUNTOS DE PARTICIPACIÓN</h3>
                         <p class="text-center text-[10px] text-gray-500 font-bold mb-4 uppercase">Marca los demás equipos que compitieron en la actividad:</p>
                         
-                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2" id="participantes-grid">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2" id="participantes-grid">
                             <!-- Los checkboxes se inyectan con JavaScript -->
                         </div>
                     </div>
@@ -388,18 +399,31 @@
     // --- LISTA DE TODOS LOS EQUIPOS Y LLENADO ---
     const listaEquipos = ["Mario", "Waluigi", "Peach", "Bowser", "Rosalina", "Koopa", "Boo", "Huesitos"];
     
-    const selectsPodio = ['oro-select', 'plata-select', 'bronce-select'];
-    selectsPodio.forEach(selectId => {
-        const sel = document.getElementById(selectId);
-        listaEquipos.forEach(eq => sel.innerHTML += `<option value="${eq}">${eq}</option>`);
+    // Inyección de checkboxes para las medallas (Soporte para empates)
+    const medallas = [
+        { id: 'oro-grid', prefix: 'oro' },
+        { id: 'plata-grid', prefix: 'plata' },
+        { id: 'bronce-grid', prefix: 'bronce' }
+    ];
+    
+    medallas.forEach(medalla => {
+        const grid = document.getElementById(medalla.id);
+        listaEquipos.forEach(equipo => {
+            grid.innerHTML += `
+                <div class="relative">
+                    <input type="checkbox" id="${medalla.prefix}-${equipo}" value="${equipo}" class="hidden medal-checkbox ${medalla.prefix}-checkbox" onchange="actualizarSelectores()">
+                    <label for="${medalla.prefix}-${equipo}" class="block w-full text-center py-2 border-2 border-black bg-white/90 rounded font-bold text-gray-700 cursor-pointer text-[10px] md:text-xs transition-all shadow-sm select-none">${equipo}</label>
+                </div>
+            `;
+        });
     });
 
     const gridParticipantes = document.getElementById('participantes-grid');
     listaEquipos.forEach(equipo => {
         gridParticipantes.innerHTML += `
             <div class="relative">
-                <input type="checkbox" id="part-${equipo}" value="${equipo}" class="hidden participant-checkbox">
-                <label for="part-${equipo}" class="block w-full text-center py-2 border-2 border-gray-300 bg-white rounded font-bold text-gray-500 cursor-pointer text-[10px] md:text-xs transition-all">${equipo}</label>
+                <input type="checkbox" id="part-${equipo}" value="${equipo}" class="hidden participant-checkbox" onchange="actualizarSelectores()">
+                <label for="part-${equipo}" class="block w-full text-center py-2 border-2 border-gray-300 bg-white rounded font-bold text-gray-500 cursor-pointer text-[10px] md:text-xs transition-all select-none">${equipo}</label>
             </div>
         `;
     });
@@ -433,20 +457,16 @@
         s5:  { oro: 50,  plata: 30,  bronce: 15, participacion: 0 }
     };
 
-    // --- NUEVA FUNCIÓN MEJORADA: OCULTAR MISIONES CALIFICADAS ---
     window.actualizarMisionesDisponibles = function() {
         const selectElement = document.getElementById('mision-select');
         const misionesCalificadas = window.baseDeDatosComite.map(r => r.misionId);
 
-        // En navegadores móviles (especialmente iOS/Safari), ocultar un <option> con CSS falla.
-        // La forma más segura y definitiva es remover el elemento del DOM si ya fue calificado.
         Array.from(selectElement.options).forEach(opt => {
             if (opt.value && misionesCalificadas.includes(opt.value)) {
                 opt.remove(); 
             }
         });
         
-        // Limpieza visual: si una categoría completa (OptGroup) se queda sin misiones, la eliminamos también.
         Array.from(selectElement.querySelectorAll('optgroup')).forEach(group => {
             if (group.querySelectorAll('option').length === 0) {
                 group.remove();
@@ -460,7 +480,7 @@
 
         if (!finalConfig || !finalConfig.apiKey || finalConfig.apiKey.includes("TU_API_KEY")) {
             modoOffline = true;
-            window.actualizarMisionesDisponibles(); // Offline
+            window.actualizarMisionesDisponibles(); 
             return;
         }
 
@@ -476,10 +496,9 @@
                     await signInAnonymously(auth);
                 }
             } catch (authError) {
-                console.warn("⚠️ Fallo en autenticación. Activando Modo Offline.");
                 modoOffline = true;
                 if (!isCanvasEnv) document.getElementById('aviso-offline').classList.remove('hidden');
-                window.actualizarMisionesDisponibles(); // Offline
+                window.actualizarMisionesDisponibles(); 
                 return;
             }
 
@@ -496,7 +515,7 @@
                             });
                             localStorage.setItem('uatyg_comite_votos', JSON.stringify(window.baseDeDatosComite));
                             
-                            window.actualizarMisionesDisponibles(); // Actualiza el Select en vivo y elimina completadas
+                            window.actualizarMisionesDisponibles(); 
 
                             const misionId = document.getElementById('mision-select').value;
                             if (misionId) window.verificarEstadoRegistro(misionId);
@@ -554,7 +573,7 @@
 
     // --- 2. LÓGICA DE INTERFAZ Y BLOQUEO DINÁMICO ---
     window.onload = function() {
-        window.actualizarMisionesDisponibles(); // Configura el select de inicio
+        window.actualizarMisionesDisponibles();
         if (localStorage.getItem('uatyg_comite_sesion') === "ACTIVA") {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
@@ -591,37 +610,35 @@
     };
 
     window.actualizarSelectores = function() {
-        const oro = document.getElementById('oro-select').value;
-        const plata = document.getElementById('plata-select').value;
-        const bronce = document.getElementById('bronce-select').value;
+        const oros = Array.from(document.querySelectorAll('.oro-checkbox:checked')).map(cb => cb.value);
+        const platas = Array.from(document.querySelectorAll('.plata-checkbox:checked')).map(cb => cb.value);
+        const bronces = Array.from(document.querySelectorAll('.bronce-checkbox:checked')).map(cb => cb.value);
         
-        const elegidos = [oro, plata, bronce].filter(v => v !== "");
+        const tipos = ['oro', 'plata', 'bronce', 'part'];
 
-        ['oro-select', 'plata-select', 'bronce-select'].forEach(selectId => {
-            const selectElement = document.getElementById(selectId);
-            Array.from(selectElement.options).forEach(opt => {
-                if (opt.value !== "") {
-                    if (elegidos.includes(opt.value) && selectElement.value !== opt.value) {
-                        opt.disabled = true;
-                        opt.text = `${opt.value} (Ya en podio)`;
-                    } else {
-                        opt.disabled = false;
-                        opt.text = opt.value;
-                    }
+        listaEquipos.forEach(equipo => {
+            // Verifica en qué lista está actualmente elegido este equipo
+            let medallaActual = null;
+            if (oros.includes(equipo)) medallaActual = 'oro';
+            else if (platas.includes(equipo)) medallaActual = 'plata';
+            else if (bronces.includes(equipo)) medallaActual = 'bronce';
+
+            tipos.forEach(tipo => {
+                const cb = document.getElementById(`${tipo}-${equipo}`);
+                const label = document.querySelector(`label[for="${tipo}-${equipo}"]`);
+                if (!cb || !label) return;
+
+                // Si está en una medalla y la grilla evaluada es de otro lugar, deshabilítala
+                if (medallaActual && tipo !== medallaActual) {
+                    cb.disabled = true;
+                    cb.checked = false; // Quita el check si lo tenía
+                    label.classList.add('disabled-checkbox');
+                } else {
+                    // Si no está en medallas o es su misma medalla, déjala libre
+                    cb.disabled = false;
+                    label.classList.remove('disabled-checkbox');
                 }
             });
-        });
-
-        document.querySelectorAll('.participant-checkbox').forEach(cb => {
-            const label = document.querySelector(`label[for="${cb.id}"]`);
-            if (elegidos.includes(cb.value)) {
-                cb.disabled = true;
-                cb.checked = false; 
-                label.classList.add('disabled-checkbox'); 
-            } else {
-                cb.disabled = false;
-                label.classList.remove('disabled-checkbox');
-            }
         });
     };
 
@@ -652,6 +669,9 @@
         const formularioCampos = document.getElementById('formulario-campos');
         const btnEnviar = document.getElementById('btn-enviar');
 
+        // Limpia todos los checkboxes para iniciar
+        document.querySelectorAll('.medal-checkbox, .participant-checkbox').forEach(cb => cb.checked = false);
+
         if(yaRegistrado) {
             estadoRegistroMsg.classList.remove('hidden');
             formularioCampos.classList.add('opacity-60', 'pointer-events-none'); 
@@ -659,27 +679,21 @@
             
             const registro = window.baseDeDatosComite.find(r => r.misionId === misionId);
             if(registro) {
-                document.getElementById('oro-select').value = registro.oro;
-                document.getElementById('plata-select').value = registro.plata || "";
-                document.getElementById('bronce-select').value = registro.bronce || "";
-                
-                document.querySelectorAll('.participant-checkbox').forEach(cb => cb.checked = false);
-                if(registro.participantes) {
-                    registro.participantes.forEach(equipo => {
-                        const cb = document.getElementById(`part-${equipo}`);
-                        if(cb) cb.checked = true;
-                    });
-                }
+                // Compatibilidad de DB vieja (donde era un string) y nueva (donde es un arreglo)
+                const oros = Array.isArray(registro.oro) ? registro.oro : (registro.oro ? [registro.oro] : []);
+                const platas = Array.isArray(registro.plata) ? registro.plata : (registro.plata ? [registro.plata] : []);
+                const bronces = Array.isArray(registro.bronce) ? registro.bronce : (registro.bronce ? [registro.bronce] : []);
+                const parts = registro.participantes || [];
+
+                oros.forEach(eq => { const cb = document.getElementById(`oro-${eq}`); if(cb) cb.checked = true; });
+                platas.forEach(eq => { const cb = document.getElementById(`plata-${eq}`); if(cb) cb.checked = true; });
+                bronces.forEach(eq => { const cb = document.getElementById(`bronce-${eq}`); if(cb) cb.checked = true; });
+                parts.forEach(eq => { const cb = document.getElementById(`part-${eq}`); if(cb) cb.checked = true; });
             }
         } else {
             estadoRegistroMsg.classList.add('hidden');
             formularioCampos.classList.remove('opacity-60', 'pointer-events-none');
             btnEnviar.classList.remove('hidden');
-            
-            document.getElementById('oro-select').value = "";
-            document.getElementById('plata-select').value = "";
-            document.getElementById('bronce-select').value = "";
-            document.querySelectorAll('.participant-checkbox').forEach(cb => cb.checked = false);
         }
         
         window.actualizarSelectores();
@@ -690,12 +704,12 @@
         const misionId = selectElement.value;
         const tituloMision = selectElement.options[selectElement.selectedIndex].text;
 
-        const oro = document.getElementById('oro-select').value;
-        const plata = document.getElementById('plata-select').value;
-        const bronce = document.getElementById('bronce-select').value;
-        
-        if (!oro) {
-            window.mostrarAlerta("Debes asignar al menos el 1er Lugar (Medalla de Oro).");
+        const oros = Array.from(document.querySelectorAll('.oro-checkbox:checked')).map(cb => cb.value);
+        const platas = Array.from(document.querySelectorAll('.plata-checkbox:checked')).map(cb => cb.value);
+        const bronces = Array.from(document.querySelectorAll('.bronce-checkbox:checked')).map(cb => cb.value);
+
+        if (oros.length === 0) {
+            window.mostrarAlerta("Debes asignar al menos un ganador para el 1er Lugar (Medalla de Oro).");
             return;
         }
 
@@ -708,22 +722,21 @@
 
         const pts = puntosMisiones[misionId];
 
+        // Se guarda como array para soportar múltiples equipos en el mismo puesto
         const registroComite = {
             misionId: misionId,
             titulo: tituloMision,
-            oro: oro,
+            oro: oros,
             ptsOro: pts.oro,
-            plata: plata || null,
-            ptsPlata: plata ? pts.plata : 0,
-            bronce: bronce || null,
-            ptsBronce: bronce ? pts.bronce : 0,
+            plata: platas,
+            ptsPlata: platas.length > 0 ? pts.plata : 0,
+            bronce: bronces,
+            ptsBronce: bronces.length > 0 ? pts.bronce : 0,
             participantes: participantes,
             ptsParticipacion: pts.participacion,
             timestamp: new Date().toISOString()
         };
 
-        // OPTIMISTIC UI: Guardamos inmediatamente de forma local para no depender de la latencia de internet
-        // Esto asegura que la misión desaparezca instantáneamente al cerrar la alerta.
         if (!window.baseDeDatosComite.some(r => r.misionId === misionId)) {
             window.baseDeDatosComite.push(registroComite);
         }
@@ -746,12 +759,9 @@
 
     window.cerrarModalExito = function() {
         document.getElementById('success-modal').classList.add('hidden');
-        
-        // Reseteamos el selector al default para obligarlos a elegir otra
         document.getElementById('mision-select').value = "";
         window.cambiarMision(); 
         window.actualizarMisionesDisponibles(); 
-        
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
@@ -774,25 +784,32 @@
         if (!registro) {
             tabla.innerHTML = '<p class="text-center text-gray-500 text-sm italic">Aún no se ha registrado el podio para esta actividad en la base de datos.</p>';
         } else {
-            if (registro.oro) {
+            // Helper para leer db vieja o db nueva
+            const getMedalWinners = (val) => Array.isArray(val) ? val : (val ? [val] : []);
+            
+            const oros = getMedalWinners(registro.oro);
+            const platas = getMedalWinners(registro.plata);
+            const bronces = getMedalWinners(registro.bronce);
+
+            if (oros.length > 0) {
                 tabla.innerHTML += `
                     <div class="flex justify-between items-center p-3 border-2 rounded-lg bg-yellow-100 border-yellow-400 text-yellow-900 shadow-sm mb-2">
-                        <div class="font-bold text-sm flex items-center gap-2"><span class="text-xl">🥇 1º</span> ${registro.oro}</div>
-                        <div class="font-pixel text-[10px] text-yellow-700 bg-yellow-200 px-2 py-1 rounded">+${registro.ptsOro} pts</div>
+                        <div class="font-bold text-sm flex items-center gap-2"><span class="text-xl">🥇 1º</span> ${oros.join(', ')}</div>
+                        <div class="font-pixel text-[10px] text-yellow-700 bg-yellow-200 px-2 py-1 rounded">+${registro.ptsOro} pts c/u</div>
                     </div>`;
             }
-            if (registro.plata) {
+            if (platas.length > 0) {
                 tabla.innerHTML += `
                     <div class="flex justify-between items-center p-3 border-2 rounded-lg bg-gray-100 border-gray-400 text-gray-800 shadow-sm mb-2">
-                        <div class="font-bold text-sm flex items-center gap-2"><span class="text-xl">🥈 2º</span> ${registro.plata}</div>
-                        <div class="font-pixel text-[10px] text-gray-600 bg-gray-200 px-2 py-1 rounded">+${registro.ptsPlata} pts</div>
+                        <div class="font-bold text-sm flex items-center gap-2"><span class="text-xl">🥈 2º</span> ${platas.join(', ')}</div>
+                        <div class="font-pixel text-[10px] text-gray-600 bg-gray-200 px-2 py-1 rounded">+${registro.ptsPlata} pts c/u</div>
                     </div>`;
             }
-            if (registro.bronce) {
+            if (bronces.length > 0) {
                 tabla.innerHTML += `
                     <div class="flex justify-between items-center p-3 border-2 rounded-lg bg-orange-100 border-orange-400 text-orange-900 shadow-sm mb-2">
-                        <div class="font-bold text-sm flex items-center gap-2"><span class="text-xl">🥉 3º</span> ${registro.bronce}</div>
-                        <div class="font-pixel text-[10px] text-orange-700 bg-orange-200 px-2 py-1 rounded">+${registro.ptsBronce} pts</div>
+                        <div class="font-bold text-sm flex items-center gap-2"><span class="text-xl">🥉 3º</span> ${bronces.join(', ')}</div>
+                        <div class="font-pixel text-[10px] text-orange-700 bg-orange-200 px-2 py-1 rounded">+${registro.ptsBronce} pts c/u</div>
                     </div>`;
             }
             if (registro.participantes && registro.participantes.length > 0) {
@@ -827,9 +844,16 @@
         listaEquipos.forEach(eq => puntajesGlobales[eq] = 0);
 
         window.baseDeDatosComite.forEach(registro => {
-            if (registro.oro) puntajesGlobales[registro.oro] += (registro.ptsOro || 0);
-            if (registro.plata) puntajesGlobales[registro.plata] += (registro.ptsPlata || 0);
-            if (registro.bronce) puntajesGlobales[registro.bronce] += (registro.ptsBronce || 0);
+            const getMedalWinners = (val) => Array.isArray(val) ? val : (val ? [val] : []);
+            
+            const oros = getMedalWinners(registro.oro);
+            const platas = getMedalWinners(registro.plata);
+            const bronces = getMedalWinners(registro.bronce);
+
+            oros.forEach(eq => puntajesGlobales[eq] += (registro.ptsOro || 0));
+            platas.forEach(eq => puntajesGlobales[eq] += (registro.ptsPlata || 0));
+            bronces.forEach(eq => puntajesGlobales[eq] += (registro.ptsBronce || 0));
+
             if (registro.participantes && Array.isArray(registro.participantes)) {
                 registro.participantes.forEach(participante => {
                     puntajesGlobales[participante] += (registro.ptsParticipacion || 0);
@@ -842,7 +866,6 @@
             return { nombre: equipo, puntos: puntajesGlobales[equipo] };
         }).sort((a, b) => b.puntos - a.puntos);
 
-        // Variables para controlar empates
         let rankActual = 1;
         let puntosAnteriores = -1;
 
@@ -894,5 +917,4 @@
 </script>
 </body>
 </html>
-
 
