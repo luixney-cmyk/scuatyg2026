@@ -303,9 +303,28 @@
 
         // Sumar puntos
         registrosNube.forEach(registro => {
-            if (registro.oro) { let eq = equiposProcesados.find(t => t.name === registro.oro); if (eq) eq.points += (registro.ptsOro || 0); }
-            if (registro.plata) { let eq = equiposProcesados.find(t => t.name === registro.plata); if (eq) eq.points += (registro.ptsPlata || 0); }
-            if (registro.bronce) { let eq = equiposProcesados.find(t => t.name === registro.bronce); if (eq) eq.points += (registro.ptsBronce || 0); }
+            // Helper para leer base de datos vieja (texto) o nueva (arreglo para empates)
+            const getMedalWinners = (val) => Array.isArray(val) ? val : (val ? [val] : []);
+
+            const oros = getMedalWinners(registro.oro);
+            const platas = getMedalWinners(registro.plata);
+            const bronces = getMedalWinners(registro.bronce);
+
+            oros.forEach(equipoNombre => {
+                let eq = equiposProcesados.find(t => t.name === equipoNombre);
+                if (eq) eq.points += (registro.ptsOro || 0);
+            });
+            
+            platas.forEach(equipoNombre => {
+                let eq = equiposProcesados.find(t => t.name === equipoNombre);
+                if (eq) eq.points += (registro.ptsPlata || 0);
+            });
+            
+            bronces.forEach(equipoNombre => {
+                let eq = equiposProcesados.find(t => t.name === equipoNombre);
+                if (eq) eq.points += (registro.ptsBronce || 0);
+            });
+
             if (registro.participantes && Array.isArray(registro.participantes)) {
                 registro.participantes.forEach(participante => {
                     let eq = equiposProcesados.find(t => t.name === participante);
