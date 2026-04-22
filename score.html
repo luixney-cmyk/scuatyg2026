@@ -211,7 +211,7 @@
     const currentAppId = typeof __app_id !== 'undefined' ? __app_id : 'scuatyg2026-app';
     const baseUrl = "https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/";
 
-    // --- BASE DE DATOS DE EQUIPOS (Ahora con imágenes incluidas) ---
+    // --- BASE DE DATOS DE EQUIPOS ---
     const baseTeamsInfo = [
         { name: "Mario", color: "bg-red-600", border: "border-red-800", text: "text-white", img: "mario.png" },
         { name: "Peach", color: "bg-pink-400", border: "border-pink-600", text: "text-white", img: "peach.png" },
@@ -226,7 +226,7 @@
     let db = null, auth = null;
     let globalTeamsData = []; 
 
-    // --- FUNCIÓN PRINCIPAL PARA PROCESAR DATOS ---
+    // --- FUNCIÓN PRINCIPAL PARA PROCESAR DATOS (Soporte para Empates) ---
     const procesarDatosDeNube = (registrosNube) => {
         let equiposProcesados = baseTeamsInfo.map(t => ({
             ...t, 
@@ -235,27 +235,37 @@
         }));
 
         registrosNube.forEach(registro => {
-            if (registro.oro) {
-                let eq = equiposProcesados.find(t => t.name === registro.oro);
+            // Helper para soportar bases de datos viejas (string) y nuevas (array de empates)
+            const getMedalWinners = (val) => Array.isArray(val) ? val : (val ? [val] : []);
+
+            const oros = getMedalWinners(registro.oro);
+            const platas = getMedalWinners(registro.plata);
+            const bronces = getMedalWinners(registro.bronce);
+
+            oros.forEach(equipoNombre => {
+                let eq = equiposProcesados.find(t => t.name === equipoNombre);
                 if (eq) {
                     eq.points += (registro.ptsOro || 0);
                     eq.missions.push({ title: registro.titulo, place: 1, pts: registro.ptsOro });
                 }
-            }
-            if (registro.plata) {
-                let eq = equiposProcesados.find(t => t.name === registro.plata);
+            });
+
+            platas.forEach(equipoNombre => {
+                let eq = equiposProcesados.find(t => t.name === equipoNombre);
                 if (eq) {
                     eq.points += (registro.ptsPlata || 0);
                     eq.missions.push({ title: registro.titulo, place: 2, pts: registro.ptsPlata });
                 }
-            }
-            if (registro.bronce) {
-                let eq = equiposProcesados.find(t => t.name === registro.bronce);
+            });
+
+            bronces.forEach(equipoNombre => {
+                let eq = equiposProcesados.find(t => t.name === equipoNombre);
                 if (eq) {
                     eq.points += (registro.ptsBronce || 0);
                     eq.missions.push({ title: registro.titulo, place: 3, pts: registro.ptsBronce });
                 }
-            }
+            });
+
             if (registro.participantes && Array.isArray(registro.participantes)) {
                 registro.participantes.forEach(participante => {
                     let eq = equiposProcesados.find(t => t.name === participante);
@@ -267,9 +277,19 @@
             }
         });
 
+        // Ordenar por puntos (mayor a menor)
         equiposProcesados.sort((a, b) => b.points - a.points);
-        globalTeamsData = equiposProcesados;
         
+        // Calcular el Rank real permitiendo empates en el puntaje global
+        let rankActual = 1;
+        let puntosAnteriores = -1;
+        equiposProcesados.forEach((equipo, index) => {
+            if (equipo.points !== puntosAnteriores) { rankActual = index + 1; }
+            equipo.rank = rankActual;
+            puntosAnteriores = equipo.points;
+        });
+
+        globalTeamsData = equiposProcesados;
         renderizarTabla();
     };
 
@@ -282,8 +302,8 @@
 
         if (globalTeamsData.length === 0) return;
 
-        globalTeamsData.forEach((team, index) => {
-            const rank = index + 1;
+        globalTeamsData.forEach((team) => {
+            const rank = team.rank; // Utilizamos el rank calculado que soporta empates globales
             let rankColor = "text-orange-500"; 
             let suffix = "th";
             
@@ -453,4 +473,3 @@
 </script>
 </body>
 </html>
-
