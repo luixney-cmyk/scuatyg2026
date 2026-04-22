@@ -221,16 +221,6 @@
         </div>
 
         <form id="evaluacion-form" class="space-y-6 text-center">
-            <div id="contenedor-fase-drag" class="hidden bg-pink-50 p-4 border-4 border-pink-400 rounded relative shadow-sm text-center">
-                <label class="block font-pixel text-pink-800 text-[8px] mb-2 uppercase text-center">Fase del Concurso:</label>
-                <select id="categoria-select" onchange="window.cambiarFaseDrag()" class="w-full border-2 border-black p-2 font-bold text-gray-800 text-sm bg-white text-center">
-                    <option value="pasarela">1. Pasarela</option>
-                    <option value="show">2. Show / Performance</option>
-                    <option value="lipsync">3. Lipsync General</option>
-                    <option value="lipsync_final">4. Gran Final Top 3</option>
-                </select>
-            </div>
-
             <div class="bg-yellow-50 p-4 border-4 border-yellow-400 rounded relative text-center">
                 <label class="block font-pixel text-yellow-800 text-[8px] mb-2 uppercase text-center">Select Character:</label>
                 <select id="equipo-select" onchange="window.actualizarEquiposDisponibles()" class="w-full border-2 border-black p-2 font-bold text-gray-800 text-sm bg-white text-center">
@@ -244,7 +234,6 @@
                     <option value="Boo (Azul)">Boo (Azul)</option>
                     <option value="Huesitos (Gris)">Huesitos (Gris)</option>
                 </select>
-                <p id="aviso-lipsync" class="hidden text-[8px] font-bold text-red-600 mt-2 uppercase text-center">* Calificando solo a las 3 mejores puntuaciones acumuladas</p>
             </div>
 
             <div id="rubrica-container" class="space-y-4 pt-4 border-t-4 border-dashed border-gray-200 text-center">
@@ -345,12 +334,8 @@
         "UkFNT1MxMg==": { nombre: "Dr Jeraar Atahualpa Ramos", avatar: "🍕", mision: "m14", juezId: "J4" },
         
         "TUFSSU8xOA==": { nombre: "Mtro Mario Jauregui", avatar: "🚗", mision: "m19", juezId: "J1" },
-        "REFMSUExOA==": { nombre: "Mtra Dalia Alcaraz", avatar: "🏎️", mision: "m19", juezId: "J2" },
+        "REFMSUExOA==": { nombre: "Mtra Ena Janeth Gomez", avatar: "🏎️", mision: "m19", juezId: "J2" },
         "QU5UT05JTzE4": { nombre: "Mtro Antonio Cabello Sandoval", avatar: "🏁", mision: "m19", juezId: "J3" },
-        
-        "U0lTU1kyMA==": { nombre: "Sissy Hera", avatar: "👑", mision: "m6", juezId: "J1" },
-        "QVRIRU5BMjA=": { nombre: "Athena Steele", avatar: "💅", mision: "m6", juezId: "J2" },
-        "Uk9TQTIw": { nombre: "Rosa Perré", avatar: "✨", mision: "m6", juezId: "J3" },
         
         "VEVTVElHTzI2": { nombre: "Comité (Observador)", avatar: "🕶️", mision: "todas", juezId: "OBS" }
     };
@@ -387,71 +372,10 @@
             {id:"c2", nombre:"Creatividad", icono:"sparkles"},
             {id:"c3", nombre:"Composición (Luces/Audio)", icono:"palette"},
             {id:"c4", nombre:"¿Integró Cosplay?", icono:"person-standing", customRange: [0, 5], labels: {0: "NO", 5: "SÍ"}}
-        ]},
-        "m6": { titulo: "Gala Diva Drag", fases: {
-            "pasarela": [{id:"c1",nombre:"Vestuario",icono:"shirt"},{id:"c2",nombre:"Pasarela",icono:"zap"}],
-            "show": [{id:"c3",nombre:"Performance",icono:"sparkles"},{id:"c4",nombre:"Creatividad",icono:"palette"}],
-            "lipsync": [{id:"c5",nombre:"LipSync",icono:"mic"},{id:"c6",nombre:"Energía",icono:"volume-2"}],
-            "lipsync_final": [{id:"c7",nombre:"Duelo Final",icono:"flame"},{id:"c8",nombre:"Impacto",icono:"crown"}]
-        }}
+        ]}
     };
 
     // --- LÓGICA CORE ---
-
-    window.actualizarFasesDisponibles = function() {
-        if (!window.sesionActual || window.sesionActual.mision !== "m6") return;
-
-        const selectFase = document.getElementById('categoria-select');
-        const valorActual = selectFase.value;
-        const totalEquipos = window.obtenerTotalEquiposMenu();
-
-        // 1. Obtener los votos del JUEZ ACTUAL
-        const misVotos = window.baseDeDatosVotos.filter(v => v.mision === "m6" && v.juez === window.sesionActual.juezId);
-        const completadas = {
-            pasarela: misVotos.filter(v => v.fase === "pasarela").length >= totalEquipos,
-            show: misVotos.filter(v => v.fase === "show").length >= totalEquipos,
-            lipsync: misVotos.filter(v => v.fase === "lipsync").length >= totalEquipos
-        };
-
-        // 2. Comprobar si TODAS las juezas ya calificaron las 3 fases
-        const votosGlobalesM6 = window.baseDeDatosVotos.filter(v => v.mision === "m6" && ['pasarela', 'show', 'lipsync'].includes(v.fase));
-        const todasLasJuezasTerminaron = votosGlobalesM6.length >= (totalEquipos * 3 * 3); // 8 equipos * 3 juezas * 3 fases = 72
-
-        selectFase.innerHTML = ''; 
-
-        // 3. Ocultar dinámicamente las fases ya calificadas por este juez
-        if (!completadas.pasarela) selectFase.innerHTML += '<option value="pasarela">1. Pasarela</option>';
-        if (!completadas.show) selectFase.innerHTML += '<option value="show">2. Show / Performance</option>';
-        if (!completadas.lipsync) selectFase.innerHTML += '<option value="lipsync">3. Lipsync General</option>';
-
-        // 4. Lógica de Lipsync Final (Top 3)
-        if (todasLasJuezasTerminaron) {
-            selectFase.innerHTML += '<option value="lipsync_final">4. Gran Final Top 3</option>';
-        } else if (completadas.pasarela && completadas.show && completadas.lipsync) {
-            selectFase.innerHTML += '<option value="esperando">-- Esperando a las demás Juezas --</option>';
-        }
-
-        // Mantener la fase que estaba seleccionada o elegir la primera disponible
-        let opcionEncontrada = Array.from(selectFase.options).find(opt => opt.value === valorActual);
-        if (opcionEncontrada) {
-            selectFase.value = valorActual;
-        } else if (selectFase.options.length > 0) {
-            selectFase.selectedIndex = 0;
-        }
-
-        // Bloqueo de UI si estamos esperando
-        const esperando = selectFase.value === "esperando";
-        document.getElementById('equipo-select').disabled = esperando;
-        if (esperando) {
-            document.getElementById('criterios-dinamicos').innerHTML = '<div class="bg-red-50 p-4 border-2 border-red-400 rounded-lg shadow-sm text-center"><i data-lucide="clock" class="w-8 h-8 mx-auto text-red-500 mb-2 animate-pulse"></i><p class="text-xs text-red-600 font-bold uppercase">Sincronizando...<br>Faltan juezas por terminar de calificar las primeras 3 fases.</p></div>';
-            document.querySelector('button[onclick="window.enviarCalificacion()"]').classList.add('hidden');
-            document.getElementById('observaciones').disabled = true;
-            lucide.createIcons();
-        } else {
-            document.querySelector('button[onclick="window.enviarCalificacion()"]').classList.remove('hidden');
-            document.getElementById('observaciones').disabled = false;
-        }
-    };
 
     // Función global para saber si todos los jueces de una misión han terminado
     window.todasLasJuezasTerminaronMision = function() {
@@ -462,14 +386,8 @@
         const totalJueces = Object.values(accesosJueces).filter(j => j.mision === mId).length;
         const totalEquipos = window.obtenerTotalEquiposMenu();
 
-        if (mId === "m6") {
-            const votosGlobalesM6 = window.baseDeDatosVotos.filter(v => v.mision === mId);
-            // 24 votos (fases base) + 3 votos (lipsync_final) = 27 votos requeridos por cada juez
-            return votosGlobalesM6.length >= (27 * totalJueces);
-        } else {
-            const votosGlobales = window.baseDeDatosVotos.filter(v => v.mision === mId);
-            return votosGlobales.length >= (totalEquipos * totalJueces);
-        }
+        const votosGlobales = window.baseDeDatosVotos.filter(v => v.mision === mId);
+        return votosGlobales.length >= (totalEquipos * totalJueces);
     };
 
     async function initFirebase() {
@@ -481,7 +399,6 @@
                     window.baseDeDatosVotos = [];
                     snapshot.forEach(doc => window.baseDeDatosVotos.push({ id: doc.id, ...doc.data() }));
                     if (window.sesionActual) {
-                        if (window.sesionActual.mision === "m6") window.actualizarFasesDisponibles();
                         window.cargarCriterios();
                         window.actualizarProgreso(); 
                         window.actualizarEquiposDisponibles();
@@ -518,7 +435,6 @@
     window.validarMisionCompletada = function() {
         if (!window.sesionActual || window.sesionActual.mision === "todas") return false;
         const misVotos = window.baseDeDatosVotos.filter(v => v.mision === window.sesionActual.mision && v.juez === window.sesionActual.juezId);
-        if (window.sesionActual.mision === "m6") return misVotos.length >= 27;
         const equiposCalificados = [...new Set(misVotos.map(v => v.equipo))];
         return equiposCalificados.length >= window.obtenerTotalEquiposMenu();
     };
@@ -608,10 +524,6 @@
                 document.getElementById('vista-testigo').classList.add('hidden');
                 document.getElementById('evaluacion-form').classList.remove('hidden');
                 document.getElementById('barra-progreso-cont').classList.remove('hidden');
-                if(window.sesionActual.mision === "m6") {
-                    document.getElementById('contenedor-fase-drag').classList.remove('hidden');
-                    window.actualizarFasesDisponibles();
-                }
                 window.cargarCriterios(); window.actualizarProgreso(); window.actualizarEquiposDisponibles();
             }
         } else { document.getElementById('error-login').classList.remove('hidden'); }
@@ -641,30 +553,20 @@
         location.reload(); 
     };
     
-    window.cambiarFaseDrag = function() { 
-        if (window.sesionActual.mision === "m6") window.actualizarFasesDisponibles();
-        window.cargarCriterios(); 
-        window.actualizarEquiposDisponibles(); 
-        window.actualizarProgreso(); 
-    };
-    
     window.cargarCriterios = function() { 
         const cont = document.getElementById('criterios-dinamicos'); 
         const mision = configuracionMisiones[window.sesionActual.mision]; 
         if(!mision) return; 
-        const fase = window.sesionActual.mision === "m6" ? document.getElementById('categoria-select').value : null; 
-        
-        if (fase === "esperando") return; 
 
         cont.innerHTML = ''; 
-        const criterios = fase ? mision.fases[fase] : mision.criterios; 
+        const criterios = mision.criterios; 
         criterios.forEach(crit => { 
             let rs = ''; const range = crit.customRange || [1,2,3,4,5,6,7,8,9,10]; 
             range.forEach(i => { 
                 const label = (crit.labels || {})[i] || i; 
                 rs += `<div><input type="radio" name="${crit.id}" id="${crit.id}-${i}" value="${i}" class="hidden score-radio ${i===0?'score-radio-zero':''}" onclick="playSound('coin')"><label for="${crit.id}-${i}" class="block border-2 border-gray-300 py-2 rounded font-bold text-gray-600 text-[10px] cursor-pointer bg-white transition-all uppercase text-center">${label}</label></div>`; 
             }); 
-            cont.innerHTML += `<div class="bg-gray-50 p-3 border-2 border-gray-200 rounded-lg shadow-sm text-center"><label class="flex flex-col items-center font-bold text-[10px] text-gray-800 mb-3 uppercase tracking-tighter justify-center text-center"><span class="flex items-center text-center justify-center"><i data-lucide="${crit.icono}" class="w-4 h-4 mr-2 ${window.sesionActual.mision==='m6'?'text-pink-600':'text-blue-600'}"></i> ${crit.nombre}</span>${crit.desc ? `<span class="text-[8px] text-gray-500 mt-1">${crit.desc}</span>` : ''}</label><div class="grid ${range.length>6?'grid-cols-5':'grid-cols-2'} gap-2">${rs}</div></div>`; 
+            cont.innerHTML += `<div class="bg-gray-50 p-3 border-2 border-gray-200 rounded-lg shadow-sm text-center"><label class="flex flex-col items-center font-bold text-[10px] text-gray-800 mb-3 uppercase tracking-tighter justify-center text-center"><span class="flex items-center text-center justify-center"><i data-lucide="${crit.icono}" class="w-4 h-4 mr-2 text-blue-600"></i> ${crit.nombre}</span>${crit.desc ? `<span class="text-[8px] text-gray-500 mt-1">${crit.desc}</span>` : ''}</label><div class="grid ${range.length>6?'grid-cols-5':'grid-cols-2'} gap-2">${rs}</div></div>`; 
         }); 
         lucide.createIcons(); 
     };
@@ -672,17 +574,12 @@
     window.actualizarEquiposDisponibles = function() { 
         if (!window.sesionActual || window.sesionActual.mision === "todas") return; 
         const select = document.getElementById('equipo-select'); 
-        const fase = window.sesionActual.mision === "m6" ? document.getElementById('categoria-select').value : "general"; 
-        let top3 = []; if(fase === "lipsync_final") { 
-            const totals = {}; window.baseDeDatosVotos.filter(v => v.mision === "m6" && (v.fase === "pasarela" || v.fase === "show" || v.fase === "lipsync")).forEach(v => { totals[v.equipo] = (totals[v.equipo] || 0) + v.puntos; }); 
-            top3 = Object.keys(totals).map(e => ({n:e, p:totals[e]})).sort((a,b)=>b.p-a.p).slice(0,3).map(x=>x.n); 
-            document.getElementById('aviso-lipsync').classList.remove('hidden'); 
-        } else document.getElementById('aviso-lipsync').classList.add('hidden'); 
+
         Array.from(select.options).forEach(opt => { 
             if (opt.value !== "") { 
-                const ya = window.baseDeDatosVotos.some(v => v.mision === window.sesionActual.mision && v.fase === fase && v.equipo === opt.value && v.juez === window.sesionActual.juezId); 
-                if (fase === "lipsync_final" && !top3.includes(opt.value)) { opt.disabled = true; opt.style.display = "none"; } 
-                else { opt.disabled = ya; opt.style.display = "block"; } 
+                const ya = window.baseDeDatosVotos.some(v => v.mision === window.sesionActual.mision && v.equipo === opt.value && v.juez === window.sesionActual.juezId); 
+                opt.disabled = ya; 
+                opt.style.display = "block"; 
                 if (ya && !opt.text.includes("✓")) opt.text += " ✓"; else if(!ya) opt.text = opt.text.replace(" ✓", ""); 
             } 
         }); 
@@ -690,9 +587,9 @@
 
     window.actualizarProgreso = function() { 
         if (!window.sesionActual || window.sesionActual.mision === "todas") return; 
-        const total = window.sesionActual.mision === "m6" ? 27 : window.obtenerTotalEquiposMenu(); 
+        const total = window.obtenerTotalEquiposMenu(); 
         const misVotos = window.baseDeDatosVotos.filter(v => v.mision === window.sesionActual.mision && v.juez === window.sesionActual.juezId); 
-        const calificados = window.sesionActual.mision === "m6" ? misVotos.length : [...new Set(misVotos.map(v => v.equipo))].length; 
+        const calificados = [...new Set(misVotos.map(v => v.equipo))].length; 
         const porc = total > 0 ? Math.min((calificados / total) * 100, 100) : 0; 
         document.getElementById('progress-bar').style.width = porc + '%'; 
         document.getElementById('progress-text').innerText = `Progress: ${calificados}/${total}`; 
@@ -700,14 +597,13 @@
 
     window.enviarCalificacion = async function() { 
         const equipo = document.getElementById('equipo-select').value; if (!equipo) return alert("Selecciona equipo"); 
-        const fase = window.sesionActual.mision === "m6" ? document.getElementById('categoria-select').value : "general"; 
         const m = configuracionMisiones[window.sesionActual.mision]; 
-        const criteria = fase !== "general" ? m.fases[fase] : m.criterios; 
+        const criteria = m.criterios; 
         let total = 0, todas = true; 
         criteria.forEach(c => { const val = document.querySelector(`input[name="${c.id}"]:checked`); if (val) total += parseInt(val.value); else todas = false; }); 
         if (!todas) return alert("Faltan criterios"); 
         try { 
-            await addDoc(coleccionVotos, { mision: window.sesionActual.mision, fase: fase, juez: window.sesionActual.juezId, juezNombre: window.sesionActual.nombre, equipo: equipo, puntos: total, notas: document.getElementById('observaciones').value, timestamp: new Date().toISOString() }); 
+            await addDoc(coleccionVotos, { mision: window.sesionActual.mision, fase: "general", juez: window.sesionActual.juezId, juezNombre: window.sesionActual.nombre, equipo: equipo, puntos: total, notas: document.getElementById('observaciones').value, timestamp: new Date().toISOString() }); 
             playSound('powerup'); 
             
             document.getElementById('success-modal').classList.remove('hidden');
@@ -717,20 +613,7 @@
     window.cerrarModalExito = function() { 
         document.getElementById('success-modal').classList.add('hidden'); 
         
-        let faseGuardada = null;
-        if (window.sesionActual && window.sesionActual.mision === "m6") {
-            faseGuardada = document.getElementById('categoria-select').value;
-        }
-        
         document.getElementById('evaluacion-form').reset(); 
-        
-        if (faseGuardada) {
-            document.getElementById('categoria-select').value = faseGuardada;
-        }
-        
-        if (window.sesionActual && window.sesionActual.mision === "m6") {
-            window.actualizarFasesDisponibles(); 
-        }
         
         window.cargarCriterios();
         window.actualizarEquiposDisponibles(); 
@@ -783,16 +666,17 @@
                         document.getElementById('selector-ranking-mision').classList.remove('hidden');
                         s.innerHTML = ''; Object.entries(configuracionMisiones).forEach(([k,v]) => s.innerHTML += `<option value="${k}">${v.titulo}</option>`);
                     } else {
-                        if(window.sesionActual.mision === "m6") {
-                            document.getElementById('contenedor-fase-drag').classList.remove('hidden');
-                            window.actualizarFasesDisponibles();
-                        }
                         window.cargarCriterios(); window.actualizarProgreso(); window.actualizarEquiposDisponibles(); 
                     }
                 }
             });
         }
     }
+    initApp();
+    lucide.createIcons();
+</script>
+</body>
+</html>
     initApp();
     lucide.createIcons();
 </script>
