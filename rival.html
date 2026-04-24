@@ -204,7 +204,7 @@
 
         const MYSTERY_BOX_POOL = [
           ...Array(5).fill({ id: 'turbo', name: 'Turbo', icon: '🍄', color: 'bg-red-500', desc: 'Próximo acierto = +2 casillas.' }),
-          ...Array(6).fill({ id: 'banana', name: 'Plátano', icon: '🍌', color: 'bg-yellow-500', desc: 'Elige y congela a un rival al azar.' }),
+          ...Array(6).fill({ id: 'banana', name: 'Plátano', icon: '🍌', color: 'bg-yellow-500', desc: 'Elige y congela a un rival.' }),
           ...Array(6).fill({ id: 'shell', name: 'Caparazón', icon: '🐢', color: 'bg-red-600', desc: 'Ataca al 1er lugar (-1 casilla).' }),
           ...Array(2).fill({ id: 'star', name: 'Estrella', icon: '⭐', color: 'bg-yellow-300', desc: 'Avanza aunque falles O te protege de 1 ataque.' }),
           ...Array(1).fill({ id: 'lightning', name: 'Rayo Simple', icon: '⚡', color: 'bg-blue-500', desc: '¡Los demás retroceden una casilla!' }),
@@ -216,7 +216,7 @@
           currentQuestion: '',
           hostAnswerHint: '',
           questionAudio: null,
-          questionImage: null, // NUEVO CAMPO PARA IMÁGENES
+          questionImage: null, 
           deadline: 0,
           rouletteQueue: [], 
           activeRoulette: { teamId: null, spinning: false, item: null, targetId: null },
@@ -308,10 +308,16 @@
                 if (data.status === 'host_evaluating' && (!prevState || prevState.status !== 'host_evaluating')) playSound('timeUp');
                 if (data.status === 'finished' && (!prevState || prevState.status !== 'finished')) playSound('win');
 
-                if (role === 'player' && data.status !== 'question_active') {
-                  setHasSubmitted(false);
-                  setPlayerAnswerInput('');
-                  setPunishTarget(""); 
+                if (role === 'player') {
+                    // CORRECCIÓN BUG PLÁTANO: Solo limpiar el texto si no estamos en pregunta, 
+                    // y solo limpiar el dropdown del ítem si salimos de la ruleta.
+                    if (data.status !== 'question_active') {
+                        setHasSubmitted(false);
+                        setPlayerAnswerInput('');
+                    }
+                    if (data.status !== 'roulette_active') {
+                        setPunishTarget(""); 
+                    }
                 }
                 
                 prevStateRef.current = data;
@@ -518,7 +524,7 @@
               currentQuestion: randomQ.q,
               hostAnswerHint: randomQ.a,
               questionAudio: randomQ.audio || null, 
-              questionImage: randomQ.image || null, // SI TIENE IMAGEN
+              questionImage: randomQ.image || null,
               deadline: Date.now() + 21000, 
               usedQuestions: [...usedQuestionsArray, randomQ.originalIndex] 
             };
@@ -559,7 +565,6 @@
             setIsProcessing(false);
           };
 
-          // NUEVA FUNCIÓN: LANZAR PREGUNTAS DE IMAGEN
           const launchImageQuestion = async () => {
             if(isProcessing) return;
             setIsProcessing(true);
@@ -718,12 +723,10 @@
                  else newTeams[victimId].frozen = true;
               }
             } else if (item.id === 'shell') {
+              // CORRECCIÓN CAPARAZÓN: Aplica automáticamente al que va en 1er lugar
               playSound('shell');
-              if (targetId && newTeams[targetId]) {
-                 if (newTeams[targetId].star) newTeams[targetId].star = false;
-                 else newTeams[targetId].pos = Math.max(0, newTeams[targetId].pos - 1);
-              } else {
-                 const maxPos = Math.max(...Object.values(newTeams).map(t => t.pos));
+              const maxPos = Math.max(...Object.values(newTeams).map(t => t.pos));
+              if (maxPos > 0) {
                  const leaders = Object.keys(newTeams).filter(id => newTeams[id].pos === maxPos && String(id) !== String(teamId));
                  leaders.forEach(lId => {
                     if (newTeams[lId].star) newTeams[lId].star = false;
@@ -1270,9 +1273,10 @@
                                </div>
                                <h3 className="text-3xl font-black text-white mb-6 uppercase">{gameState.activeRoulette.item.name}</h3>
                                
-                               {(gameState.activeRoulette.item.id === 'banana' || gameState.activeRoulette.item.id === 'shell') && availableRivals.length > 0 && (
+                               {/* === LÓGICA REPARADA: SOLO PARA EL PLÁTANO === */}
+                               {gameState.activeRoulette.item.id === 'banana' && availableRivals.length > 0 && (
                                   <div className="mb-6 w-full text-left bg-gray-950 p-4 rounded-2xl border border-yellow-600/50">
-                                     <p className="text-yellow-400 font-bold uppercase text-sm mb-2">Selecciona a quién castigar:</p>
+                                     <p className="text-yellow-400 font-bold uppercase text-sm mb-2">Selecciona a quién congelar:</p>
                                      <select value={punishTarget} onChange={e=>updatePunishTargetToDB(e.target.value)} className="w-full p-4 bg-black border border-gray-700 rounded-xl text-white font-bold text-xl focus:border-yellow-500 focus:outline-none">
                                         <option value="" disabled>-- Elige un rival --</option>
                                         {availableRivals.map(t => (
@@ -1282,14 +1286,38 @@
                                   </div>
                                )}
                                
+                               {/* === LÓGICA NUEVA: CAPARAZÓN (AUTOMÁTICO) === */}
+                               {gameState.activeRoulette.item.id === 'shell' && (() => {
+                                  const maxPos = Math.max(...Object.values(gameState.teams).map(t => t.pos));
+                                  const leaders = Object.keys(gameState.teams).filter(id => gameState.teams[id].pos === maxPos && String(id) !== String(myTeamId) && gameState.teams[id].pos > 0);
+                                  
+                                  if (leaders.length > 0) {
+                                      const leaderNames = leaders.map(id => TEAMS_INFO[id].name).join(' y ');
+                                      return (
+                                          <div className="mb-6 w-full text-center bg-red-900/30 p-4 rounded-2xl border-2 border-red-500">
+                                              <p className="text-red-400 font-bold uppercase text-sm mb-2">Objetivo Automático (1er Lugar):</p>
+                                              <p className="text-2xl text-white font-black uppercase">¡Atacas a {leaderNames}!</p>
+                                          </div>
+                                      );
+                                  } else {
+                                      return (
+                                          <div className="mb-6 w-full text-center bg-gray-900 p-4 rounded-2xl border-2 border-gray-600">
+                                              <p className="text-gray-400 font-bold uppercase text-sm mb-2">Objetivo Automático:</p>
+                                              <p className="text-xl text-gray-500 font-bold uppercase">Nadie va adelante aún...</p>
+                                          </div>
+                                      );
+                                  }
+                               })()}
+
                                {(gameState.activeRoulette.item.id === 'banana' || gameState.activeRoulette.item.id === 'shell') && availableRivals.length === 0 && (
                                   <p className="text-gray-400 mb-6 font-bold">Aún no hay rivales a los qué atacar...</p>
                                )}
 
+                               {/* LÓGICA DE BOTÓN CORREGIDA */}
                                <button 
-                                  disabled={isProcessing || ((gameState.activeRoulette.item.id === 'banana' || gameState.activeRoulette.item.id === 'shell') && availableRivals.length > 0 && !punishTarget)} 
-                                  onClick={() => resolveItemEffect(gameState.activeRoulette.teamId, gameState.activeRoulette.item, punishTarget)} 
-                                  className={`w-full py-5 text-white font-black text-2xl uppercase rounded-2xl shadow-[0_8px_0_rgba(21,128,61,1)] transition-all ${(isProcessing || ((gameState.activeRoulette.item.id === 'banana' || gameState.activeRoulette.item.id === 'shell') && availableRivals.length > 0 && !punishTarget)) ? 'bg-gray-600 cursor-not-allowed shadow-none' : 'bg-green-600 active:bg-green-800 active:translate-y-2 active:shadow-none cursor-pointer'}`}
+                                  disabled={isProcessing || (gameState.activeRoulette.item.id === 'banana' && availableRivals.length > 0 && !punishTarget)} 
+                                  onClick={() => resolveItemEffect(gameState.activeRoulette.teamId, gameState.activeRoulette.item, gameState.activeRoulette.item.id === 'banana' ? punishTarget : null)} 
+                                  className={`w-full py-5 text-white font-black text-2xl uppercase rounded-2xl shadow-[0_8px_0_rgba(21,128,61,1)] transition-all ${(isProcessing || (gameState.activeRoulette.item.id === 'banana' && availableRivals.length > 0 && !punishTarget)) ? 'bg-gray-600 cursor-not-allowed shadow-none' : 'bg-green-600 active:bg-green-800 active:translate-y-2 active:shadow-none cursor-pointer'}`}
                                >
                                  ¡Usar Ítem!
                                </button>
