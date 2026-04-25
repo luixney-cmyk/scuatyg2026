@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Semana Cultural UATyG 2026</title>
+    <title>Clausura - Super Semana Cultural UATyG 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Fredoka:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -27,32 +27,6 @@
             position: relative;
             background: white;
             box-shadow: 8px 8px 0px rgba(0,0,0,1);
-        }
-
-        .nes-btn {
-            border: 4px solid black;
-            transition: all 0.1s;
-            box-shadow: 4px 4px 0px black;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-        .nes-btn:active {
-            transform: translate(4px, 4px);
-            box-shadow: 0px 0px 0px black;
-        }
-
-        /* Textura de Ladrillos de Mario para Zona Staff */
-        .brick-bg {
-            background-color: #b83618;
-            background-image: 
-                linear-gradient(335deg, rgba(0,0,0,0.1) 23px, transparent 23px),
-                linear-gradient(155deg, rgba(0,0,0,0.1) 23px, transparent 23px),
-                linear-gradient(335deg, rgba(0,0,0,0.1) 23px, transparent 23px),
-                linear-gradient(155deg, rgba(0,0,0,0.1) 23px, transparent 23px);
-            background-size: 58px 58px;
         }
 
         /* Colores del Podio */
@@ -113,7 +87,7 @@
             </div>
             <div class="flex items-center gap-4">
                 <a href="score.html" class="text-yellow-300 font-pixel text-[10px] md:text-xs hover:text-white transition-colors no-underline flex items-center gap-1 blink">
-                    <i data-lucide="bar-chart-2" class="w-4 h-4"></i> TABLA DETALLADA
+                    <i data-lucide="bar-chart-2" class="w-4 h-4"></i> VER DETALLES
                 </a>
             </div>
         </div>
@@ -148,18 +122,26 @@
 
     <main class="container mx-auto mt-8 px-4 max-w-4xl">
         
-        <!-- ACCESOS RÁPIDOS (Actividades y Cronograma) -->
-        <div class="grid grid-cols-2 gap-4 mb-8">
-            <!-- Botón Actividades -->
-            <a href="actividades.html" class="nes-btn bg-green-500 text-white font-pixel py-4 px-2 hover:bg-green-400 no-underline text-[9px] md:text-xs flex-col">
-                <i data-lucide="clipboard-list" class="w-8 h-8 md:w-10 md:h-10 mb-2 drop-shadow-md"></i>
-                <span>ACTIVIDADES</span>
-            </a>
-            <!-- Botón Cronograma -->
-            <a href="cronograma.html" class="nes-btn bg-yellow-400 text-gray-900 font-pixel py-4 px-2 hover:bg-yellow-300 no-underline text-[9px] md:text-xs flex-col">
-                <i data-lucide="calendar-days" class="w-8 h-8 md:w-10 md:h-10 mb-2 drop-shadow-md"></i>
-                <span>CRONOGRAMA</span>
-            </a>
+        <!-- BANNER DE AGRADECIMIENTO / CLAUSURA -->
+        <div class="bg-white border-4 border-black p-6 md:p-10 rounded-lg shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-center mb-10 relative overflow-hidden">
+            <!-- Iconos decorativos -->
+            <div class="absolute top-[-20px] left-[-20px] opacity-10"><i data-lucide="star" class="w-40 h-40 text-yellow-400 fill-yellow-400"></i></div>
+            <div class="absolute bottom-[-20px] right-[-20px] opacity-10"><i data-lucide="party-popper" class="w-40 h-40 text-red-500"></i></div>
+            
+            <i data-lucide="sparkles" class="w-12 h-12 md:w-16 md:h-16 text-yellow-500 mx-auto mb-4 animate-pulse"></i>
+            
+            <h2 class="font-pixel text-xl md:text-3xl text-red-600 mb-6 drop-shadow-md">¡NIVEL COMPLETADO!</h2>
+            
+            <p class="font-bold text-gray-800 text-base md:text-xl uppercase leading-relaxed relative z-10">
+                Un enorme <span class="text-green-600 font-pixel text-lg md:text-2xl mx-2">GRACIAS</span> a todos por hacer de esta una <br><br>
+                <span class="text-blue-600 font-pixel text-sm md:text-lg block mb-4">SUPER SEMANA CULTURAL UATyG 2026</span>
+            </p>
+            
+            <div class="w-16 h-1 bg-gray-300 mx-auto my-4"></div>
+            
+            <p class="text-xs md:text-sm text-gray-500 font-bold max-w-2xl mx-auto relative z-10">
+                El evento ha concluido y los marcadores son definitivos, pero el espíritu competitivo, el aprendizaje y la convivencia se quedan con nosotros. ¡Nos vemos en el próximo nivel!
+            </p>
         </div>
 
         <!-- Indicador de Offline -->
@@ -172,14 +154,14 @@
         <section class="nes-container bg-gray-900 text-white rounded-lg border-4 border-black p-6 md:p-8 mb-10 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative min-h-[400px]">
             
             <h3 class="font-pixel text-center text-yellow-400 text-sm md:text-base mb-2 flex justify-center items-center gap-2">
-                <span class="w-2 h-2 bg-green-500 rounded-full animate-ping hidden" id="live-dot"></span> LIVE LEADERBOARD
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-ping hidden" id="live-dot"></span> RESULTADOS FINALES
             </h3>
-            <p class="text-center text-xs mb-4 text-gray-400 uppercase">Tabla General de Posiciones</p>
+            <p class="text-center text-xs mb-4 text-gray-400 uppercase">Tabla General de Posiciones - Clausura</p>
 
             <!-- Pantalla de carga inicial -->
             <div id="loading-state" class="absolute inset-0 bg-gray-900 flex flex-col items-center justify-center z-40 rounded-lg loading-pulse">
                 <i data-lucide="joystick" class="w-12 h-12 text-yellow-400 mb-4 animate-bounce"></i>
-                <p class="font-pixel text-white text-xs md:text-sm">SINCRONIZANDO PODIO...</p>
+                <p class="font-pixel text-white text-xs md:text-sm">CARGANDO MARCADOR...</p>
             </div>
 
             <!-- PODIO (1er, 2do y 3er Lugar) -->
@@ -196,7 +178,7 @@
                     <p class="text-left text-[10px] text-gray-400 font-pixel uppercase">
                         <i data-lucide="users" class="w-4 h-4 inline mb-1 text-blue-400"></i> RESTO DE EQUIPOS
                     </p>
-                    <a href="score.html" class="text-[8px] md:text-[10px] font-pixel text-yellow-400 hover:text-yellow-200">VER TODOS ▶</a>
+                    <a href="score.html" class="text-[8px] md:text-[10px] font-pixel text-yellow-400 hover:text-yellow-200">VER TABLA DETALLADA ▶</a>
                 </div>
                 
                 <div id="horizontal-list" class="flex overflow-x-auto gap-3 pb-2 snap-x hide-scrollbar">
@@ -205,32 +187,9 @@
             </div>
         </section>
 
-        <!-- ACCESO AL STAFF (Estilo Ladrillo / Bowser Castle) -->
-        <section class="brick-bg p-6 md:p-8 border-4 border-black rounded shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative">
-            <h3 class="font-pixel text-center text-white text-sm mb-6 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]">
-                STAFF ONLY WARP PIPES
-            </h3>
-            
-            <div class="grid md:grid-cols-2 gap-6">
-                <!-- Botón Jueces -->
-                <a href="jueces.html" class="nes-btn bg-red-600 text-white font-pixel py-6 px-4 gap-3 hover:bg-red-500 no-underline text-xs md:text-sm flex-col h-full bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]">
-                    <i data-lucide="star" class="w-10 h-10 drop-shadow-md fill-white"></i>
-                    PANEL DE JUECES
-                    <span class="text-[8px] font-sans font-bold text-red-200 bg-red-900/50 px-2 py-1 rounded border border-red-800 mt-2">MISIONES CON RÚBRICA</span>
-                </a>
-
-                <!-- Botón Comité -->
-                <a href="comite.html" class="nes-btn bg-blue-600 text-white font-pixel py-6 px-4 gap-3 hover:bg-blue-500 no-underline text-xs md:text-sm flex-col h-full bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]">
-                    <i data-lucide="shield-check" class="w-10 h-10 drop-shadow-md"></i>
-                    PANEL DEL COMITÉ
-                    <span class="text-[8px] font-sans font-bold text-blue-200 bg-blue-900/50 px-2 py-1 rounded border border-blue-800 mt-2">ASIGNACIÓN DE MEDALLAS</span>
-                </a>
-            </div>
-        </section>
-
     </main>
 
-    <footer class="container mx-auto mt-12 px-4 text-center pb-8">
+    <footer class="container mx-auto mt-6 px-4 text-center pb-8">
         <p class="font-pixel text-[10px] md:text-xs text-gray-800 mb-2">COMITÉ ESTUDIANTIL (CETyG)</p>
         <p class="font-pixel text-[8px] md:text-[10px] text-gray-600 mb-2">UNIDAD ACADÉMICA DE TURISMO Y GASTRONOMÍA</p>
         <p class="text-xs font-bold text-blue-800 uppercase">Universidad Autónoma de Nayarit</p>
@@ -259,8 +218,7 @@
     const currentAppId = typeof __app_id !== 'undefined' ? __app_id : 'scuatyg2026-app';
     const baseUrl = "https://raw.githubusercontent.com/luixney-cmyk/scuatyg2026/main/";
 
-    // --- BASE DE DATOS DE EQUIPOS (Ahora con imágenes incluidas) ---
-    // Toad fue omitido intencionalmente ya que no compite en el podio.
+    // --- BASE DE DATOS DE EQUIPOS ---
     const baseTeamsInfo = [
         { name: "Mario", color: "bg-red-600", border: "border-red-800", text: "text-white", img: "mario.png" },
         { name: "Peach", color: "bg-pink-400", border: "border-pink-600", text: "text-white", img: "peach.png" },
@@ -275,7 +233,6 @@
     let db = null, auth = null;
     let globalTeamsData = []; 
 
-    // Función auxiliar para dibujar los avatares apilados con imágenes reales
     function getAvatarsHTML(teamsArr, sizeClass) {
         if(!teamsArr || teamsArr.length === 0) return '';
         
@@ -286,7 +243,7 @@
         
         let html = '<div class="flex flex-wrap justify-center gap-2 z-10 mb-2">';
         teamsArr.forEach(t => {
-            const cacheBuster = "?v=" + new Date().getTime(); // Evitar problemas de caché con github
+            const cacheBuster = "?v=" + new Date().getTime(); 
             html += `
             <div class="${t.color} ${t.border} border-[3px] rounded-full ${avatarClass} flex items-center justify-center shadow-[0_0_10px_rgba(255,255,255,0.4)] overflow-hidden relative" title="${t.name}">
                 <img src="${baseUrl}${t.img}${cacheBuster}" alt="${t.name}" class="w-full h-full object-contain p-1 drop-shadow-[2px_2px_2px_rgba(0,0,0,0.8)] scale-110" onerror="this.onerror=null; this.src='https://placehold.co/50x50?text=${t.name.substring(0,3)}';">
@@ -296,14 +253,10 @@
         return html;
     }
 
-    // --- FUNCIÓN PARA PROCESAR DATOS Y DIBUJAR ---
     const renderizarPodioIndex = (registrosNube) => {
-        // Inicializar puntos de todos los equipos en 0, incluyendo sus imágenes
         let equiposProcesados = baseTeamsInfo.map(t => ({ ...t, points: 0 }));
 
-        // Sumar puntos
         registrosNube.forEach(registro => {
-            // Helper para leer base de datos vieja (texto) o nueva (arreglo para empates)
             const getMedalWinners = (val) => Array.isArray(val) ? val : (val ? [val] : []);
 
             const oros = getMedalWinners(registro.oro);
@@ -333,10 +286,8 @@
             }
         });
 
-        // Ordenar de mayor a menor
         equiposProcesados.sort((a, b) => b.points - a.points);
         
-        // Asignar Ranking Real Matemático (Criterio Olímpico)
         let rankActual = 1;
         let puntosAnteriores = -1;
         equiposProcesados.forEach((equipo, index) => {
@@ -347,13 +298,11 @@
 
         globalTeamsData = equiposProcesados;
 
-        // Ocultar Carga
         document.getElementById('loading-state').classList.add('hidden');
         const podioContainer = document.getElementById('podium-container');
         podioContainer.classList.remove('hidden');
         podioContainer.classList.remove('opacity-0');
 
-        // Si no hay datos (todo en 0), mostrar un mensaje amigable en el podio
         const puntosTotales = globalTeamsData.reduce((sum, team) => sum + team.points, 0);
         if (puntosTotales === 0) {
             podioContainer.innerHTML = `
@@ -366,7 +315,6 @@
             return;
         }
 
-        // Extraer los 3 mejores GRUPOS DE PUNTOS (para rellenar los 3 pilares)
         const distinctScores = [...new Set(globalTeamsData.map(t => t.points).filter(p => p > 0))].sort((a, b) => b - a);
         
         const group1 = distinctScores.length > 0 ? globalTeamsData.filter(t => t.points === distinctScores[0]) : [];
@@ -375,7 +323,6 @@
 
         let podioHTML = '';
 
-        // --- 2DO PILAR (Plata) ---
         if (group2.length > 0) {
             const visual = getAvatarsHTML(group2, 'normal');
             podioHTML += `
@@ -387,9 +334,8 @@
                     <span class="text-[9px] md:text-xs font-bold mt-2 text-gray-800 bg-gray-100 px-2 rounded-full border border-gray-400">${group2[0].points} pts</span>
                 </div>
             </div>`;
-        } else { podioHTML += `<div class="w-1/3 h-28"></div>`; } // Espaciador si no hay nadie
+        } else { podioHTML += `<div class="w-1/3 h-28"></div>`; }
 
-        // --- 1ER PILAR (Oro) ---
         if (group1.length > 0) {
             const visual = getAvatarsHTML(group1, 'large');
             podioHTML += `
@@ -404,7 +350,6 @@
             </div>`;
         }
 
-        // --- 3ER PILAR (Bronce) ---
         if (group3.length > 0) {
             const visual = getAvatarsHTML(group3, 'normal');
             podioHTML += `
@@ -420,7 +365,6 @@
 
         podioContainer.innerHTML = podioHTML;
 
-        // --- DIBUJAR LISTA HORIZONTAL (Los que no están en el podio) ---
         const horizList = document.getElementById('horizontal-list');
         horizList.innerHTML = '';
         
@@ -432,7 +376,6 @@
         } else {
             restoEquipos.forEach((team) => {
                 const cacheBuster = "?v=" + new Date().getTime();
-                // Extracción de la clase bg- para inyectarla como fondo del círculo de la imagen pequeña
                 const bgClass = team.color; 
                 
                 horizList.innerHTML += `
@@ -455,7 +398,6 @@
         lucide.createIcons();
     };
 
-    // --- CONEXIÓN A LA NUBE ---
     const initIndexCloud = async () => {
         let finalConfig = isCanvasEnv ? JSON.parse(__firebase_config) : firebaseConfig;
 
