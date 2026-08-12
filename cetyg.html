@@ -236,30 +236,37 @@
     <!-- ENLACES A PLATAFORMAS (LOS SUB-SITIOS) -->
     <section id="enlaces" class="py-16 bg-gray-50">
         <div class="container mx-auto px-6 max-w-6xl text-center">
-            <h2 class="text-3xl font-bold text-uan-blue mb-4">Nuestras Plataformas</h2>
-            <p class="text-gray-600 mb-10">Visita nuestros sitios oficiales para conocer más de cada evento.</p>
+            <h2 class="text-3xl font-bold text-uan-blue mb-4">Nuestras Plataformas y Eventos</h2>
+            <p class="text-gray-600 mb-10">Visita nuestros sitios oficiales o entérate de nuestras próximas fiestas.</p>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <!-- Semana Cultural -->
-                <a href="https://scuatyg2026.online/" target="_blank" class="block bg-white p-8 rounded-xl shadow-md border-b-4 border-blue-500 hover-scale">
+                <a href="https://scuatyg2026.online/" target="_blank" class="block bg-white p-6 rounded-xl shadow-md border-b-4 border-blue-500 hover-scale">
                     <i data-lucide="layout-dashboard" class="w-12 h-12 text-blue-500 mx-auto mb-4"></i>
                     <h3 class="text-xl font-bold text-gray-800 mb-2">Semana Cultural</h3>
                     <p class="text-sm text-gray-500">Sitio principal del evento</p>
                 </a>
                 
                 <!-- Huertito -->
-                <a href="https://huertouatyg.online/" target="_blank" class="block bg-white p-8 rounded-xl shadow-md border-b-4 border-green-500 hover-scale">
+                <a href="https://huertouatyg.online/" target="_blank" class="block bg-white p-6 rounded-xl shadow-md border-b-4 border-green-500 hover-scale">
                     <i data-lucide="plant" class="w-12 h-12 text-green-500 mx-auto mb-4"></i>
                     <h3 class="text-xl font-bold text-gray-800 mb-2">Huertito Académico</h3>
                     <p class="text-sm text-gray-500">Nuestro espacio ecológico</p>
                 </a>
 
                 <!-- Tzompantli -->
-                <a href="https://tzompantli.online/" target="_blank" class="block bg-white p-8 rounded-xl shadow-md border-b-4 border-orange-500 hover-scale">
+                <a href="https://tzompantli.online/" target="_blank" class="block bg-white p-6 rounded-xl shadow-md border-b-4 border-orange-500 hover-scale">
                     <i data-lucide="flame-kindling" class="w-12 h-12 text-orange-500 mx-auto mb-4"></i>
                     <h3 class="text-xl font-bold text-gray-800 mb-2">Tzompantli</h3>
                     <p class="text-sm text-gray-500">Exposición de Día de Muertos</p>
                 </a>
+
+                <!-- Botón Fiestas (Abre el modal) -->
+                <button onclick="abrirFiestas()" class="block w-full bg-white p-6 rounded-xl shadow-md border-b-4 border-purple-500 hover-scale text-center cursor-pointer">
+                    <i data-lucide="party-popper" class="w-12 h-12 text-purple-500 mx-auto mb-4"></i>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Fiestas</h3>
+                    <p class="text-sm text-gray-500">Próximas celebraciones</p>
+                </button>
             </div>
         </div>
     </section>
@@ -328,9 +335,69 @@
         </div>
     </footer>
 
-    <!-- Script para inicializar íconos Lucide -->
+    <!-- MODAL DE FIESTAS (Sub-página oculta) -->
+    <div id="modal-fiestas" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/80 backdrop-blur-sm transition-opacity">
+        <div class="bg-white w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden relative transform transition-all border-4 border-purple-500">
+            
+            <!-- Encabezado del Modal -->
+            <div class="bg-gradient-to-br from-purple-600 to-indigo-700 p-8 text-center relative">
+                <!-- Botón de Cerrar -->
+                <button onclick="cerrarFiestas()" class="absolute top-4 right-4 text-white/80 hover:text-white hover:rotate-90 transition-all">
+                    <i data-lucide="x-circle" class="w-8 h-8"></i>
+                </button>
+                
+                <i data-lucide="sparkles" class="w-16 h-16 mx-auto text-yellow-300 mb-4 animate-pulse"></i>
+                <h2 class="text-4xl md:text-5xl font-extrabold text-white mb-2">¡Próximamente!</h2>
+                <p class="text-purple-100 text-lg">Prepárate para los mejores eventos del semestre</p>
+            </div>
+            
+            <!-- Contenido del Modal -->
+            <div class="p-6 md:p-10 grid md:grid-cols-2 gap-6 bg-gray-50">
+                
+                <!-- Fiesta 1 -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-blue-100 text-center hover:shadow-lg transition-shadow hover:-translate-y-1 transform duration-300">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="music-4" class="w-8 h-8 text-blue-600"></i>
+                    </div>
+                    <h3 class="font-bold text-xl text-gray-800 mb-2">Bienvenida y Despedida</h3>
+                    <p class="text-gray-600">¡Recibimos con todo a los de nuevo ingreso y despedimos en grande a las generaciones que se gradúan de Gastro y Gestión!</p>
+                </div>
+
+                <!-- Fiesta 2 -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-orange-100 text-center hover:shadow-lg transition-shadow hover:-translate-y-1 transform duration-300">
+                    <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="ghost" class="w-8 h-8 text-orange-600"></i>
+                    </div>
+                    <h3 class="font-bold text-xl text-gray-800 mb-2">Fiesta de Halloween</h3>
+                    <p class="text-gray-600">Ve preparando tu mejor y más creativo disfraz para la noche más divertida y terrorífica de la unidad.</p>
+                </div>
+            </div>
+
+            <!-- Botón inferior para cerrar -->
+            <div class="bg-white p-6 text-center border-t border-gray-100">
+                <button onclick="cerrarFiestas()" class="px-8 py-3 bg-gray-900 text-white rounded-full font-bold hover:bg-purple-600 transition-colors shadow-md">
+                    ¡Entendido, los espero!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script para inicializar íconos Lucide y controlar el Modal -->
     <script>
         lucide.createIcons();
+
+        // Funciones para abrir y cerrar la sub-página de Fiestas
+        function abrirFiestas() {
+            document.getElementById('modal-fiestas').classList.remove('hidden');
+            // Evitar que la página de atrás haga scroll mientras el modal está abierto
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function cerrarFiestas() {
+            document.getElementById('modal-fiestas').classList.add('hidden');
+            // Restaurar el scroll de la página
+            document.body.style.overflow = 'auto';
+        }
     </script>
 </body>
 </html>
